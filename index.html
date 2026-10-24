@@ -356,6 +356,13 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area
 .keptnote{font-size:.78rem;font-style:italic;opacity:.85;align-self:center}
 .splitlist{max-height:46vh;overflow:auto;margin:10px 0;padding-left:1.6em}
 .splitlist .splrow{padding:3px 0;border-bottom:1px dashed var(--line,#ddd)}
+/* bộ gác chất lượng + tên chưa thống nhất */
+.prow.qbad .vi textarea{border-left:3px solid var(--warn)}
+.qflag{font-size:.8rem}
+.editednote{font-size:.78rem;font-style:italic;opacity:.8;align-self:center}
+.cfitem{display:flex;flex-direction:column;gap:4px;padding:6px 0;border-top:1px dashed var(--line,#ddd)}
+.cfitem:first-of-type{border-top:0}
+.cfuse{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -531,6 +538,47 @@ Object.assign(window.AM_EN,{
   'Cả truyện đang nằm trong 1 chương ({n} đoạn), có {k} dòng tiêu đề chương. Tách thành {k2} chương? Bản dịch đã có được giữ nguyên.': 'The whole novel is in 1 chapter ({n} paragraphs) with {k} chapter headings. Split into {k2} chapters? Existing translations are kept.',
   'Chương này dài {n} đoạn và có {k} dòng tiêu đề chương bên trong — có thể cả truyện nằm chung một chương.': 'This chapter has {n} paragraphs and {k} chapter headings inside — the whole novel may be in one chapter.'
 });
+Object.assign(window.AM_EN,{
+'Tìm đoạn dịch còn cứng/kiểu convert rồi tự dịch lại cho mượt (không đụng đoạn bạn đã sửa tay)':'Find stiff, convert-style paragraphs and re-translate them smoothly (hand-edited paragraphs are left alone)',
+'Rà soát chương':'Review chapter',
+'Dịch lại cho mượt…':'Smooth re-translate…',
+'Dịch lại cho mượt':'Smooth re-translate',
+'Bộ kiểm tra thấy đoạn này còn đọc như convert. Bấm “Dịch lại cho mượt” hoặc sửa tay.':'The checker found this paragraph still reads like a raw conversion. Tap “Smooth re-translate” or edit it by hand.',
+'Câu còn cứng:':'Still stiff:',
+'Đoạn bạn đã sửa tay — “Rà soát chương” và “Dịch lại cho mượt” sẽ không đụng tới.':'You edited this paragraph by hand — “Review chapter” and “Smooth re-translate” will not touch it.',
+'đã sửa tay':'edited by hand',
+'Tên dịch chưa thống nhất ({n})':'Inconsistent name spellings ({n})',
+'Cùng một tên mà bản dịch đang viết nhiều kiểu. Chọn một cách viết rồi bấm “Thống nhất trong bản dịch” (không đụng đoạn bạn đã sửa tay).':'The same name is spelled several ways in the translation. Pick one spelling, then tap “Unify in translation” (hand-edited paragraphs are left alone).',
+'Dùng “{v}”':'Use “{v}”',
+'Thống nhất trong bản dịch':'Unify in translation',
+'Đã tự lập bảng tên nhân vật: {l}. Kiểm tra/sửa trong “Thuật ngữ & xưng hô”.':'Character name list built: {l}. Check or edit it in “Terms & forms of address”.',
+'Không tìm thêm được tên nào mới.':'No new names found.',
+'Đã thống nhất “{v}” ({n} chỗ).':'Unified to “{v}” ({n} places).',
+'Bỏ qua {k} đoạn bạn đã sửa tay.':'Skipped {k} hand-edited paragraphs.',
+'Không thấy đoạn nào còn cứng.':'No stiff paragraphs found.',
+'Rà soát xong: {c} đoạn đã kiểm tra, {f} đoạn còn cứng.':'Review done: {c} paragraphs checked, {f} still stiff.',
+'Đã viết lại cho mượt: đoạn {p}.':'Rewritten smoothly: paragraph {p}.',
+'Đoạn {p} vẫn còn cứng — sửa tay hoặc thử model khác.':'Paragraph {p} is still stiff — edit it by hand or try another model.',
+'Dịch lại các đoạn đã chọn với đủ văn phong, thuật ngữ, tên nhân vật và ngữ cảnh. Bản mới chỉ được nhận khi đọc mượt hơn. Đoạn bạn đã sửa tay được giữ nguyên.':'Re-translate the chosen paragraphs with the full style guide, glossary, character names and context. A new version is only kept if it reads more smoothly. Hand-edited paragraphs are kept as they are.',
+'Tất cả đoạn bị đánh dấu còn cứng ({n})':'All paragraphs flagged as stiff ({n})',
+'Từ đoạn':'From paragraph',
+'đến đoạn':'to paragraph',
+'Đoạn này bạn đã sửa tay. Vẫn để AI viết lại?':'You edited this paragraph by hand. Let the AI rewrite it anyway?',
+'Đọc tên truyện và chương đầu để lập bảng tên nhân vật (mỗi tên một cách viết, tên Tây viết kiểu Tây). Sửa được.':'Read the book title and first chapter to build a character name list (one spelling per name, Western names in Western form). Editable.',
+'Tự tìm tên nhân vật':'Find character names',
+'Đoạn {a} dịch còn cứng ({w}) — đang viết lại cho mượt… ({k}/{n}, lần {t}/2)':'Paragraph {a} reads stiff ({w}) — rewriting it smoothly… ({k}/{n}, try {t}/2)',
+'theo yêu cầu':'on request',
+'Đã tự viết lại cho mượt: đoạn {p}.':'Automatically rewritten smoothly: paragraph {p}.',
+'Đoạn {p} vẫn còn cứng — bấm “Dịch lại cho mượt” hoặc sửa tay.':'Paragraph {p} is still stiff — tap “Smooth re-translate” or edit it by hand.',
+'còn từ kiểu convert':'convert-style words',
+'hư từ đặt sai chỗ':'misplaced particles',
+'lặp chữ':'repeated words',
+'ngắn hơn bản gốc nhiều':'much shorter than the source',
+'gần như chép bản convert':'almost a copy of the conversion',
+'tên chưa thống nhất':'inconsistent names',
+'câu bị cắt cụt':'sentence cut short',
+'còn chữ chưa dịch':'untranslated text left'
+});
 </script>
 <script id="core">
 /* ===== LÕI XỬ LÝ (không phụ thuộc giao diện) ===== */
@@ -663,8 +711,8 @@ C.reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /* Thuật ngữ chữ Latinh / tiếng Việt (tên Anh, tên Hàn đã Latinh hóa…) chỉ khớp nguyên từ; chữ Hán, Hàn, Thái khớp chuỗi con (không có dấu cách giữa từ). */
 const LATIN_EDGE = /[A-Za-z0-9\u00c0-\u024f\u1e00-\u1eff]/;
 C.termPattern = t => { t = t.trim(); const e = C.reEsc(t); return (LATIN_EDGE.test(t[0]) ? '(?<![\\p{L}\\p{N}])' : '') + e + (LATIN_EDGE.test(t[t.length - 1]) ? '(?![\\p{L}\\p{N}])' : ''); };
-C.termIn = (text, term) => { const t = String(term || '').trim(); if (!t) return false; if (!LATIN_EDGE.test(t[0]) && !LATIN_EDGE.test(t[t.length - 1])) return String(text).includes(t); return new RegExp(C.termPattern(t), 'u').test(text); };
-C.findTerms = (text, glossary) => (glossary || []).filter(g => g.zh && g.zh.trim() && C.termIn(text, g.zh));
+C.termIn = (text, term, ci) => { const t = String(term || '').trim(); if (!t) return false; if (!LATIN_EDGE.test(t[0]) && !LATIN_EDGE.test(t[t.length - 1]) && !ci) return String(text).includes(t); return new RegExp(C.termPattern(t), ci ? 'iu' : 'u').test(text); };
+C.findTerms = (text, glossary) => (glossary || []).filter(g => g.zh && g.zh.trim() && C.termIn(text, g.zh, g.kind === 'name'));
 C.makeHighlighter = glossary => {
   const terms = (glossary || []).filter(g => g.zh && g.zh.trim()).sort((a, b) => b.zh.trim().length - a.zh.trim().length);
   if (!terms.length) return s => C.esc(s);
@@ -739,20 +787,20 @@ C.detectLang = text => {
   }
   if (hangul > 20 && hangul >= han) return 'ko';
   if (thai > 20) return 'th';
-  if (han > 12 && viet > 12) return 'auto';
+  if (han > 12 && viet > 12) return han / (han + viet) < 0.05 ? 'vi' : 'auto'; /* bản convert Hán Việt chỉ sót vài chữ Hán (tên truyện, tên riêng) → vẫn là tiếng Việt/convert, không phải “văn bản lẫn” */
   if (han > 12) return /[之乎者也矣焉哉曰兮]/.test(text) && (String(text).match(/[之乎者也矣焉哉曰兮朕卿]/g) || []).length / han > 0.03 ? 'zh-classical' : 'zh-modern';
   if (viet > 12 || (viet >= 3 && viet / (latin + viet) > 0.08)) return 'vi';
   if (latin > 15) return 'en';
   return 'auto';
 };
 const AUTO_NOTE = {
-  vi: n => 'Hướng dịch “Tự nhận”: tự xác định ngôn ngữ nguồn của từng đoạn. Phần lớn chương này có vẻ là ' + n + '. Đoạn nào khác ngôn ngữ cũng dịch đúng sang tiếng Việt; đoạn đã là tiếng Việt xuôi thì giữ, chỉ sửa chỗ còn cứng.',
+  vi: n => 'Hướng dịch “Tự nhận”: tự xác định ngôn ngữ nguồn của từng đoạn. Phần lớn chương này có vẻ là ' + n + '. Đoạn nào khác ngôn ngữ cũng dịch đúng sang tiếng Việt; đoạn đã là tiếng Việt xuôi thì giữ, chỉ sửa chỗ còn cứng. Câu Hán Việt convert (trật tự kiểu Trung, hư từ thừa, từ Hán Việt cứng) KHÔNG phải tiếng Việt xuôi: phải viết lại hoàn toàn thành văn Việt tự nhiên.',
   en: n => 'Direction “Auto”: identify the source language of each paragraph yourself. Most of this chapter appears to be ' + n + '. Translate any paragraph in another language into English as well; paragraphs already in fluent English stay as they are, with only stiff spots polished.'
 };
 C.effectiveSource = (direction, sample) => {
   const d = C.dir(direction); if (d.source !== 'auto') return d.source;
   let l = C.detectLang(sample || '');
-  if (l === 'vi' && d.target === 'vi') l = 'hv';
+  if (l === 'vi' && (d.target === 'vi' || C.looksConvert(sample))) l = 'hv';
   return l;
 };
 
@@ -781,10 +829,15 @@ const SRC_NAME = {
 /* Gợi ý theo nguồn — viết bằng tiếng đích của lời nhắc */
 C.GUIDE = {
   vi: {
-    auto: ['Văn bản lẫn chữ Hán, Hán Việt và tiếng Việt: tự nhận từng câu. Chữ Hán thì dịch, Hán Việt còn cứng thì viết mượt, câu tiếng Việt đã xuôi thì giữ.', 'Xưng hô theo tác giả. Không gán sẵn một cặp nhân vật.'],
+    auto: ['Văn bản lẫn chữ Hán, Hán Việt và tiếng Việt: tự nhận từng câu. Chữ Hán thì dịch, Hán Việt còn cứng thì viết lại hoàn toàn cho mượt, câu tiếng Việt đã xuôi thì giữ. Câu convert chỉ đảo vài chữ vẫn là convert — không được giữ.', 'Xưng hô theo tác giả. Không gán sẵn một cặp nhân vật.'],
     'zh-modern': ['Tiếng Trung hiện đại sang tiếng Việt đương thời.', 'Giữ hết tình tiết. Không thêm cảnh, không tóm tắt.', 'Câu có nhịp, không dịch cứng từng chữ.', 'Không ép “ngươi / ta” nếu nguồn không viết cổ.'],
     'zh-classical': ['Nguồn là văn cổ hoặc văn cung đình (cổ văn, bán văn ngôn). Dịch sang tiếng Việt hiện đại, tự nhiên, dễ đọc, nhưng giữ không khí cổ: nhịp câu trang trọng, xưng hô cổ theo nguồn (ta, ngươi, nàng, bổn cung, thần thiếp, bệ hạ…), từ Hán Việt có chọn lọc cho phẩm hàm, lễ nghi, đồ vật.', 'Không dịch từng chữ kiểu convert, cũng không hiện đại hóa bằng từ lóng hay từ mới.', 'Câu văn ngôn cô đọng thì diễn đạt đủ ý, nhưng không thêm tình tiết hay giải thích.', 'Thơ, câu đối: dịch thơ hoặc dịch nghĩa gọn, giữ hình ảnh.', 'Tên riêng, địa danh, chức tước viết Hán Việt, nhất quán.'],
-    hv: ['Nguồn là bản convert Hán Việt (máy chuyển thô từ tiếng Trung): trật tự từ kiểu Trung, từ Hán Việt cứng, hư từ thừa, xưng hô lẫn lộn.', 'Viết lại thành tiếng Việt mượt, tự nhiên: đảo định ngữ về đúng trật tự tiếng Việt, bỏ hư từ thừa (đích, liễu, trứ…), thay từ Hán Việt khó hiểu bằng từ thuần Việt nếu hợp bối cảnh.', 'Trung thành với bản convert: giữ đủ mọi ý, tình tiết và thứ tự sự việc; không thêm, không bớt, không đoán thêm nghĩa.', 'Giữ tên riêng như bản convert (trừ khi bảng thuật ngữ quy định khác); sửa xưng hô cho nhất quán theo quan hệ nhân vật.'],
+    hv: ['Nguồn là bản convert Hán Việt (máy chuyển thô từ tiếng Trung, ví dụ QuickTranslator): trật tự từ kiểu Trung, từ Hán Việt cứng, hư từ thừa, xưng hô lẫn lộn. Bản convert KHÔNG phải tiếng Việt xuôi: không được giữ nguyên câu convert, cũng không được chỉ đảo vài chữ.',
+      'Hiểu ý cả câu rồi viết lại thành tiếng Việt mượt như một nhà văn Việt viết: đảo định ngữ về đúng trật tự tiếng Việt (“thiếu nữ   thân thể” → “thân thể thiếu nữ”), bỏ hư từ thừa (đích, liễu, trứ, đắc, thì…), bỏ lượng từ kiểu Trung (“một đạo …”, “nhất phó …”), đổi giới từ kiểu Trung (“tại ánh trăng phản chiếu hạ” → “dưới ánh trăng”), thay từ Hán Việt khó hiểu bằng từ thuần Việt hợp bối cảnh.',
+      'Nhiều dấu cách liền nhau giữa hai chữ là chỗ máy bỏ chữ “的”: hiểu là quan hệ sở hữu hoặc định ngữ.',
+      'Tên phương Tây trong convert hay bị tách bằng dấu chấm, ví dụ “ngả mai đát. Mễ lan đóa”: đó là MỘT họ tên (gốc có dấu “．”), không phải hết câu — không được cắt câu ở đó. Chữ Hán còn sót lại giữa bản convert (ví dụ “媞”, “菈菈”) là tên riêng máy không chuyển được. Viết mọi tên theo bảng thuật ngữ; tên chưa có trong bảng thì viết hoa và giữ một cách viết duy nhất.',
+      'Câu convert bị rối hoặc lặp chữ (máy chuyển sai) thì dựa vào ngữ cảnh viết ra ý hợp lý nhất bằng câu trọn vẹn, không lặp chữ máy móc.',
+      'Trung thành với bản convert: giữ đủ mọi ý, tình tiết và thứ tự sự việc; không thêm, không bớt, không tóm tắt. Sửa xưng hô cho nhất quán theo quan hệ nhân vật.'],
     ko: ['Tiếng Hàn sang tiếng Việt đương thời.', 'Tên Hàn giữ dạng Latinh theo cách viết thông dụng (ví dụ Kim Ji-won), không Hán Việt hóa, nhất quán.', 'Mức nói: 존댓말 (kính ngữ) → lời lịch sự (dạ, ạ, chị/em, tôi/cô); 반말 (nói trống) → lời thân mật (cậu/tớ, chị/em thân, mày/tao khi gay gắt). Khi nhân vật chuyển từ kính ngữ sang nói trống, đổi xưng hô theo để giữ ý nghĩa thân thiết hơn.', '언니 → chị (nữ gọi nữ lớn tuổi hơn); 선배 → tiền bối hoặc chị, theo bối cảnh trường lớp, công ty; 후배 → hậu bối hoặc em; 동생 → em; hậu tố -씨 → bỏ, hoặc “cô / chị” + tên.', 'Tiếng Hàn hay lược chủ ngữ: thêm chủ ngữ tiếng Việt khi cần cho rõ ai nói, ai làm, nhưng không đổi nghĩa.', 'Từ tượng thanh, tượng hình: dịch bằng cách tả tương đương tự nhiên.'],
     th: ['Tiếng Thái sang tiếng Việt đương thời.', 'Tên Thái và tên gọi ở nhà (ชื่อเล่น) giữ dạng Latinh theo phiên âm thông dụng, nhất quán.', 'Xưng hô: พี่ (P’) → chị; น้อง (Nong) → em; คุณ (Khun) → cô, chị hoặc ngài theo vai vế; ฉัน, เรา, หนู → tôi, tớ, em theo quan hệ; เธอ → em, cậu hoặc cô theo ngữ cảnh.', 'Tiểu từ cuối câu (ค่ะ, คะ, ครับ, นะ, จ้ะ) không dịch thành chữ riêng, mà thể hiện qua giọng: lễ phép (dạ, ạ), mềm mỏng (nhé, nha).', 'Tiếng Thái hay lược đại từ: thêm chủ ngữ tiếng Việt khi cần cho rõ.'],
     en: ['Tiếng Anh sang văn Việt tự nhiên.', 'Không dịch sát từng từ đến mức cứng. Không thêm tình tiết.', 'Tên tiếng Anh giữ nguyên.', 'she / her, you, I: chọn xưng hô tiếng Việt (chị, em, cô, tôi, cậu, nàng…) theo tuổi và quan hệ nhân vật, giữ nhất quán.'],
@@ -794,7 +847,7 @@ C.GUIDE = {
     auto: ['Mixed Chinese, Sino-Vietnamese and Vietnamese: read each sentence. Translate Chinese, render stiff Sino-Vietnamese naturally, translate Vietnamese faithfully.', 'Address and pronouns follow the author. No preset couple is applied.'],
     'zh-modern': ['Modern Chinese into contemporary literary English.', 'Keep every event. Do not add scenes or summarize.', 'Sentences should breathe, not stick word for word.', 'Do not use archaic English unless the source is archaic.'],
     'zh-classical': ['Classical or court Chinese. Render it into readable modern English with a measured, slightly formal period flavour; avoid both slang and pseudo-Shakespearean English.', 'Keep ranks, titles and court terms consistent.', 'Names in pinyin, consistent across chapters.', 'Poems and couplets: translate as verse or as a compact rendering that keeps the imagery.', 'Pronouns follow the source. No preset couple is applied.'],
-    hv: ['The source is a Sino-Vietnamese machine conversion of a Chinese novel: Chinese word order and stiff Sino-Vietnamese words.', 'Translate the meaning into natural English. Keep every event and the names as given (unless the glossary says otherwise).'],
+    hv: ['The source is a Sino-Vietnamese machine conversion of a Chinese novel: Chinese word order and stiff Sino-Vietnamese words.', 'Translate the meaning into natural English. Keep every event; write names as the glossary says.', 'Western names are often split by a full stop in the conversion (e.g. “ngả mai đát. Mễ lan đóa”): that is ONE full name, not a sentence end. Leftover Chinese characters (e.g. “媞”, “菈菈”) are names the converter could not render.', 'Where the conversion is garbled or repeats words, write the most plausible meaning from context as a complete sentence.'],
     ko: ['Korean into contemporary English.', 'Korean names in standard romanization (e.g. Kim Ji-won), consistent.', 'Speech levels (jondaetmal vs banmal) come through tone and word choice; when characters switch to banmal, let the dialogue become noticeably closer.', '언니, 선배, -씨: render through names, relationship and tone; keep “unnie” or “sunbae” only if the glossary says so.', 'Korean often drops subjects: add English subjects where needed for clarity, without changing meaning.'],
     th: ['Thai into contemporary English.', 'Thai names and nicknames in standard romanization, consistent.', 'พี่ / น้อง (P’ / Nong) and คุณ (Khun): render through names, relationship and tone; keep “P’” + name only if the glossary says so.', 'Sentence particles (ค่ะ, ครับ, นะ, จ้ะ) are not translated as words; show politeness or softness through tone.'],
     en: ['The source is already English: only polish it, keep the meaning.'],
@@ -804,7 +857,7 @@ C.GUIDE = {
 C.guideFor = (id, sample) => { const d = C.dir(id); const src = C.effectiveSource(id, sample); const g = (C.GUIDE[d.target][src] || []).slice(); if (d.source === 'auto') g.unshift(AUTO_NOTE[d.target](SRC_NAME[d.target][src])); return g; };
 
 /* ---------- Lời nhắc (prompt) ---------- */
-C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, address, sample, soften, humor }) => {
+C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, address, sample, soften, humor, format }) => {
   const d = C.dir(direction); const src = C.effectiveSource(direction, sample);
   const srcName = lang => d.source === 'auto' ? (lang === 'vi' ? 'ngôn ngữ tự nhận (chương này có vẻ là ' + SRC_NAME.vi[src] + ')' : 'an auto-detected language (this chapter appears to be ' + SRC_NAME.en[src] + ')') : SRC_NAME[lang][d.source];
   if (d.target === 'en') {
@@ -819,9 +872,9 @@ C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, ad
       if (prevTail) s += 'End of the previous chapter:\n' + prevTail.trim() + '\n';
       s += '\n';
     }
-    s += '## OUTPUT FORMAT (mandatory)\n- Each source paragraph is numbered [1], [2], ...\n- Return the English translation of EACH paragraph, starting with exactly that number, one paragraph per line.\n- N source paragraphs → exactly N numbered blocks, from [1] through [N], in order — including very short ones (a single line of dialogue, “……”, an exclamation).\n- Do not merge, split, drop or add paragraphs: block [n] contains the translation of paragraph [n] only.\n- Translate every sentence in full. Never summarize, shorten or skip a sentence.\n- No notes, no explanations, do not repeat the source.';
+    if (format === 'line') s += C.LINE_FORMAT.en; else s += '## OUTPUT FORMAT (mandatory)\n- Each source paragraph is numbered [1], [2], ...\n- Return the English translation of EACH paragraph, starting with exactly that number, one paragraph per line.\n- N source paragraphs → exactly N numbered blocks, from [1] through [N], in order — including very short ones (a single line of dialogue, “……”, an exclamation).\n- Do not merge, split, drop or add paragraphs: block [n] contains the translation of paragraph [n] only.\n- Translate every sentence in full. Never summarize, shorten or skip a sentence.\n- No notes, no explanations, do not repeat the source.';
     if (humor) s += '\n\n' + C.HUMOR.en;
-    if (soften) s += '\n\n' + C.SOFTEN.en;
+    s += '\n\n' + (soften ? C.SOFTEN.en : C.INTIMATE.en);
     return s;
   }
   let s = 'Bạn là một dịch giả văn học chuyên nghiệp, chuyên dịch tiểu thuyết bách hợp (GL) từ ' + srcName('vi') + ' sang tiếng Việt.\n\n';
@@ -836,16 +889,38 @@ C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, ad
     if (prevTail) s += 'Đoạn cuối chương trước:\n' + prevTail.trim() + '\n';
     s += '\n';
   }
-  s += '## ĐỊNH DẠNG TRẢ LỜI (bắt buộc)\n- Mỗi đoạn gốc được đánh số [1], [2], ...\n- Trả về bản dịch tiếng Việt của TỪNG đoạn, mở đầu bằng đúng số thứ tự đó, mỗi đoạn trên một dòng riêng.\n- Có N đoạn gốc thì trả về đúng N khối, đủ từ [1] đến [N], theo thứ tự — kể cả đoạn rất ngắn (một câu thoại, “……”, tiếng kêu).\n- Không gộp, tách, bỏ hay thêm đoạn: khối [n] chỉ chứa bản dịch của đúng đoạn [n].\n- Dịch đầy đủ từng câu. Không tóm tắt, không rút gọn, không bỏ câu nào.\n- Không ghi chú, không giải thích, không nhắc lại bản gốc.';
+  if (format === 'line') s += C.LINE_FORMAT.vi; else s += '## ĐỊNH DẠNG TRẢ LỜI (bắt buộc)\n- Mỗi đoạn gốc được đánh số [1], [2], ...\n- Trả về bản dịch tiếng Việt của TỪNG đoạn, mở đầu bằng đúng số thứ tự đó, mỗi đoạn trên một dòng riêng.\n- Có N đoạn gốc thì trả về đúng N khối, đủ từ [1] đến [N], theo thứ tự — kể cả đoạn rất ngắn (một câu thoại, “……”, tiếng kêu).\n- Không gộp, tách, bỏ hay thêm đoạn: khối [n] chỉ chứa bản dịch của đúng đoạn [n].\n- Dịch đầy đủ từng câu. Không tóm tắt, không rút gọn, không bỏ câu nào.\n- Không ghi chú, không giải thích, không nhắc lại bản gốc.';
   if (humor) s += '\n\n' + C.HUMOR.vi;
-  if (soften) s += '\n\n' + C.SOFTEN.vi;
+  s += '\n\n' + (soften ? C.SOFTEN.vi : C.INTIMATE.vi);
   return s;
 };
-C.buildTranslateUser = (zhList, tailVi, direction, retry) => {
-  const en = C.targetOf(direction) === 'en'; const N = zhList.length;
+/* ctx: { prev: [{src, vi}] (2–3 đoạn ngay trước: gốc + bản dịch), next: [src] (1–2 đoạn ngay sau, chỉ gốc) } — hoặc mảng bản dịch (kiểu cũ).
+   retry: true | 'missing' = lần trước bỏ sót/gộp; { kind: 'quality', reasons: [...], prev: 'bản dịch cũ' } = viết lại cho mượt. */
+C.contextBlock = (ctx, en) => {
+  if (!ctx) return '';
+  if (Array.isArray(ctx)) return ctx.length ? (en ? 'Immediately preceding paragraphs (already translated, for continuity only — do NOT translate again):\n' : 'Đoạn ngay trước (đã dịch, chỉ để nối mạch — KHÔNG dịch lại):\n') + ctx.join('\n') + '\n\n' : '';
   let u = '';
-  if (tailVi && tailVi.length) u += (en ? 'Immediately preceding paragraphs (already translated, for continuity only — do NOT translate again):\n' : 'Đoạn ngay trước (đã dịch, chỉ để nối mạch — KHÔNG dịch lại):\n') + tailVi.join('\n') + '\n\n';
-  if (retry) u += en ? 'NOTE: the previous answer left ' + (N > 1 ? 'these paragraphs' : 'this paragraph') + ' out or merged ' + (N > 1 ? 'them' : 'it') + ' with another. Translate ' + (N > 1 ? 'each one' : 'it') + ' in full, sentence by sentence, as its own numbered block.\n\n'
+  const prev = (ctx.prev || []).filter(x => x && (x.src || x.vi)), next = (ctx.next || []).filter(Boolean);
+  if (prev.length) u += (en ? 'CONTEXT — the paragraphs just before (source + existing translation; for continuity of names, address and tone only — do NOT translate them again):\n' : 'NGỮ CẢNH — các đoạn ngay trước (gốc + bản dịch đã có; chỉ để nối mạch tên, xưng hô, giọng văn — KHÔNG dịch lại):\n')
+    + prev.map(x => (en ? '(source) ' : '(gốc) ') + String(x.src || '').trim() + (x.vi && x.vi.trim() ? '\n' + (en ? '(translation) ' : '(đã dịch) ') + x.vi.trim() : '')).join('\n') + '\n\n';
+  if (next.length) u += (en ? 'CONTEXT — the paragraphs just after (source only, to understand where the scene goes — do NOT translate them):\n' : 'NGỮ CẢNH — các đoạn ngay sau (chỉ bản gốc, để hiểu mạch truyện — KHÔNG dịch):\n')
+    + next.map(z => (en ? '(source) ' : '(gốc) ') + String(z).trim()).join('\n') + '\n\n';
+  return u;
+};
+C.QUALITY_REASON = {
+  vi: { convert: 'còn nhiều từ Hán Việt kiểu convert', particle: 'hư từ/giới từ kiểu convert đặt sai chỗ (“hạ,”, “thì,”, “đắc”, “một đạo … vật”…)', repeat: 'lặp chữ/lặp cụm vô nghĩa', short: 'ngắn hơn nhiều so với bản gốc (có thể thiếu ý)', copy: 'gần như chép lại bản convert', name: 'tên riêng chưa theo bảng thuật ngữ', fragment: 'câu bị cắt cụt (thường do tên bị tách bằng dấu chấm)', manual: 'người dịch muốn câu văn mượt hơn' },
+  en: { convert: 'too many literal Sino-Vietnamese words', particle: 'convert-style particles in odd places', repeat: 'meaningless repeated words', short: 'much shorter than the source (meaning may be missing)', copy: 'almost a copy of the conversion', name: 'names not as in the glossary', fragment: 'a sentence cut short (often a name split by a full stop)', manual: 'the translator wants smoother prose', untranslated: 'parts left untranslated' }
+};
+C.buildTranslateUser = (zhList, ctx, direction, retry) => {
+  const en = C.targetOf(direction) === 'en'; const N = zhList.length;
+  let u = C.contextBlock(ctx, en);
+  if (retry && retry.kind === 'quality') {
+    const R = C.QUALITY_REASON[en ? 'en' : 'vi']; const why = (retry.reasons || []).map(c => R[c] || c).join('; ');
+    u += en ? 'NOTE: the previous translation of ' + (N > 1 ? 'these paragraphs' : 'this paragraph') + ' read like a machine conversion' + (why ? ' (' + why + ')' : '') + '. Rewrite it from scratch in natural, fluent, literary English — complete sentence by sentence, faithful to the meaning, names exactly as in the glossary. Do not copy the word order of the source.\n'
+      : 'LƯU Ý: bản dịch trước của ' + (N > 1 ? 'các đoạn này' : 'đoạn này') + ' còn cứng, đọc như convert' + (why ? ' (' + why + ')' : '') + '. Hãy viết lại hoàn toàn bằng tiếng Việt tự nhiên, mượt, giàu cảm xúc như một nhà văn Việt viết — đủ từng câu, đúng nghĩa, tên riêng đúng bảng thuật ngữ. Không chép trật tự từ của bản convert.\n';
+    if (retry.prev && String(retry.prev).trim()) u += (en ? 'Previous version (do not reuse its wording):\n' : 'Bản trước (không dùng lại cách viết này):\n') + String(retry.prev).trim() + '\n';
+    u += '\n';
+  } else if (retry) u += en ? 'NOTE: the previous answer left ' + (N > 1 ? 'these paragraphs' : 'this paragraph') + ' out or merged ' + (N > 1 ? 'them' : 'it') + ' with another. Translate ' + (N > 1 ? 'each one' : 'it') + ' in full, sentence by sentence, as its own numbered block.\n\n'
     : 'LƯU Ý: lần trước bạn đã bỏ sót hoặc gộp ' + (N > 1 ? 'các đoạn này' : 'đoạn này') + ' vào đoạn khác. Hãy dịch đầy đủ từng câu, mỗi đoạn một khối có số riêng.\n\n';
   u += (en ? 'Translate the following ' + N + ' paragraphs' + (N > 1 ? ' (all of [1]–[' + N + '], one block each, never merge or skip)' : '') + ':\n\n'
     : 'Hãy dịch ' + N + ' đoạn sau' + (N > 1 ? ' (đủ từ [1] đến [' + N + '], mỗi đoạn một khối riêng, không gộp, không bỏ)' : '') + ':\n\n') + zhList.map((z, i) => '[' + (i + 1) + '] ' + z).join('\n');
@@ -897,13 +972,33 @@ C.SOFTEN = {
     '- Riêng những đoạn mô tả tình dục lộ liễu hoặc chi tiết bạo lực ghê rợn: diễn đạt tiết chế, gợi tả theo lối văn chương — chỉ ngụ ý, không tả chi tiết cơ thể hay hành vi; khi cần thì lướt qua hoặc chuyển cảnh nhẹ nhàng.\n' +
     '- Giữ câu văn tự nhiên, liền mạch để người đọc không thấy bị hụt.\n' +
     '- Không thêm lời bình, ghi chú hay giải thích.\n' +
+    '- Phần tiết chế vẫn phải là văn xuôi tiếng Việt trôi chảy, gợi tả, đủ câu — không dùng lối convert hay từ Hán Việt giải phẫu cứng.\n' +
     '- Vẫn theo đúng hướng dẫn văn phong, bảng thuật ngữ, cách xưng hô và định dạng đánh số ở trên.',
   en: '## SPECIAL INSTRUCTION FOR THIS PART: SOFTENED TRANSLATION\n' +
     '- Translate the plot, emotions, dialogue and the relationships between characters faithfully.\n' +
     '- Render any explicit sexual content or graphic violence in a restrained, suggestive, literary way: imply rather than describe anatomy or acts in detail, and fade to black where needed.\n' +
     '- Keep the prose natural and continuous so readers do not notice a gap.\n' +
     '- Add no commentary, notes or explanations.\n' +
+    '- The restrained passages must still be fluent, evocative, complete prose — never stiff, literal or clinical.\n' +
     '- Still follow the style guide, glossary, forms of address and numbering format above.'
+};
+/* Cảnh thân mật ở chế độ thường: dịch đủ, bằng văn xuôi Việt tự nhiên — không phải lối convert/giải phẫu */
+C.INTIMATE = {
+  vi: '## CẢNH THÂN MẬT, CẢNH NGƯỜI LỚN (nếu có trong phần này)\n' +
+    '- Dịch đầy đủ, không lược, không làm nhẹ đi so với bản gốc.\n' +
+    '- Viết bằng văn xuôi tiếng Việt tự nhiên, trôi chảy, gợi cảm và giàu hình ảnh, như một nhà văn Việt viết truyện tình cảm người lớn có chất văn chương; câu nào cũng phải đọc trôi.\n' +
+    '- Không dùng lối convert hay từ giải phẫu Hán Việt cứng (kiểu “âm phụ”, “dính trù vật”, “thâm nhập”, “tràn lan đắc”): chọn từ ngữ Việt tinh tế, tự nhiên, đúng mức độ của bản gốc.\n' +
+    '- Giữ nhịp cảm xúc, hơi thở và cảm giác của nhân vật.',
+  en: '## INTIMATE AND ADULT SCENES (if any in this part)\n' +
+    '- Translate them in full, without cuts and without toning them down relative to the source.\n' +
+    '- Write natural, fluent, sensual and evocative literary English, the way a novelist writes romantic adult fiction; every sentence must read smoothly.\n' +
+    '- No stiff literal or clinical wording carried over from the conversion: choose tasteful, natural words at the same intensity as the source.\n' +
+    '- Keep the characters\' emotional rhythm, breathing and sensations.'
+};
+/* Định dạng trả lời cho lời nhắc một dòng (dòng ngắn ≤ 12 ký tự): vẫn đủ văn phong, thuật ngữ, ngữ cảnh — chỉ khác cách trả lời */
+C.LINE_FORMAT = {
+  vi: '## ĐỊNH DẠNG TRẢ LỜI (bắt buộc)\n- Chỉ dịch đúng MỘT dòng được hỏi. Chỉ trả về bản dịch của dòng đó — không đánh số, không giải thích, không nhắc lại ngữ cảnh.\n- Nếu dòng chỉ là ký hiệu, số, tên riêng hoặc từ tượng thanh không cần dịch thì trả về nguyên dòng.',
+  en: '## OUTPUT FORMAT (mandatory)\n- Translate exactly ONE line. Return only its translation — no numbering, no explanation, do not repeat the context.\n- If the line is only symbols, a number, a name or a sound that needs no translation, return it unchanged.'
 };
 /* Gợi ý thuật ngữ mới sau mỗi chương: một lần gọi AI, trả về JSON {source, target, note} */
 C.buildTermSuggestMessages = (srcText, tgtText, glossary, direction) => {
@@ -943,6 +1038,180 @@ C.parseTermSuggestions = (text, opts) => {
   return out;
 };
 
+/* ---------- Bộ gác chất lượng: phát hiện bản dịch “kiểu convert” ---------- */
+/* Từ/cụm hầu như chỉ gặp trong bản convert Hán Việt (máy chuyển thô), rất hiếm trong văn Việt tự nhiên */
+const CV_PHRASES = ['nhất phó', 'khả dĩ', 'tha sở', 'đối ngã', 'ngã thuyết', 'dính trù', 'trù vật', 'quang hái', 'tức đăng', 'hoan hỷ nhất', 'tập thể lưỡng', 'thực thì', 'quá trứ', 'đắc tràn', 'phản chiếu hạ', 'thâm nhập', 'nhập thâm', 'âm phụ', 'mới vừa rồi đoạn', 'đoạn điệu', 'khiên tha', 'đem chính mình', 'như vậy vô thần', 'nằm úp sấp ngã', 'nhiều lắm chỉ có', 'xuất đầu', 'hồng sắc', 'lam hôi sắc', 'sấn đắc', 'hoàn trụ', 'đầu vai', 'mềm nhẹ', 'tiểu đất trũng'];
+const CV_WORDS = ['trứ', 'liễu', 'đắc', 'tịnh', 'nhĩ', 'khán', 'thuyết', 'đích'];
+/* từ ghép tự nhiên chứa các âm trên — không tính */
+const CV_OK = /(đắc (ý|tội|thắng|lực|chí|địa|dụng|đạo|cử|thế|sủng|nhân tâm)|tâm đắc|(giả|lý|tiểu|học|diễn|thuyết|truyền|ngụy|chủ|tà|hùng|du|thuyết) thuyết|thuyết (phục|minh|giảng|giáo|trình|khách|pháp)|((cành|dương|tơ|mày|cây|hàng|rặng|bồ|lá|gốc|bờ|tóc|tơ) liễu|liễu (rủ|yếu|xanh|mày|đào|bồ))|(giá (cả|trị|tiền|như|mà|rẻ|đắt|sách|đỡ|treo|vẽ|áo|lạnh|buốt|băng|thú|thế|ngự|đáo))|((đánh|bảng|có|vô|tăng|giảm|ra|trả|hạ|mặc cả|đắt|rẻ|đúng|cái|bao nhiêu) giá)|(cá (nhân|tính|thể|biệt|cược|độ|voi|mập|vàng|chép|heo|sấu|kho|nướng|rán|chiên|lóc|chuối|trê|thu|ngừ|hồi|đuối)|(con|bắt|câu|ăn|nuôi|chả|thả|ao|bể|hồ|mắm|nước mắm) cá)|(mục đích|đích (thực|thân|xác|đáng|danh|thị|tôn)|(cái|trúng|nhắm|về|tới|đến|đạt|có|là|làm) đích)|((xem|thưởng|biểu|bình|thăm) khán|khán (giả|đài|phòng|thủ))|(tịnh (độ|tâm|xá|thất)|(thanh|yên|tĩnh|an) tịnh)|(\bna (ná|mô|uy)|(ma|la|hoa|ba|xa|a|tana|lana) na\b))/giu;
+const CV_TOKEN_RE = new RegExp('(?<![\\p{L}])(' + CV_WORDS.join('|') + ')(?![\\p{L}])', 'gu'); /* chỉ chữ thường — “Liễu”, “Đích” viết hoa là tên riêng */
+/* hư từ/giới từ kiểu convert đặt sai chỗ */
+const ODD_PARTICLES = [
+  /(?<!(?:bệ|điện|các|thuộc|thiên|dưới|thủ|môn|tọa|hạ|cấp|bề|xuống|trên|lui|ngự|tại|bên|quý|tiểu|đại|phụ) )(?<![\p{L}])hạ(?=\s*[,.;:!?…])/iu,
+  /(?<!(?:hoàng|thánh|tối|chí|cao|thái|tôn|bề|đứng|trên|hòa|thượng) )(?<![\p{L}])thượng(?=\s*[,.;:!?…])/iu,
+  /(?:^|[.!?…,;]\s*["“”]?)(?!(?:khi|lúc|nếu|hễ|mỗi|còn|vậy|thế|chừng|giá|giả sử|bởi|vì|đến|tới|rồi|xong|nói|nghĩ|ngay|nhưng)\b)[^,.!?…;]{1,18}\sthì,/iu,
+  /(?<![\p{L}])đắc(?![\p{L}])(?!\s+(?:ý|tội|thắng|lực|chí|địa|dụng|đạo|cử|thế|sủng|nhân))/iu,
+  /(?<![\p{L}])một đạo(?![\p{L}])(?!\s+(?:quân|sĩ|lý|đức|pháp|bùa|thánh chỉ|chỉ|phù|kiếm khí|ánh|tia|hào quang|sấm|sét))/iu,
+  /(?<![\p{L}])(?:nhất|một) (?:phó|cá|chích|kiện|đạo)\s+[\p{Ll}]+(?:\s+[\p{Ll}]+)?\s+vật(?![\p{L}])/iu,
+  /(?<![\p{L}])(?:tại|ở)\s+[^,.!?…]{1,25}\s(?:hạ|thượng|trung|lý)\s*,/iu
+];
+const STOP = new Set('và,là,của,thì,mà,có,không,chẳng,một,hai,ba,những,các,cái,con,người,ta,nàng,em,chị,cô,tôi,mình,anh,hắn,nó,họ,cho,với,đã,sẽ,đang,cũng,mới,rồi,lại,càng,vừa,lúc,khi,nào,ai,gì,đâu,đi,ra,vào,lên,xuống,này,kia,ấy,đó,thế,vậy,như,rất,quá,lắm,thật,nhé,nha,à,ạ,ơi,ừ,ờ,hả,sao,được,bị,vì,nên,nếu,để,trong,ngoài,trên,dưới,từ,đến,tới,sau,trước,còn,cả,chỉ,ngay,đều,nhau,mãi,dần,nhẹ'.split(','));
+const vTokens = s => (String(s || '').toLowerCase().match(/[\p{L}\p{N}]+/gu) || []);
+const lcsRatio = (a, b) => {
+  if (!a.length || !b.length) return 0;
+  let prev = new Array(b.length + 1).fill(0);
+  for (let i = 1; i <= a.length; i++) { const cur = [0]; for (let j = 1; j <= b.length; j++) cur[j] = a[i - 1] === b[j - 1] ? prev[j - 1] + 1 : Math.max(prev[j], cur[j - 1]); prev = cur; }
+  return prev[b.length] / Math.max(a.length, b.length);
+};
+/* Đếm dấu hiệu convert trong một văn bản tiếng Việt (dùng cho cả bản gốc lẫn bản dịch) */
+C.convertHits = text => {
+  const raw = String(text || '').replace(CV_OK, ' '); const t = raw.toLowerCase();
+  let n = 0; CV_PHRASES.forEach(p => { if (t.includes(p)) n++; });
+  n += (raw.match(CV_TOKEN_RE) || []).length;
+  return n;
+};
+/* Bản gốc có phải convert Hán Việt? (QuickTranslator, nhiều dấu cách liền nhau thay chữ 的, hư từ convert) */
+C.looksConvert = text => {
+  const t = String(text || '').slice(0, 8000); if (!t.trim()) return false;
+  if (/QuickTranslator|TangThuVien|Generated By/i.test(t)) return true;
+  const gaps = (t.match(/[\p{L}] {3,}[\p{L}]/gu) || []).length; const words = Math.max(1, vTokens(t).length);
+  return gaps / words > 0.01 || C.convertHits(t) / words > 0.01;
+};
+/* Kiểm tra một đoạn đã dịch. Trả về mảng mã lỗi (rỗng = ổn):
+   convert · particle · repeat · short · copy · name · fragment · untranslated (→ EN) */
+C.qualityIssues = (src, vi, opts) => {
+  opts = opts || {}; const out = [];
+  const s = String(src || '').trim(), v = String(vi || '').trim();
+  if (!s || !v || C.noLetters(s) || C.isShortLine(s)) return out;
+  const en = opts.target === 'en';
+  const han = C.countCJK(s); const srcHanShare = han / Math.max(1, s.replace(/\s/g, '').length);
+  const vlen = v.replace(/\s/g, '').length, slen = s.replace(/\s/g, '').length;
+  const tv = vTokens(v);
+  if (en) {
+    if ((v.match(/[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/giu) || []).length > 6) out.push('untranslated');
+    if (srcHanShare > 0.3 ? vlen < han * 1.2 : vlen < slen * 0.4) out.push('short');
+  } else {
+    const hits = C.convertHits(v);
+    if (hits >= 2 || (hits >= 1 && tv.length < 25) || hits / Math.max(1, tv.length) > 0.04) out.push('convert');
+    if (ODD_PARTICLES.some(re => re.test(v))) out.push('particle');
+    /* lặp: A X A (“nhập thâm nhập”) hoặc cụm ≥ 3 từ lặp lại gần nhau (“mẫu thân của ta, cũng là mẫu thân của ta”) */
+    let rep = false;
+    /* A X A ở cuối vế câu (“nhập thâm nhập.”) — không tính lối lặp tự nhiên “chạy ra chạy vào”, “nghĩ đi nghĩ lại” */
+    const axa = /(?<![\p{L}])(\p{L}{3,}) (\p{L}+) (\p{L}{3,})(?=\s*(?:[,.;:!?…"”)]|$))/giu; let mm;
+    while (!rep && (mm = axa.exec(v))) { const A = mm[1].toLowerCase(); if (A === mm[3].toLowerCase() && A !== mm[2].toLowerCase() && !STOP.has(A)) rep = true; axa.lastIndex = mm.index + mm[1].length + 1; }
+    /* cụm ≥ 4 từ lặp lại gần nhau (“mẫu thân của ta, cũng là mẫu thân của ta”) */
+    for (let i = 0; i + 3 < tv.length && !rep; i++) {
+      const g = tv.slice(i, i + 4); if (g.filter(x => !STOP.has(x)).length < 2) continue;
+      const k = g.join(' '); for (let j = i + 4; j + 3 < Math.min(tv.length, i + 18); j++) if (tv.slice(j, j + 4).join(' ') === k) { rep = true; break; }
+    }
+    if (rep) out.push('repeat');
+    if (srcHanShare > 0.3 ? (han >= 15 && vlen < han * 1.3) : (slen >= 40 && vlen < slen * 0.55)) out.push('short');
+    /* chép lại bản convert: gốc là chữ Việt kiểu convert mà bản dịch gần như trùng thứ tự từ */
+    if (srcHanShare < 0.05) { const ts = vTokens(s); if (ts.length >= 10 && (C.looksConvert(s) || C.convertHits(s) >= 1) && lcsRatio(ts, tv) >= 0.8) out.push('copy'); }
+    /* câu cụt kiểu “Đêm hôm đó, Ngả Mai Đát. Phu nhân …” */
+    if (/(?:^|[.!?…]["”]?\s+)[^\s.!?,…]+(?:\s[^\s.!?,…]+){0,4},\s(?:\p{Lu}[\p{Ll}]*\s){1,3}\p{Lu}[\p{Ll}]*\.(?=\s|$)/u.test(v)) out.push('fragment');
+  }
+  /* tên riêng: gốc có tên trong bảng mà bản dịch không dùng đúng cách viết đã chọn, hoặc dùng cách viết khác (alts) */
+  for (const t of (opts.terms || [])) {
+    if (!t || t.kind !== 'name' || !t.vi) continue;
+    if (!C.termIn(s, t.zh, true)) continue;
+    const vLow = v.toLowerCase();
+    if (!vLow.includes(String(t.vi).toLowerCase()) || (t.alts || []).some(a => a && a.toLowerCase() !== String(t.vi).toLowerCase() && !String(t.vi).toLowerCase().includes(a.toLowerCase()) && C.termIn(v, a, true))) { out.push('name'); break; }
+  }
+  return [...new Set(out)];
+};
+C.qualityScore = issues => (issues || []).reduce((a, c) => a + ({ copy: 3, convert: 2, particle: 2, repeat: 2, fragment: 2, name: 1, short: 2, untranslated: 3 }[c] || 1), 0);
+
+/* ---------- Bảng tên nhân vật tự lập (từ tên truyện + chương đầu) ---------- */
+/* Phiên âm Hán → tên Tây (chỉ chữ hay gặp trong tên phiên âm phương Tây); thiếu chữ nào thì không đoán */
+C.WEST_SYL = { 媞: 'ti', 蒂: 'ti', 缇: 'ti', 娜: 'na', 米: 'mi', 兰: 'lan', 蘭: 'lan', 朵: 'do', 菈: 'la', 拉: 'la', 莉: 'li', 丽: 'li', 麗: 'li', 丝: 's', 絲: 's', 安: 'an', 妮: 'ni', 薇: 'vi', 卡: 'ca', 莎: 'sa', 玛: 'ma', 瑪: 'ma', 露: 'lu', 西: 'si', 亚: 'a', 亞: 'a', 雅: 'a', 艾: 'ai', 伊: 'i', 琳: 'lin', 洛: 'lo', 罗: 'ro', 羅: 'ro', 芙: 'fu', 塔: 'ta', 贝: 'be', 貝: 'be', 尔: 'r', 爾: 'r', 克: 'c', 斯: 's', 特: 't', 黛: 'de', 茜: 'ci', 娅: 'a', 婭: 'a', 珂: 'co', 凯: 'ca', 凱: 'ca', 萝: 'lo', 蘿: 'lo', 达: 'da', 達: 'da', 妲: 'da', 梅: 'me', 维: 'vi', 維: 'vi', 奥: 'o', 奧: 'o', 莉: 'li', 芬: 'fen', 娃: 'va', 妃: 'phi' };
+const capWords = s => String(s).trim().split(/\s+/).map(w => w ? w[0].toUpperCase() + w.slice(1) : w).join(' ');
+const capName = s => String(s).trim().split(/\s+/).map(w => /^[\u3400-\u9fff]/.test(w) ? w : w[0].toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+const westOf = han => { const r = [...han].map(c => C.WEST_SYL[c]); if (r.some(x => x == null)) return ''; const w = r.join(''); return w[0].toUpperCase() + w.slice(1); };
+const NAME_SEP = /[．·・•‧]/;
+/* Tìm các cách viết convert của một phần tên Hán có n âm tiết: dạng “媞 na”, “mễ lan đóa” (đếm theo âm tiết) */
+C.buildNameGlossary = ({ titles, titlesVi, text }) => {
+  titles = (titles || []).filter(Boolean); titlesVi = (titlesVi || []).filter(Boolean); text = String(text || '');
+  const out = []; const seen = new Set();
+  const add = (zh, vi, note, alts) => { const k = zh.toLowerCase(); if (!zh || !vi || seen.has(k)) return; seen.add(k); out.push({ zh, vi, note: note || '', kind: 'name', alts: [...new Set((alts || []).filter(a => a && a.toLowerCase() !== vi.toLowerCase()))], auto: true }); };
+  /* 1. Tên Tây có dấu “．” trong tên truyện */
+  const hanNames = [];
+  titles.join('\n').replace(/[\u3400-\u9fff]{1,6}(?:[．·・•‧][\u3400-\u9fff]{1,6})+/g, m => { if (!hanNames.includes(m)) hanNames.push(m); return m; });
+  /* cách viết Tây trong tên truyện đã dịch (ví dụ “Tina Milanđo”) */
+  const viWest = titlesVi.join(' \n ').match(/(?:[A-ZĐ][a-zđ\u00e0-\u1ef9]+(?:[ .·-]+|$)){2,4}/gu) || [];
+  const textLow = text.toLowerCase();
+  const syl = '[\\p{L}\\u3400-\\u9fff]+';
+  const convertForm = han => { /* “媞娜” → “媞 na” (chữ Hán còn sót hoặc âm Hán Việt), tìm trong bản convert */
+    const n = [...han].length; const re = new RegExp('(?<![\\p{L}\\u3400-\\u9fff])(' + Array(n).fill(syl).join(' ') + ')(?=\\. )', 'giu');
+    return re; };
+  const parts = {}; /* han part → {west, hv} */
+  for (const hn of hanNames) {
+    const ps = hn.split(NAME_SEP);
+    const west = viWest.map(x => x.trim().split(/[ .·-]+/).filter(Boolean)).find(ws => ws.length === ps.length && ws.some(w => /[a-z]/.test(w)));
+    ps.forEach((p, k) => { parts[p] = parts[p] || { west: (west && west[k]) || westOf(p) }; });
+    /* dạng convert của cả tên: các phần nối bằng “. ” */
+    const re = new RegExp('(?<![\\p{L}\\u3400-\\u9fff])' + ps.map(p => '(' + Array([...p].length).fill(syl).join(' ') + ')').join('\\. ') + '(?![\\p{L}])', 'giu');
+    const cnt = {}; let m;
+    while ((m = re.exec(text))) { const forms = m.slice(1); /* phải khớp chữ Hán còn sót hoặc tên đã biết ở cùng chỗ */
+      if (!forms.every((f, k) => !/[\u3400-\u9fff]/.test(f) || [...ps[k]].some(c => f.includes(c)))) continue;
+      if (!forms.some((f, k) => [...ps[k]].some(c => f.includes(c)))) continue;
+      const key = forms.map(f => f.toLowerCase()).join('|'); cnt[key] = (cnt[key] || 0) + 1; }
+    const best = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0];
+    if (best) best[0].split('|').forEach((f, k) => { parts[ps[k]].hv = f; });
+    const full = ps.map(p => parts[p].west).filter(Boolean);
+    if (full.length === ps.length) {
+      const fullVi = full.join(' ');
+      add(hn, fullVi, 'tên Tây phiên âm (theo tên truyện)', [ps.map(p => parts[p].hv ? capName(parts[p].hv) : '').join(' ')]);
+      if (best) add(ps.map(p => parts[p].hv).join('. '), fullVi, 'họ tên đầy đủ — bản convert tách bằng dấu chấm', [ps.map(p => capName(parts[p].hv)).join(' '), ps.map(p => capName(parts[p].hv)).join('. ')]);
+    }
+    ps.forEach(p => { const x = parts[p]; if (x.west) { add(p, x.west, 'tên Tây phiên âm', x.hv ? [capName(x.hv)] : []); if (x.hv) add(x.hv, x.west, 'tên Tây phiên âm (dạng convert của ' + p + ')', [capName(x.hv)]); } });
+  }
+  /* 2. Họ tên convert khác dùng chung một phần đã biết (ví dụ “ngả mai đát. Mễ lan đóa” — cùng họ 米兰朵) */
+  for (const p of Object.keys(parts)) {
+    const x = parts[p]; if (!x.hv) continue;
+    const re = new RegExp('((?:' + syl + ' ){0,4}' + syl + ')\\. ' + C.reEsc(x.hv) + '(?![\\p{L}])', 'giu');
+    const occ = []; let m; while ((m = re.exec(text))) occ.push(m[1].toLowerCase().split(' '));
+    if (occ.length < 2) continue;
+    for (let L = Math.min(4, Math.max(...occ.map(o => o.length))); L >= 1; L--) {
+      const g = {}; occ.forEach(o => { if (o.length >= L) { const k = o.slice(-L).join(' '); g[k] = (g[k] || 0) + 1; } });
+      const top = Object.entries(g).sort((a, b) => b[1] - a[1])[0];
+      if (!top || top[1] < Math.max(2, Math.ceil(occ.length * 0.6))) continue;
+      const first = top[0]; if (first === String(Object.values(parts).map(y => y.hv).find(h => h && first.endsWith(h)) || '\u0000')) break;
+      if (Object.values(parts).some(y => y.hv && y.hv.toLowerCase() === first)) break;
+      if (STOP.has(first.split(' ')[0]) && L > 1) continue;
+      const given = capName(first);
+      add(first + '. ' + x.hv, given + ' ' + x.west, 'họ tên đầy đủ — tên riêng chưa rõ chữ Hán gốc nên giữ Hán Việt; họ theo tên truyện. Sửa nếu muốn dạng Tây.', [given + ' ' + capName(x.hv), given + '. ' + capName(x.hv)]);
+      add(first, given, 'tên riêng (chưa rõ chữ Hán gốc — không đoán dạng Tây)', []);
+      break;
+    }
+  }
+  /* 3. Chữ Hán còn sót lặp nhiều lần trong bản convert = tên máy không chuyển được (ví dụ “菈菈”) */
+  if (C.countCJK(text) && !(C.countCJK(text) / Math.max(1, text.length) > 0.05)) {
+    const runs = {}; (text.match(/[\u3400-\u9fff]{1,4}/g) || []).forEach(r => { runs[r] = (runs[r] || 0) + 1; });
+    Object.entries(runs).filter(([r, n]) => n >= 3 && !titles.some(t => t.includes(r) && !hanNames.some(h => h.includes(r)))).sort((a, b) => b[1] - a[1]).slice(0, 12).forEach(([r]) => {
+      if (out.some(e => e.zh === r) || hanNames.some(h => h.split(NAME_SEP).includes(r))) return;
+      if ([...r].length === 1 && Object.keys(parts).some(p => p.includes(r))) return;
+      const w = westOf(r); if (w) add(r, w, 'tên máy convert không chuyển được — phiên âm', []);
+    });
+  }
+  return out;
+};
+/* Tên dịch chưa thống nhất: cùng một tên mà bản dịch dùng ≥ 2 cách viết (cách đã chọn + các dạng khác) */
+C.nameConflicts = (glossary, viText) => {
+  const t = String(viText || ''); const out = [];
+  const count = w => { if (!w) return 0; const re = new RegExp(C.termPattern(w), 'giu'); return (t.match(re) || []).length; };
+  for (const g of glossary || []) {
+    if (!g || !g.vi) continue;
+    const forms = [g.vi].concat(g.alts || []);
+    if (g.kind !== 'name' && !(g.alts || []).length) { if (/[\p{Ll}]/u.test(g.zh) && /^[\p{L} .]+$/u.test(g.zh)) forms.push(capName(g.zh)); else continue; }
+    const uses = []; const seenF = new Set();
+    forms.forEach(f => { const k = String(f).toLowerCase(); if (!f || seenF.has(k)) return; seenF.add(k); /* dạng ngắn nằm trong dạng dài đã chọn: không tính riêng */
+      let n = count(f); if (f !== g.vi && String(g.vi).toLowerCase().includes(k)) n = Math.max(0, n - count(g.vi)); if (n) uses.push({ v: f, n }); });
+    if (uses.length >= 2 || (uses.length === 1 && uses[0].v !== g.vi)) out.push({ id: g.id, zh: g.zh, chosen: g.vi, uses });
+  }
+  return out;
+};
+
 /* ---------- Đọc kết quả ---------- */
 C.stripThink = t => String(t || '').replace(/<think>[\s\S]*?(<\/think>|$)/g, '');
 /* Dòng không có chữ cái nào (chỉ dấu câu, ký hiệu, số, khoảng trắng): ＊＊＊, ———, ……, ※※※, ◆◇◆, “1.”… → không cần AI, giữ nguyên. */
@@ -951,11 +1220,13 @@ C.noLetters = s => { const t = String(s || '').trim(); return !!t && !/\p{L}/u.t
 C.SHORT_KEEP = 12;
 C.isShortLine = s => { const t = String(s || '').trim(); return !!t && [...t].length <= C.SHORT_KEEP; };
 /* Lời nhắc tối giản cho một dòng ngắn (không dùng định dạng [n]) — lượt cuối khi AI cứ bỏ qua dòng này */
-C.buildLineMessages = (line, terms, direction) => {
-  const en = C.targetOf(direction) === 'en';
+C.buildLineMessages = (line, terms, direction, opts) => {
+  const en = C.targetOf(direction) === 'en'; opts = opts || {};
   const gl = (terms || []).length ? (en ? '\nGlossary: ' : '\nThuật ngữ: ') + terms.map(t => t.zh + ' → ' + t.vi).join('; ') : '';
+  const base = opts.system ? opts.system : (en ? 'You translate one line of a novel. Return only the translation of the line — no numbering, no quotes around it, no explanation. If the line is only symbols, a number, a name or a sound that needs no translation, return it unchanged.' : 'Bạn dịch một dòng trong truyện. Chỉ trả về bản dịch của dòng đó — không đánh số, không giải thích. Nếu dòng chỉ là ký hiệu, số, tên riêng hoặc từ tượng thanh không cần dịch thì trả về nguyên dòng.') + gl;
+  const cx = opts.ctx ? C.contextBlock(opts.ctx, en).trim() : '';
   return [
-    { role: 'system', content: (en ? 'You translate one line of a novel. Return only the translation of the line — no numbering, no quotes around it, no explanation. If the line is only symbols, a number, a name or a sound that needs no translation, return it unchanged.' : 'Bạn dịch một dòng trong truyện. Chỉ trả về bản dịch của dòng đó — không đánh số, không giải thích. Nếu dòng chỉ là ký hiệu, số, tên riêng hoặc từ tượng thanh không cần dịch thì trả về nguyên dòng.') + gl },
+    { role: 'system', content: base + (cx ? '\n\n' + cx : '') },
     { role: 'user', content: (en ? 'Translate exactly this line into English, return only the translation:\n' : 'Dịch đúng dòng này sang tiếng Việt, chỉ trả về bản dịch:\n') + String(line || '').trim() }
   ];
 };
@@ -1380,7 +1651,7 @@ const VI_DIA = /[ăâêôơưđáàảãạéèẻẽẹíìỉĩịóòỏõọ
 C.detectScript = text => {
   let han = 0, viet = 0;
   for (const ch of String(text || '')) { if (/\s/.test(ch)) continue; const c = ch.codePointAt(0); if (c >= 13312 && c <= 40959) han++; else if (VI_DIA.test(ch)) viet++; }
-  return han > 12 && viet > 12 ? 'mix' : han > viet && han > 12 ? 'han' : viet > 12 ? 'viet' : 'other';
+  return han > 12 && viet > 12 && han / (han + viet) >= 0.05 ? 'mix' : han > viet && han > 12 ? 'han' : viet > 12 ? 'viet' : 'other';
 };
 /* Chữ bị “khóa font” (EPUB dùng font riêng để xáo chữ) */
 C.looksFontLocked = text => {
@@ -2285,6 +2556,7 @@ async function openProject(id) {
   S.tab = 'editor'; S.mtab = chs.length ? 'list' : 'src'; S.jobs = {}; S.queue = null; S.issues = null; S.review = null; S.rowMsg = {}; S.sel = new Set();
   localStorage.setItem('dichtruyen_last', id);
   renderProject();
+  if (!S.project.namesBuilt && chs.length) { try { if (await autoNames(true)) renderProject(); } catch (e) {} }
   /* mở lại app sau khi cập nhật: nhắc chương còn đoạn AI bỏ sót (đã lưu) — chỉ dịch bù các đoạn đó */
   let symFixed = 0;
   for (const c of chs) { if (!hasAny(c)) continue; const f = fillSymbolParas(c, gapInfo(c).all); if (f.length) { symFixed += f.length; await saveNow('chapters', c); } }
@@ -2422,7 +2694,7 @@ function fillSymbolParas(ch, idxs) {
   });
   return out;
 }
-/* Lượt cuối cho một dòng ngắn AI cứ bỏ qua: hỏi riêng bằng lời nhắc tối giản; vẫn rỗng mà ≤ 12 ký tự → giữ nguyên bản gốc (có ghi chú, sửa được).
+/* Lượt cuối cho một dòng ngắn AI cứ bỏ qua: hỏi riêng từng dòng (vẫn đủ văn phong, thuật ngữ, ngữ cảnh — chỉ khác định dạng trả lời); vẫn rỗng mà ≤ 12 ký tự → giữ nguyên bản gốc (có ghi chú, sửa được).
    Trả về 'ai' | 'kept' | '' (vẫn thiếu). */
 async function lineFallback(ch, i, profile, signal) {
   const p = ch.paras[i]; const src = String(p.zh || '').trim(); if (!src) return '';
@@ -2430,7 +2702,7 @@ async function lineFallback(ch, i, profile, signal) {
   let v = '';
   if (profile) {
     try {
-      const r = await C.chat(profile, C.buildLineMessages(src, chapterTerms(ch).filter(t => src.includes(t.zh)), chDir(ch)), { signal, maxTokens: C.maxTokensFor(profile) ? 400 : 0 });
+      const r = await C.chat(profile, C.buildLineMessages(src, chapterTerms(ch).filter(t => C.termIn(src, t.zh, t.kind === 'name')), chDir(ch), { system: systemFor(ch, !!p.softened, 'line'), ctx: paraContext(ch, [i]) }), { signal, maxTokens: C.maxTokensFor(profile) ? 400 : 0 });
       if (r.finish !== 'blocked') v = C.cleanLineResult(r.text);
     } catch (e) { if (e && e.name === 'AbortError') throw e; if (!C.isShortLine(src)) return ''; }
   }
@@ -2543,6 +2815,7 @@ function renderEditor(m) {
   <div class="ed-head">
     <div class="toolbar">
       <button class="gptoggle small" data-act="gpToggle" aria-expanded="${S.gpOpen}">${esc(T('Thuật ngữ & xưng hô'))} (${chapterTerms(ch).length})</button>
+      ${any ? `<button class="small" data-act="qaChapter" ${running ? 'disabled' : ''} title="${esc(T('Tìm đoạn dịch còn cứng/kiểu convert rồi tự dịch lại cho mượt (không đụng đoạn bạn đã sửa tay)'))}">${esc(T('Rà soát chương'))}${ch.paras.some(p => p.qflag && p.qflag.length && !p.edited) ? ' (' + ch.paras.filter(p => p.qflag && p.qflag.length && !p.edited).length + ')' : ''}</button><button class="small" data-act="smoothRange" ${running ? 'disabled' : ''}>${esc(T('Dịch lại cho mượt…'))}</button>` : ''}
       <span class="spacer"></span>
       ${!prim ? `<button class="primary" data-act="settings">${esc(T('Kết nối AI để dịch'))}</button>` : ''}
     </div>
@@ -2585,9 +2858,11 @@ function renderEditor(m) {
   <div id="rows" class="${any ? '' : 'noviyet'}">${ch.paras.map((p, i) => {
     const iss = issuesBy[i]; const rm = S.rowMsg[i];
     const gap = holeSet.has(i);
-    return `<div class="prow ${iss ? 'flag' : ''} ${p.omitted ? 'omit' : ''} ${p.softened ? 'soft' : ''} ${gap ? 'gap' : ''}" id="row-${i}"><div class="zh serif"><span class="num">${i + 1}</span>${hl(p.zh)}</div>
+    return `<div class="prow ${iss ? 'flag' : ''} ${p.qflag && p.qflag.length && !p.edited ? 'qbad' : ''} ${p.omitted ? 'omit' : ''} ${p.softened ? 'soft' : ''} ${gap ? 'gap' : ''}" id="row-${i}"><div class="zh serif"><span class="num">${i + 1}</span>${hl(p.zh)}</div>
       <div class="vi"><span class="num m">${i + 1}</span><textarea class="vi serif" data-i="${i}" rows="1" lang="${tgt}" placeholder="${esc(gap ? T('(chưa dịch — AI bỏ sót đoạn này)') : T('(chưa dịch)'))}">${esc(p.vi || '')}</textarea>
-      <div class="ptools"><button class="small" data-act="retransPara" data-i="${i}" ${running ? 'disabled' : ''}>↻ ${esc(T('Dịch lại'))}</button>
+      <div class="ptools"><button class="small" data-act="retransPara" data-i="${i}" ${running ? 'disabled' : ''}>↻ ${esc(T('Dịch lại'))}</button>${p.vi && p.vi.trim() && !p.omitted ? `<button class="small" data-act="smoothPara" data-i="${i}" ${running ? 'disabled' : ''}>${esc(T('Dịch lại cho mượt'))}</button>` : ''}
+      ${p.qflag && p.qflag.length && !p.edited ? `<span class="flagtxt qflag" title="${esc(T('Bộ kiểm tra thấy đoạn này còn đọc như convert. Bấm “Dịch lại cho mượt” hoặc sửa tay.'))}">⚠ ${esc(T('Câu còn cứng:'))} ${esc(qText(p.qflag))}</span>` : ''}
+      ${p.edited && p.vi && p.vi.trim() ? `<span class="muted small editednote" title="${esc(T('Đoạn bạn đã sửa tay — “Rà soát chương” và “Dịch lại cho mượt” sẽ không đụng tới.'))}">${esc(T('đã sửa tay'))}</span>` : ''}
       ${p.keptSrc === 'short' && p.vi && p.vi.trim() ? `<span class="muted small keptnote" title="${esc(T('AI không trả lời dòng ngắn này nên app giữ nguyên bản gốc. Bạn có thể sửa trực tiếp.'))}">${esc(T('giữ nguyên bản gốc'))}</span>` : ''}
       ${gap ? `<span class="flagtxt gapflag">⚠ ${esc(T('AI bỏ sót đoạn {a} — chưa dịch. Bấm “Dịch lại”.', { a: i + 1 }))}</span>` : ''}
       ${iss ? `<span class="flagtxt">⚠ ${esc(T('Thiếu thuật ngữ:'))} ${iss.map(x => esc(x.zh + ' → ' + x.vi)).join('; ')}</span>` : ''}
@@ -2618,6 +2893,107 @@ async function addSuggestions(ids) {
   await saveNow('projects', P); toast(T('Đã thêm {n} thuật ngữ.', { n }), 'ok');
   const sc = $('#main').scrollTop; renderEditor($('#main')); $('#main').scrollTop = sc;
 }
+/* Tên dịch chưa thống nhất (ví dụ “Mễ Lan Đóa” lẫn “Milanđo”) — cả truyện */
+function projectViText() { return S.chapters.map(c => (c.titleVi || '') + '\n' + c.paras.filter(p => !p.omitted).map(p => p.vi || '').join('\n')).join('\n'); }
+function conflictHtml(ch) {
+  const names = chapterTerms(ch).filter(g => g.kind === 'name' || (g.alts || []).length);
+  const cf = C.nameConflicts(names, projectViText()); S.nameConf = cf;
+  if (!cf.length) return '';
+  return `<div class="sgbox cfbox" id="cfBox"><div class="small gph"><b>${esc(T('Tên dịch chưa thống nhất ({n})', { n: cf.length }))}</b></div>
+    <div class="muted small">${esc(T('Cùng một tên mà bản dịch đang viết nhiều kiểu. Chọn một cách viết rồi bấm “Thống nhất trong bản dịch” (không đụng đoạn bạn đã sửa tay).'))}</div>
+    ${cf.map(x => `<div class="cfitem"><div><span class="zhfont">${esc(x.zh)}</span> → <b>${esc(x.chosen)}</b></div>
+      <div class="small">${x.uses.map(u => `<span class="cfuse">${esc(u.v)} <span class="muted">×${u.n}</span>${u.v !== x.chosen ? ` <button class="small link" data-act="cfUse" data-id="${x.id}" data-v="${esc(u.v)}">${esc(T('Dùng “{v}”', { v: u.v }))}</button>` : ''}</span>`).join(' · ')}</div>
+      <button class="small" data-act="cfUnify" data-id="${x.id}">${esc(T('Thống nhất trong bản dịch'))}</button></div>`).join('')}</div>`;
+}
+/* Tự lập bảng tên nhân vật từ tên truyện + chương đầu; chỉ thêm tên chưa có trong bảng (không ghi đè bảng của người dịch) */
+async function autoNames(quiet) {
+  const P = S.project; if (!P) return 0;
+  const chs = sortedChapters(); if (!chs.length) return 0;
+  let text = ''; for (const c of chs) { text += c.paras.map(p => p.zh).join('\n') + '\n'; if (text.length > 60000) break; }
+  const titles = [P.title, P.origTitle, chs[0].title, ...chs[0].paras.slice(0, 6).map(p => p.zh)].filter(Boolean);
+  const titlesVi = [P.titleVi, /[a-z]/i.test(P.title || '') ? P.title : '', ...chs.slice(0, 3).map(c => c.titleVi)].filter(Boolean);
+  const found = C.buildNameGlossary({ titles, titlesVi, text });
+  const have = new Set(P.glossary.map(g => String(g.zh).toLowerCase()));
+  const add = found.filter(g => !have.has(g.zh.toLowerCase()));
+  add.forEach(g => P.glossary.push(Object.assign({ id: C.uid() }, g)));
+  P.namesBuilt = true; await saveNow('projects', P);
+  if (add.length) toast(T('Đã tự lập bảng tên nhân vật: {l}. Kiểm tra/sửa trong “Thuật ngữ & xưng hô”.', { l: [...new Set(add.map(g => g.vi))].slice(0, 6).join(', ') }), 'ok', 9000);
+  else if (!quiet) toast(T('Không tìm thêm được tên nào mới.'));
+  return add.length;
+}
+/* Thay mọi cách viết khác của một tên bằng cách viết đã chọn, trong mọi chương (bỏ qua đoạn đã sửa tay) */
+async function unifyName(id) {
+  const g = S.project.glossary.find(x => x.id === id); if (!g) return;
+  const forms = (g.alts || []).filter(a => a && a.toLowerCase() !== g.vi.toLowerCase()).sort((a, b) => b.length - a.length);
+  let n = 0, skipped = 0;
+  for (const c of S.chapters) {
+    let changed = false;
+    c.paras.forEach((p, i) => {
+      if (!p.vi || p.omitted) return;
+      let v = p.vi; const keep = '\u0000';
+      v = v.replace(new RegExp(C.termPattern(g.vi), 'giu'), keep); /* giữ nguyên chỗ đã đúng */
+      forms.forEach(f => { v = v.replace(new RegExp(C.termPattern(f), 'giu'), () => { n++; return keep; }); });
+      v = v.split(keep).join(g.vi);
+      if (v !== p.vi) { if (p.edited) { skipped++; return; } p.vi = v; changed = true; if (c.id === S.chapterId) setViLive(c, i, v); }
+    });
+    if (changed) await saveNow('chapters', c);
+  }
+  toast(T('Đã thống nhất “{v}” ({n} chỗ).', { v: g.vi, n }) + (skipped ? ' ' + T('Bỏ qua {k} đoạn bạn đã sửa tay.', { k: skipped }) : ''), 'ok');
+  renderEditor($('#main'));
+}
+async function useNameForm(id, v) {
+  const g = S.project.glossary.find(x => x.id === id); if (!g || !v) return;
+  g.alts = [...new Set([g.vi].concat(g.alts || []).filter(a => a && a.toLowerCase() !== v.toLowerCase()))]; g.vi = v;
+  await saveNow('projects', S.project); renderGPanel();
+}
+/* Rà soát chương: kiểm tra mọi đoạn, đoạn còn cứng/kiểu convert thì dịch lại với đủ ngữ cảnh (bỏ qua đoạn đã sửa tay) */
+async function qaChapter(idxs, force) {
+  const ch = curCh(); if (!ch || S.busy) return;
+  const prof = primaryProfile(); if (!prof) { toast(T('Chưa kết nối AI.'), 'err'); return openSettings(); }
+  idxs = idxs || ch.paras.map((p, i) => i);
+  const o = qOpts(ch); const edited = idxs.filter(i => ch.paras[i].edited && ch.paras[i].vi && ch.paras[i].vi.trim());
+  const flagged = idxs.filter(i => !ch.paras[i].edited && qEligible(ch.paras[i]) && C.qualityIssues(ch.paras[i].zh, ch.paras[i].vi, o).length);
+  if (!force && !flagged.length) { idxs.forEach(i => { delete ch.paras[i].qflag; }); await saveNow('chapters', ch); renderEditor($('#main')); return toast(T('Không thấy đoạn nào còn cứng.') + (edited.length ? ' ' + T('Bỏ qua {k} đoạn bạn đã sửa tay.', { k: edited.length }) : ''), 'ok'); }
+  const ctrl = new AbortController(); S.busy = ctrl;
+  const chunk = { idx: force ? idxs : flagged, status: 'run', msg: '', profileName: prof.name, profileId: prof.id, chars: 0 };
+  S.jobs[ch.id] = { chunks: [chunk] }; renderEditor($('#main'));
+  let r;
+  try { r = await qualityPass(ch, force ? idxs : flagged, prof, ctrl.signal, false, m => { chunk.msg = m; renderJob(); }, !!force); }
+  catch (e) { r = null; }
+  finally {
+    S.busy = null;
+    if (r) {
+      chunk.status = r.still.length ? 'partial' : 'done';
+      chunk.msg = [T('Rà soát xong: {c} đoạn đã kiểm tra, {f} đoạn còn cứng.', { c: r.checked, f: force ? (r.flagged.length) : flagged.length }),
+        r.fixed.length ? T('Đã viết lại cho mượt: đoạn {p}.', { p: paraList(r.fixed) }) : '',
+        r.still.length ? T('Đoạn {p} vẫn còn cứng — sửa tay hoặc thử model khác.', { p: paraList(r.still) }) : '',
+        edited.length ? T('Bỏ qua {k} đoạn bạn đã sửa tay.', { k: edited.length }) : ''].filter(Boolean).join(' ');
+    } else { chunk.status = 'stopped'; chunk.msg = T('Đã dừng.'); }
+    await saveNow('chapters', ch); afterTranslate(ch);
+  }
+}
+function openSmoothRange() {
+  const ch = curCh(); if (!ch) return;
+  const nf = ch.paras.filter(p => p.qflag && p.qflag.length && !p.edited).length;
+  openModal(T('Dịch lại cho mượt'), `<div class="muted small">${esc(T('Dịch lại các đoạn đã chọn với đủ văn phong, thuật ngữ, tên nhân vật và ngữ cảnh. Bản mới chỉ được nhận khi đọc mượt hơn. Đoạn bạn đã sửa tay được giữ nguyên.'))}</div>
+    <label class="inline"><input type="radio" name="smMode" value="flag" ${nf ? 'checked' : ''}> ${esc(T('Tất cả đoạn bị đánh dấu còn cứng ({n})', { n: nf }))}</label>
+    <label class="inline"><input type="radio" name="smMode" value="range" ${nf ? '' : 'checked'}> ${esc(T('Từ đoạn'))} <input id="smFrom" type="number" min="1" max="${ch.paras.length}" value="1" style="width:5.5em"> ${esc(T('đến đoạn'))} <input id="smTo" type="number" min="1" max="${ch.paras.length}" value="${ch.paras.length}" style="width:5.5em"></label>
+    <div class="row-flex"><button class="primary" id="smGo">${esc(T('Dịch lại cho mượt'))}</button></div>`, b => {
+    $('#smGo', b).onclick = () => {
+      const mode = ($('input[name="smMode"]:checked', b) || {}).value; closeModal();
+      if (mode === 'flag') return qaChapter(ch.paras.map((p, i) => i).filter(i => ch.paras[i].qflag && ch.paras[i].qflag.length));
+      const a = Math.max(1, Number($('#smFrom', b).value) || 1), z = Math.min(ch.paras.length, Number($('#smTo', b).value) || ch.paras.length);
+      const idx = []; for (let i = a - 1; i < z; i++) idx.push(i);
+      qaChapter(idx, true);
+    };
+  });
+}
+async function smoothPara(i) {
+  const ch = curCh(); if (!ch || S.busy) return; const p = ch.paras[i];
+  if (p.edited) { if (!confirm(T('Đoạn này bạn đã sửa tay. Vẫn để AI viết lại?'))) return; delete p.edited; }
+  await qaChapter([i], true);
+  $('#row-' + i) && $('#row-' + i).scrollIntoView({ block: 'center' });
+}
 /* Bảng nhỏ cạnh bàn dịch: xưng hô + thuật ngữ trong chương */
 function renderGPanel() {
   const el = $('#gpanel'); const ch = curCh(); if (!el || !ch) return;
@@ -2627,7 +3003,9 @@ function renderGPanel() {
     <label class="small" for="gpChAddr">${esc(T('Riêng chương này'))}</label><input id="gpChAddr" data-cf="address" maxlength="400" value="${esc(ch.address || '')}" placeholder="${esc(T('Chỉ điền khi chương này khác'))}">
     <div class="small gph"><b>${esc(T('Trong chương này'))}</b> <span class="muted">(${terms.length})</span></div>
     <div class="gterms">${terms.map(g => `<div class="gterm"><span class="zhfont" title="${esc(g.note || '')}">${esc(g.zh)}</span><input data-g="vi" data-id="${g.id}" value="${esc(g.vi)}" aria-label="${esc(g.zh)}"></div>`).join('') || `<div class="muted small">${esc(T('Chưa có thuật ngữ nào xuất hiện.'))}</div>`}</div>
+    ${conflictHtml(ch)}
     ${suggestHtml()}
+    <button class="small" data-act="autoNames" title="${esc(T('Đọc tên truyện và chương đầu để lập bảng tên nhân vật (mỗi tên một cách viết, tên Tây viết kiểu Tây). Sửa được.'))}">${esc(T('Tự tìm tên nhân vật'))}</button>
     <div class="small gph"><b>${esc(T('Thêm nhanh'))}</b></div>
     <div class="qa"><input id="qaZh" class="zhfont" placeholder="${esc(T('Gốc'))}" aria-label="${esc(T('Gốc'))}"><input id="qaVi" placeholder="${esc(T('Dịch là'))}" aria-label="${esc(T('Dịch là'))}"><button class="small" data-act="qaAdd">${esc(T('Thêm'))}</button></div>
     <div class="muted small">${esc(T('Mẹo: bôi đen chữ ở cột Gốc để điền nhanh.'))}</div>
@@ -2696,12 +3074,63 @@ function prevContext(ch) {
   let tail = vis.slice(-3).join('\n'); if (tail.length > 900) tail = tail.slice(-900);
   return { prevSummary: pc.summary || '', prevTail: tail };
 }
-function buildMessages(ch, idx, soften, retry) {
+/* Lời nhắc hệ thống dùng chung cho MỌI đường dịch (thường, dịch bù, từng dòng, giảm nhẹ, viết lại cho mượt):
+   văn phong + chuẩn của người dịch + hài hước + thuật ngữ/tên + bối cảnh chương trước + xưng hô */
+function systemFor(ch, soften, format) {
   const ctx = prevContext(ch); const dir = chDir(ch);
-  const sys = C.buildSystemPrompt({ sample: ch.paras.map(p => p.zh).join('\n').slice(0, 4000), styleGuide: styleFor(dir), terms: chapterTerms(ch), prevSummary: ctx.prevSummary, prevTail: ctx.prevTail, direction: dir, address: [S.project.address, ch.address].map(x => (x || '').trim()).filter(Boolean).join('\n'), soften: !!soften, humor: !!S.project.humor });
-  const tail = []; for (let i = idx[0] - 1; i >= 0 && tail.length < 2; i--) if (ch.paras[i].vi && ch.paras[i].vi.trim() && !ch.paras[i].omitted && !idx.includes(i)) tail.unshift(ch.paras[i].vi);
-  return [{ role: 'system', content: sys }, { role: 'user', content: C.buildTranslateUser(idx.map(i => ch.paras[i].zh), tail, dir, !!retry) }];
+  return C.buildSystemPrompt({ sample: ch.paras.map(p => p.zh).join('\n').slice(0, 4000), styleGuide: styleFor(dir), terms: chapterTerms(ch), prevSummary: ctx.prevSummary, prevTail: ctx.prevTail, direction: dir, address: [S.project.address, ch.address].map(x => (x || '').trim()).filter(Boolean).join('\n'), soften: !!soften, humor: !!S.project.humor, format });
 }
+/* Ngữ cảnh quanh các đoạn cần dịch: 3 đoạn ngay trước (gốc + bản dịch nếu có) và 2 đoạn ngay sau (chỉ gốc) */
+function paraContext(ch, idx) {
+  const prev = [], next = []; const first = Math.min(...idx), last = Math.max(...idx);
+  for (let i = first - 1; i >= 0 && prev.length < 3; i--) { const p = ch.paras[i]; if (idx.includes(i) || C.noLetters(p.zh || '')) continue; prev.unshift({ src: p.zh, vi: p.omitted ? '' : (p.vi || '') }); }
+  for (let i = last + 1; i < ch.paras.length && next.length < 2; i++) { const p = ch.paras[i]; if (idx.includes(i) || C.noLetters(p.zh || '')) continue; next.push(p.zh); }
+  return { prev, next };
+}
+function buildMessages(ch, idx, soften, retry) {
+  return [{ role: 'system', content: systemFor(ch, soften) }, { role: 'user', content: C.buildTranslateUser(idx.map(i => ch.paras[i].zh), paraContext(ch, idx), chDir(ch), retry) }];
+}
+/* ---------- Bộ gác chất lượng: đoạn dịch còn “kiểu convert” → tự dịch lại với đủ ngữ cảnh ---------- */
+const qOpts = ch => ({ target: C.targetOf(chDir(ch)), terms: chapterTerms(ch) });
+const qEligible = p => p && !p.edited && !p.omitted && !p.keptSrc && p.vi && p.vi.trim() && !C.noLetters(p.zh || '') && !C.isShortLine(p.zh || '');
+const qText = codes => (codes || []).map(c => T(QREASON[c] || c)).join(', ');
+const QREASON = { convert: 'còn từ kiểu convert', particle: 'hư từ đặt sai chỗ', repeat: 'lặp chữ', short: 'ngắn hơn bản gốc nhiều', copy: 'gần như chép bản convert', name: 'tên chưa thống nhất', fragment: 'câu bị cắt cụt', untranslated: 'còn chữ chưa dịch' };
+/* Kiểm tra các đoạn; đoạn bị đánh dấu thì dịch lại từng đoạn (tối đa 2 lần, đủ văn phong/thuật ngữ/ngữ cảnh + lời nhắc “viết lại cho tự nhiên”).
+   Chỉ nhận bản mới khi điểm lỗi thấp hơn. Không bao giờ đụng đoạn người dịch đã sửa tay. force: dịch lại cả đoạn không bị đánh dấu (nút “Dịch lại cho mượt”). */
+async function qualityPass(ch, idxs, profile, signal, soften, onMsg, force) {
+  const o = qOpts(ch); const res = { checked: 0, flagged: [], fixed: [], still: [], skipped: [] };
+  const cand = [];
+  for (const i of idxs) {
+    const p = ch.paras[i]; if (!p) continue;
+    if (p.edited && p.vi && p.vi.trim()) { res.skipped.push(i); continue; }
+    if (!qEligible(p)) continue;
+    res.checked++;
+    const q = C.qualityIssues(p.zh, p.vi, o);
+    if (q.length) { p.qflag = q; res.flagged.push(i); cand.push(i); } else { delete p.qflag; if (force) cand.push(i); }
+  }
+  if (!profile) return res;
+  let n = 0;
+  for (const i of cand) {
+    if (signal && signal.aborted) break;
+    const p = ch.paras[i]; n++;
+    let best = p.vi, bestQ = p.qflag || [], score = C.qualityScore(bestQ); let took = false;
+    const soft = !!soften || !!p.softened;
+    for (let t = 1; t <= 2 && (bestQ.length || (force && t === 1)); t++) {
+      onMsg && onMsg(T('Đoạn {a} dịch còn cứng ({w}) — đang viết lại cho mượt… ({k}/{n}, lần {t}/2)', { a: i + 1, w: qText(bestQ) || T('theo yêu cầu'), k: n, n: cand.length, t }));
+      const r = await C.runChunk(profile, buildMessages(ch, [i], soft, { kind: 'quality', reasons: bestQ.length ? bestQ : ['manual'], prev: best }), 1, { signal, src: [p.zh] });
+      if (signal && signal.aborted) break;
+      const v = r && r.map && r.map[1] && String(r.map[1]).trim(); if (!v || C.looksLikeRefusal(v)) continue;
+      const q = C.qualityIssues(p.zh, v, o); const sc = C.qualityScore(q);
+      if (sc < score || (force && !bestQ.length && sc <= score)) { best = v; bestQ = q; score = sc; took = true; }
+    }
+    if (p.edited) continue; /* người dịch sửa tay trong lúc chờ → giữ bản của người dịch */
+    if (took) { setViLive(ch, i, best); if (soft) p.softened = true; res.fixed.push(i); }
+    if (bestQ.length) { p.qflag = bestQ; res.still.push(i); } else delete p.qflag;
+    await saveNow('chapters', ch);
+  }
+  return res;
+}
+const qualityOn = () => S.settings.qualityGuard !== false;
 /* Dịch một phần (chunk) và cập nhật giao diện */
 async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
   if (chunk.idx.every(i => C.noLetters(ch.paras[i].zh))) { /* chỉ toàn dòng ký hiệu/phân cách → không cần AI */
@@ -2761,7 +3190,7 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
       }
     }
   } else {
-    Object.keys(res.map).forEach(k => { const i = chunk.idx[k - 1]; if (i != null) { setViLive(ch, i, res.map[k]); delete ch.paras[i].omitted; delete ch.paras[i].missing; delete ch.paras[i].keptSrc; if (soften) ch.paras[i].softened = true; else delete ch.paras[i].softened; } });
+    Object.keys(res.map).forEach(k => { const i = chunk.idx[k - 1]; if (i != null) { setViLive(ch, i, res.map[k]); delete ch.paras[i].edited; delete ch.paras[i].qflag; delete ch.paras[i].omitted; delete ch.paras[i].missing; delete ch.paras[i].keptSrc; if (soften) ch.paras[i].softened = true; else delete ch.paras[i].softened; } });
     chunk.softened = !!soften;
     chunk.idx.forEach((i, k) => { if (!res.map[k + 1]) setViLive(ch, i, snapshot[k]); });
     chunk.status = res.status; chunk.msg = res.message || '';
@@ -2769,6 +3198,12 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
     if (res.status === 'partial') { /* AI bỏ sót / gộp đoạn → tự hỏi lại riêng những đoạn đó */
       const abs = ks => (ks || []).map(k => chunk.idx[k - 1]).filter(i => i != null);
       await repairChunk(ch, chunk, abs(res.missing), abs(res.suspect), profile, signal, soften);
+    }
+    if (qualityOn() && !(signal && signal.aborted)) {
+      const keep = chunk.msg, st = chunk.status;
+      const q = await qualityPass(ch, chunk.idx, profile, signal, soften, m => { chunk.msg = m; renderJob(); });
+      chunk.status = st;
+      chunk.msg = [keep, q.fixed.length ? T('Đã tự viết lại cho mượt: đoạn {p}.', { p: paraList(q.fixed) }) : '', q.still.length ? T('Đoạn {p} vẫn còn cứng — bấm “Dịch lại cho mượt” hoặc sửa tay.', { p: paraList(q.still) }) : ''].filter(Boolean).join(' ');
     }
   }
   await saveNow('chapters', ch);
@@ -2808,8 +3243,8 @@ async function repairParas(ch, need, suspects, profile, signal, soften, onMsg) {
       todo = todo.filter(i => !done.has(i));
       await saveNow('chapters', ch);
     }
-    /* lượt cuối: dòng ngắn (≤ 30 ký tự) vẫn thiếu → hỏi riêng từng dòng, lời nhắc tối giản; ≤ 12 ký tự mà vẫn rỗng → giữ nguyên bản gốc */
-    const shortLeft = todo.filter(i => [...String(ch.paras[i].zh || '').trim()].length <= 30);
+    /* lượt cuối: dòng ngắn (≤ 12 ký tự) vẫn thiếu → hỏi riêng từng dòng (vẫn đủ văn phong, thuật ngữ, ngữ cảnh); vẫn rỗng → giữ nguyên bản gốc */
+    const shortLeft = todo.filter(i => C.isShortLine(ch.paras[i].zh));
     if (shortLeft.length) onMsg(missMsg(shortLeft) + ' — ' + T('đang hỏi riêng từng dòng ngắn…'));
     for (const i of shortLeft) {
       const how = await lineFallback(ch, i, profile, signal);
@@ -3269,7 +3704,7 @@ function guessDirection(sample) {
   const s = C.detectScript(sample);
   if (s === 'mix') return 'auto-vi';
   if (s === 'han') return 'zh-modern-vi';
-  if (s === 'viet') return 'vi-en';
+  if (s === 'viet') return C.looksConvert(sample) ? 'auto-vi' : 'vi-en';
   return /^[\x00-\x7f\s]+$/.test(sample.slice(0, 2000)) ? 'en-vi' : 'auto-vi';
 }
 /* Tạo một truyện mới từ kết quả đọc file: tên + ghi công tự điền (tên trong file ưu tiên, rồi tới người dịch mặc định) */
@@ -3783,6 +4218,12 @@ const A = {
   softenPara: el => retransPara(Number(el.dataset.i), false, true),
   unsoften: async el => { const ch = curCh(); if (!ch) return; delete ch.paras[Number(el.dataset.i)].softened; await saveNow('chapters', ch); const sc = $('#main').scrollTop; renderEditor($('#main')); $('#main').scrollTop = sc; renderSide(); },
   sgAdd: el => addSuggestions([el.dataset.id]),
+  smoothPara: el => smoothPara(Number(el.dataset.i)),
+  qaChapter: () => qaChapter(),
+  smoothRange: () => openSmoothRange(),
+  autoNames: async () => { await autoNames(false); renderEditor($('#main')); },
+  cfUse: el => useNameForm(el.dataset.id, el.dataset.v),
+  cfUnify: el => unifyName(el.dataset.id),
   sgAddAll: () => addSuggestions((S.project.termSuggest || []).map(x => x.id)),
   sgDismiss: async el => { const P = S.project; const x = (P.termSuggest || []).find(y => y.id === el.dataset.id); if (!x) return; P.termSuggest = P.termSuggest.filter(y => y !== x); P.termDismissed = (P.termDismissed || []).concat(x.zh).slice(-500); await saveNow('projects', P); const sc = $('#main').scrollTop; renderEditor($('#main')); $('#main').scrollTop = sc; },
   retransPara: el => retransPara(Number(el.dataset.i), !!el.dataset.other),
@@ -3877,7 +4318,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('input', e => {
   const t = e.target; const ch = curCh();
-  if (t.matches('textarea.vi') && ch) { const p = ch.paras[Number(t.dataset.i)]; p.vi = t.value; delete p.omitted; if (t.value.trim()) delete p.missing; delete p.keptSrc; autosize(t); scheduleSave('chapters', ch); clearTimeout(timers._st); timers._st = setTimeout(updateStats, 300); }
+  if (t.matches('textarea.vi') && ch) { const p = ch.paras[Number(t.dataset.i)]; p.vi = t.value; p.edited = true; delete p.qflag; delete p.omitted; if (t.value.trim()) delete p.missing; delete p.keptSrc; autosize(t); scheduleSave('chapters', ch); clearTimeout(timers._st); timers._st = setTimeout(updateStats, 300); }
   else if (t.dataset.cf && ch && t.tagName !== 'SELECT') { ch[t.dataset.cf] = t.value; scheduleSave('chapters', ch); if (t.dataset.cf === 'title' || t.dataset.cf === 'titleVi') { clearTimeout(timers._sd); timers._sd = setTimeout(renderSide, 500); } }
   else if (t.dataset.sg && S.project) { const x = (S.project.termSuggest || []).find(y => y.id === t.dataset.sg); if (x) { x.vi = t.value; scheduleSave('projects', S.project); } }
   else if (t.dataset.g && S.project) { const g = S.project.glossary.find(x => x.id === t.dataset.id); if (g) { g[t.dataset.g] = t.value; scheduleSave('projects', S.project); } }
@@ -3928,7 +4369,7 @@ window.addEventListener('beforeunload', e => { if (pending.size || S.busy) { e.p
 
 
 /* ---------- Ứng dụng trên màn hình chính (PWA) ---------- */
-const APP_BUILD = '546f2e7f2317';
+const APP_BUILD = '0792ecd2cc53';
 const ONLINE_ORIGIN = /^https?:$/.test(location.protocol);
 function setThemeMeta(t) { document.querySelectorAll('meta[name=theme-color]').forEach(m => { m.content = t === 'dark' ? '#1a1714' : '#f3eee6'; m.removeAttribute('media'); }); }
 // Service worker chỉ chạy khi mở qua http(s); mở file:// thì bỏ qua (app vẫn chạy trọn trong một file)
