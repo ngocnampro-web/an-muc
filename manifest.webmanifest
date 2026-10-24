@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "Án Mực",
+  "short_name": "Án Mực",
+  "description": "Dịch truyện từng chương với AI — chạy ngay trong trình duyệt, dữ liệu lưu trên máy.",
+  "lang": "vi",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f3eee6",
+  "theme_color": "#9c3b32",
+  "categories": ["books", "productivity"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ]
+}

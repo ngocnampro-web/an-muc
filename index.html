@@ -3,10 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f3eee6">
+<meta name="theme-color" content="#f3eee6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1714" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
 <title>Án Mực — Dịch từng chương</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSLDgW4gTeG7sWMiPgogIDxyZWN0IHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgcng9IjYiIGZpbGw9IiNGM0VFRTYiLz4KICA8cmVjdCB4PSI1IiB5PSI1IiB3aWR0aD0iMjIiIGhlaWdodD0iMjIiIGZpbGw9IiM5QzNCMzIiLz4KICA8cmVjdCB4PSIxNCIgeT0iOC4yNSIgd2lkdGg9IjQiIGhlaWdodD0iMi41IiBmaWxsPSIjRjNFRUU2Ii8+CiAgPHJlY3QgeD0iOC4yNSIgeT0iMTEuNzUiIHdpZHRoPSIxNS41IiBoZWlnaHQ9IjIuNiIgZmlsbD0iI0YzRUVFNiIvPgogIDxwb2x5Z29uIHBvaW50cz0iMTYsMTMuNCAxOC4xNSwxNS4xIDIxLjM1LDIyLjc1IDE4LjE1LDIyLjc1IDE2LDE4LjE1IDEzLjg1LDIyLjc1IDEwLjY1LDIyLjc1IDEzLjg1LDE1LjEiIGZpbGw9IiNGM0VFRTYiLz4KPC9zdmc+Cg==">
+<meta name="application-name" content="Án Mực">
+<meta name="apple-mobile-web-app-title" content="Án Mực">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script id="pwa-head">/* manifest + biểu tượng màn hình chính: chỉ khi mở qua http(s); mở file:// thì không cần (và không có file đi kèm) */
+if (/^https?:$/.test(location.protocol)) [['manifest', 'manifest.webmanifest'], ['apple-touch-icon', 'apple-touch-icon.png', '180x180']].forEach(function (a) { var l = document.createElement('link'); l.rel = a[0]; l.href = a[1]; if (a[2]) l.sizes = a[2]; document.head.appendChild(l); });</script>
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,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">
 <style>
 :root{--paper:#f3eee6;--sheet:#faf7f2;--ink:#1c1915;--line:#e3d9cc;--muted:#6f675e;--cin:#9c3b32;--cin-ink:#fff8f6;--cin-soft:#f3e3df;--ok:#3f6b45;--ok-soft:#e5efe3;--warn:#8a5a12;--warn-soft:#f7ecd6;--mark:#f2e2b8;
 --sans:"Be Vietnam Pro","SF Pro Text",system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;
@@ -320,6 +328,19 @@ body.dragging::after{content:"⇩";position:fixed;inset:10px;border:3px dashed v
 .credits textarea{min-height:0}
 .excred{margin:4px 0 2px;color:var(--muted);overflow-wrap:anywhere}
 .toast .tact{margin-left:10px;min-height:30px;padding:3px 12px;font-size:.84rem;background:transparent;color:inherit;border-color:currentColor}
+/* PWA: vùng tai thỏ / thanh home khi chạy dạng ứng dụng (viewport-fit=cover) */
+body{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.topbar{height:calc(4px + env(safe-area-inset-top,0px))}
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--cin);z-index:70;pointer-events:none}
+.side,.cols-head{top:env(safe-area-inset-top,0px)}
+.gpanel{top:calc(12px + env(safe-area-inset-top,0px));max-height:calc(100vh - 24px - env(safe-area-inset-top,0px))}
+#modal{padding-top:calc(5vh + env(safe-area-inset-top,0px));padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));padding-left:calc(14px + env(safe-area-inset-left,0px));padding-right:calc(14px + env(safe-area-inset-right,0px))}
+#toasts{right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+@media (max-width:47.99rem){#mtabs{top:env(safe-area-inset-top,0px)}}
+#a2hs{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:55;display:flex;align-items:center;gap:10px;padding:10px 8px 10px 14px;background:var(--sheet);color:var(--ink);border:1px solid var(--line);border-left:3px solid var(--cin);border-radius:14px;box-shadow:0 8px 28px rgba(28,25,21,.18);font-size:.9rem;line-height:1.35;max-width:520px;margin:0 auto}
+#a2hs .a2ic{color:var(--cin);display:flex;flex:none}#a2hs .a2ic .ic{width:22px;height:22px}
+#a2hs .a2tx{flex:1;min-width:0}#a2hs .iconbtn{flex:none}
+@media print{#a2hs,body::before{display:none!important}}
 </style>
 </head>
 <body>
@@ -420,6 +441,11 @@ Object.assign(window.AM_EN, {
   'Lưu vào truyện này — lần xuất sau tự điền lại.': 'Saved to this novel — filled in again next time you export.',
   'Tên người dịch mặc định': 'Default translator name',
   'Điền sẵn vào mục “Người dịch” của truyện mới': 'Pre-filled as “Translator” for new novels'
+});
+Object.assign(window.AM_EN, {
+  'Đã có bản mới — tải lại': 'A new version is available — reload',
+  'Tải lại': 'Reload',
+  'Thêm vào màn hình chính: bấm nút Chia sẻ rồi chọn “Thêm vào MH chính”': 'Add to Home Screen: tap the Share button, then choose “Add to Home Screen”'
 });
 </script>
 <script id="core">
@@ -1834,6 +1860,7 @@ const P = {
   gear: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
   moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>', play: '<path d="M7 4.5l12 7.5-12 7.5z" fill="currentColor"/>', stop: '<rect x="6" y="6" width="12" height="12" rx="1.5" fill="currentColor"/>',
   up: '<path d="M12 18V6M7 11l5-5 5 5"/>', down: '<path d="M12 6v12M7 13l5 5 5-5"/>', paste: '<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9z"/>',
+  share: '<path d="M12 3v12M8 7l4-4 4 4"/><path d="M8 10H6a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1h-2"/>',
   link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>', folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', book: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>'
 };
 const I = n => '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P[n] + '</svg>';
@@ -3160,14 +3187,14 @@ async function createSample() {
   openProject(p.id);
 }
 function setUiLang(l) {
-  UI = l === 'en' ? 'en' : 'vi'; C.lang = UI; localStorage.setItem(LKEY, UI);
+  UI = l === 'en' ? 'en' : 'vi'; C.lang = UI; localStorage.setItem(LKEY, UI); renderA2hs();
   if (S.project) renderProject(); else goHome();
 }
 
 /* ---------- Sự kiện ---------- */
 const A = {
   home: () => goHome(), settings: () => openSettings(), closeModal: () => closeModal(),
-  theme: () => { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = t; localStorage.setItem('dichtruyen_theme', t); const m = $('meta[name=theme-color]'); if (m) m.content = t === 'dark' ? '#1a1714' : '#f3eee6'; },
+  theme: () => { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = t; localStorage.setItem('dichtruyen_theme', t); setThemeMeta(t); },
   uiLang: el => setUiLang(el.dataset.l),
   mtab: el => { S.mtab = el.dataset.m; if (S.mtab !== 'list' && S.tab !== 'editor') { S.tab = 'editor'; renderSide(); renderMain(); } renderMTabs(); window.scrollTo(0, 0); },
   createProject: async () => {
@@ -3346,12 +3373,57 @@ window.addEventListener('drop', async e => {
 });
 window.addEventListener('beforeunload', e => { if (pending.size || S.busy) { e.preventDefault(); e.returnValue = ''; } });
 
+
+/* ---------- Ứng dụng trên màn hình chính (PWA) ---------- */
+const APP_BUILD = 'fd940bf4ae3d';
+const ONLINE_ORIGIN = /^https?:$/.test(location.protocol);
+function setThemeMeta(t) { document.querySelectorAll('meta[name=theme-color]').forEach(m => { m.content = t === 'dark' ? '#1a1714' : '#f3eee6'; m.removeAttribute('media'); }); }
+// Service worker chỉ chạy khi mở qua http(s); mở file:// thì bỏ qua (app vẫn chạy trọn trong một file)
+function initPwa() {
+  if (!ONLINE_ORIGIN || !('serviceWorker' in navigator)) return;
+  const sw = navigator.serviceWorker; let reloading = false, offered = false;
+  sw.addEventListener('controllerchange', () => { if (reloading) location.reload(); });
+  const offer = w => {
+    if (!w || !sw.controller || offered) return;
+    const ch = new MessageChannel();
+    ch.port1.onmessage = e => {
+      if (e.data === APP_BUILD) { w.postMessage('skipWaiting'); return; } // trang này đã là bản mới (tải mạng trước) → cập nhật lặng lẽ
+      offered = true;
+      toast(T('Đã có bản mới — tải lại'), 'ok', 600000, { label: T('Tải lại'), fn: () => { reloading = true; w.postMessage('skipWaiting'); setTimeout(() => location.reload(), 1500); } });
+    };
+    w.postMessage('version', [ch.port2]);
+  };
+  sw.register('./sw.js').then(reg => {
+    window.__swReg = reg;
+    const track = w => { if (w) w.addEventListener('statechange', () => { if (w.state === 'installed') offer(w); }); };
+    if (reg.waiting) offer(reg.waiting); else track(reg.installing);
+    reg.addEventListener('updatefound', () => track(reg.installing));
+    if (sw.controller) reg.update().catch(() => {}); // mở lại từ màn hình chính → kiểm tra bản mới ngay
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
+  }).catch(() => {});
+}
+// Gợi ý “Thêm vào màn hình chính” cho iPhone/iPad (Safari, Chrome iOS) khi chưa mở dạng ứng dụng; tắt rồi thì không hiện lại
+const A2KEY = 'anmuc_a2hs_off';
+function a2hsWanted() {
+  const ua = navigator.userAgent || '';
+  const ios = /iP(hone|od|ad)/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const inApp = /FBAN|FBAV|Instagram|Line\/|Zalo|Messenger|TikTok|MicroMessenger/i.test(ua);
+  const standalone = navigator.standalone === true || !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  return ONLINE_ORIGIN && ios && !inApp && !standalone && !localStorage.getItem(A2KEY);
+}
+function renderA2hs() {
+  let d = $('#a2hs');
+  if (!a2hsWanted()) { if (d) d.remove(); return; }
+  if (!d) { d = document.createElement('div'); d.id = 'a2hs'; d.setAttribute('role', 'note'); document.body.appendChild(d); }
+  d.innerHTML = `<span class="a2ic">${I('share')}</span><span class="a2tx">${esc(T('Thêm vào màn hình chính: bấm nút Chia sẻ rồi chọn “Thêm vào MH chính”'))}</span><button class="iconbtn" id="a2hsX" aria-label="${esc(T('Đóng'))}">✕</button>`;
+  $('#a2hsX', d).onclick = () => { localStorage.setItem(A2KEY, '1'); d.remove(); };
+}
 /* ---------- Khởi động ---------- */
 (async function init() {
   C.lang = UI;
   const th = localStorage.getItem('dichtruyen_theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  document.documentElement.dataset.theme = th;
-  renderHeader();
+  document.documentElement.dataset.theme = th; setThemeMeta(th);
+  renderHeader(); initPwa(); renderA2hs();
   try { await DB.open(); } catch (e) { $('#app').innerHTML = '<div class="wrap"><div class="sheet">' + esc(T('Không mở được bộ nhớ trình duyệt (IndexedDB). Hãy dùng Chrome bản mới và không ở chế độ ẩn danh.')) + '</div></div>'; return; }
   if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
   const last = localStorage.getItem('dichtruyen_last');
