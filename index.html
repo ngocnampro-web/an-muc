@@ -355,6 +355,12 @@ Object.assign(window.AM_EN, {
 "Gợi ý thuật ngữ mới sau mỗi chương": "Suggest new terms after each chapter",
 "AI đề xuất tên riêng, thuật ngữ, xưng hô mới; bạn tự chọn Thêm hoặc Bỏ — không tự đưa vào bảng thuật ngữ.": "AI proposes new names, terms and forms of address; you choose Add or Dismiss — nothing is added to the glossary automatically."
 });
+
+Object.assign(window.AM_EN, {
+"Tăng chất hài (truyện hài, nhẹ nhàng)": "Boost the humor (comedic, light-hearted story)",
+"Bật cho truyện hài: AI dịch giọng tươi, dí dỏm hơn ở cảnh đời thường; cảnh nghiêm túc vẫn giữ nghiêm túc, không bịa thêm câu đùa. Mặc định tắt — văn phong mặc định đã có mục “Hài hước, duyên dáng” cho đoạn hài.": "Turn on for comedic stories: the AI uses a brighter, wittier voice in everyday scenes; serious scenes stay serious and no jokes are invented. Off by default — the default style already has a “Humor and charm” section for funny passages.",
+"Truyện này đang dùng văn phong mặc định cũ. Bấm “Dùng văn phong mặc định mới” để cập nhật (bản mới có thêm mục “Hài hước, duyên dáng”).": "This novel uses an older default style. Click “Use the new default style” to update (the new version adds a “Humor and charm” section)."
+});
 </script>
 <script id="core">
 /* ===== LÕI XỬ LÝ (không phụ thuộc giao diện) ===== */
@@ -575,7 +581,7 @@ C.GUIDE = {
 C.guideFor = (id, sample) => { const d = C.dir(id); const src = C.effectiveSource(id, sample); const g = (C.GUIDE[d.target][src] || []).slice(); if (d.source === 'auto') g.unshift(AUTO_NOTE[d.target](SRC_NAME[d.target][src])); return g; };
 
 /* ---------- Lời nhắc (prompt) ---------- */
-C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, address, sample, soften }) => {
+C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, address, sample, soften, humor }) => {
   const d = C.dir(direction); const src = C.effectiveSource(direction, sample);
   const srcName = lang => d.source === 'auto' ? (lang === 'vi' ? 'ngôn ngữ tự nhận (chương này có vẻ là ' + SRC_NAME.vi[src] + ')' : 'an auto-detected language (this chapter appears to be ' + SRC_NAME.en[src] + ')') : SRC_NAME[lang][d.source];
   if (d.target === 'en') {
@@ -591,6 +597,7 @@ C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, ad
       s += '\n';
     }
     s += '## OUTPUT FORMAT\n- Each source paragraph is numbered [1], [2], ...\n- Return the English translation of EACH paragraph, starting with exactly that number, one paragraph per line.\n- Do not merge, split, drop or add paragraphs. No notes, no explanations, do not repeat the source.';
+    if (humor) s += '\n\n' + C.HUMOR.en;
     if (soften) s += '\n\n' + C.SOFTEN.en;
     return s;
   }
@@ -607,6 +614,7 @@ C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, ad
     s += '\n';
   }
   s += '## ĐỊNH DẠNG TRẢ LỜI\n- Mỗi đoạn gốc được đánh số [1], [2], ...\n- Trả về bản dịch tiếng Việt của TỪNG đoạn, mở đầu bằng đúng số thứ tự đó, mỗi đoạn trên một dòng riêng.\n- Không gộp, tách, bỏ hay thêm đoạn. Không ghi chú, không giải thích, không nhắc lại bản gốc.';
+  if (humor) s += '\n\n' + C.HUMOR.vi;
   if (soften) s += '\n\n' + C.SOFTEN.vi;
   return s;
 };
@@ -646,6 +654,17 @@ C.needsTitleTranslation = (title, direction) => { const d = C.dir(direction); if
 C.OMIT = { vi: '〔Đoạn này lược, không dịch chi tiết.〕', en: '[This passage is left out.]' };
 /* Dịch giảm nhẹ: chỉ dùng khi một phần bị nhà cung cấp chặn. Đây là yêu cầu làm nhẹ bản dịch thật sự (tiết chế, gợi tả),
    không phải lời lách bộ lọc. Viết bằng tiếng đích của lời nhắc, nối vào cuối lời nhắc hệ thống. */
+/* Tăng chất hài (bật theo từng truyện) — nối sau định dạng, trước phần “giảm nhẹ” nếu có */
+C.HUMOR = {
+  vi: '## YÊU CẦU RIÊNG CHO TRUYỆN NÀY: TĂNG CHẤT HÀI\n' +
+    '- Đây là truyện hài, nhẹ nhàng. Ở các cảnh đời thường, trò chuyện, trêu đùa, hãy để giọng văn tươi, tinh nghịch và dí dỏm hơn một chút, giúp người đọc thấy thư giãn, thoải mái.\n' +
+    '- Vẫn sát gốc: không bịa thêm tình tiết hay câu đùa, không chèn tiếng lóng hay meme lệch bối cảnh, giữ đúng tính cách nhân vật.\n' +
+    '- Cảnh nghiêm túc, buồn hay căng thẳng thì giữ đúng độ nghiêm túc của bản gốc.',
+  en: '## SPECIAL INSTRUCTION FOR THIS NOVEL: EXTRA HUMOR\n' +
+    '- This is a light, comedic story. In casual and everyday scenes, conversations and teasing, make the voice a little more playful, lively and witty so readers feel relaxed and entertained.\n' +
+    '- Stay faithful: do not invent plot or jokes, do not add slang or memes that break the setting, and keep each character\'s personality.\n' +
+    '- Serious, sad or tense scenes keep exactly the seriousness of the source.'
+};
 C.SOFTEN = {
   vi: '## YÊU CẦU RIÊNG CHO PHẦN NÀY: DỊCH GIẢM NHẸ\n' +
     '- Dịch trung thành cốt truyện, cảm xúc, lời thoại và quan hệ giữa các nhân vật.\n' +
@@ -961,10 +980,31 @@ C.DEFAULT_STYLE = `VĂN PHONG DỊCH — TIỂU THUYẾT BÁCH HỢP (GL)
 2. Mượt: viết như một nhà văn Việt viết, đọc lên phải trôi. Được đảo cấu trúc câu, tách hoặc gộp vế câu trong một đoạn cho tự nhiên. Tránh sao phỏng Hán Việt cứng, ví dụ viết "lòng nàng chợt nhói lên" thay cho "trong lòng nàng một trận chua xót". Tránh lặp từ và dùng "thì, là, mà, của" thừa.
 3. Chân thật: lời thoại giống người thật nói, đúng tuổi, tính cách, vai vế và bối cảnh. Cảm xúc thể hiện qua hành động, ánh mắt, nhịp thở. Không sến, không phóng đại, không giảng giải.
 4. Giàu cảm xúc: giữ đủ từng tầng tâm lý như ngập ngừng, giằng xé, ấm áp, ghen, dịu dàng, tinh nghịch. Giữ nhịp văn: câu ngắn khi căng thẳng hoặc dồn dập, câu dài và mềm khi lắng đọng. Giữ nguyên hình ảnh và chi tiết giác quan, tả chứ không kể.
+5. Hài hước, duyên dáng: khi bản gốc có chất hài (đấu khẩu, trêu chọc, tình huống dở khóc dở cười, khoảnh khắc ngượng ngùng, quê độ, độc thoại nội tâm tự trào, chơi chữ), dịch sao cho cái hài thật sự “tới” với người đọc Việt, để người đọc thấy thư giãn, thoải mái. Dùng tiếng Việt sinh động, dí dỏm, tự nhiên; nhịp gây cười gọn và đúng lúc, câu chốt gây cười đặt ở cuối câu. Chơi chữ thì tìm cách nói tương đương trong tiếng Việt; không chuyển được thì giữ ý cho mượt, không chú thích. Trợ từ, thán từ biểu cảm dùng vừa phải, hợp giọng nhân vật và bối cảnh cổ đại hay hiện đại. Vẫn sát gốc: không bịa thêm câu đùa, không chèn tiếng lóng hay meme hiện đại làm lệch bối cảnh, không biến cảnh nghiêm túc, buồn hay căng thẳng thành hài. Giữ đúng tính cách từng nhân vật.
+6. Từ ngữ hợp bối cảnh: cổ đại dùng từ cổ vừa phải và từ Hán Việt có chọn lọc, hiện đại dùng từ đời thường. Thành ngữ thì dùng thành ngữ Việt tương đương nếu tự nhiên, không có thì diễn đạt gọn và rõ.
+7. Xưng hô và tên riêng: theo đúng bảng thuật ngữ và ô xưng hô. Mặc định, cổ đại dùng ta, ngươi, nàng; hiện đại dùng chị, em, tôi, cô theo quan hệ. Chỉ đổi xưng hô khi quan hệ nhân vật đổi trong truyện. Khi nhiều nhân vật nữ cùng xuất hiện, dùng tên thay cho "nàng" để không nhầm người.
+8. Trình bày: lời thoại đặt trong ngoặc kép “ ”. Giữ nguyên cách chia đoạn của bản gốc.`;
+C.DEFAULT_STYLE_EN = `TRANSLATION STYLE — GL (GIRLS' LOVE) FICTION
+
+1. Faithful: translate every sentence and every idea, in the original order of events. Do not summarize, cut, or add ideas or notes. Do not change the meaning, and do not soften or intensify emotions relative to the source. Intimate scenes for adult readers are also translated in full, in a literary, delicate voice, never crude.
+2. Fluent: write the way a native English novelist writes; it must read smoothly. You may restructure sentences and split or merge clauses within a paragraph so it sounds natural. Avoid stiff translationese, e.g. write "her heart gave a sudden ache" rather than "in her heart, a burst of sourness". Avoid repeated words and needless filler.
+3. True to life: dialogue sounds like real people talking, matching each character's age, personality, status and setting. Show emotion through action, glances and breathing. No melodrama, no exaggeration, no explaining.
+4. Emotionally rich: keep every layer of feeling, such as hesitation, inner conflict, warmth, jealousy, tenderness and playfulness. Keep the rhythm: short sentences when tense or urgent, long and soft sentences in quiet moments. Keep images and sensory details; show, don't tell.
+5. Humor and charm: when the source is funny (banter, teasing, comic situations, awkward or embarrassing moments, self-mocking inner monologue, wordplay), translate so the humor really lands for English readers and they feel relaxed and entertained. Use lively, witty, natural English with tight comic rhythm and timing; keep the punchline at the end of the sentence. Adapt wordplay to an English equivalent where possible; if it cannot be adapted, keep the meaning smooth, with no translator's notes. Use interjections and expressive words in moderation, fitting each character's voice and the historical or modern setting. Stay faithful: do not invent jokes, do not add modern slang or memes that break the setting, and do not turn serious, sad or tense scenes into comedy. Keep each character's personality.
+6. Register fits the setting: historical settings use a lightly elevated, period-appropriate register and keep culturally specific terms selectively; modern settings use everyday language. Use a natural English idiom when one fits; otherwise express the meaning briefly and clearly.
+7. Names and forms of address: follow the glossary and the forms-of-address box exactly. Keep honorifics or kinship terms only if the glossary says so. Change how characters address each other only when their relationship changes in the story. When several female characters appear together, use names instead of "she/her" so it is always clear who is who.
+8. Formatting: put dialogue in double quotes “ ”. Keep the source's paragraph breaks exactly.`;
+/* Văn phong mặc định trước khi thêm mục “Hài hước, duyên dáng” (10/2026): để nhận ra và cập nhật dự án cũ */
+C.PREV_DEFAULT_STYLE = `VĂN PHONG DỊCH — TIỂU THUYẾT BÁCH HỢP (GL)
+
+1. Sát gốc: dịch đủ từng câu, từng ý, đúng thứ tự diễn biến. Không tóm tắt, không lược, không thêm ý hay chú thích. Không đổi nghĩa, không làm nhẹ hay làm nặng cảm xúc so với bản gốc. Các cảnh thân mật dành cho người trưởng thành cũng dịch đầy đủ, bằng giọng văn chương, tinh tế, không thô tục.
+2. Mượt: viết như một nhà văn Việt viết, đọc lên phải trôi. Được đảo cấu trúc câu, tách hoặc gộp vế câu trong một đoạn cho tự nhiên. Tránh sao phỏng Hán Việt cứng, ví dụ viết "lòng nàng chợt nhói lên" thay cho "trong lòng nàng một trận chua xót". Tránh lặp từ và dùng "thì, là, mà, của" thừa.
+3. Chân thật: lời thoại giống người thật nói, đúng tuổi, tính cách, vai vế và bối cảnh. Cảm xúc thể hiện qua hành động, ánh mắt, nhịp thở. Không sến, không phóng đại, không giảng giải.
+4. Giàu cảm xúc: giữ đủ từng tầng tâm lý như ngập ngừng, giằng xé, ấm áp, ghen, dịu dàng, tinh nghịch. Giữ nhịp văn: câu ngắn khi căng thẳng hoặc dồn dập, câu dài và mềm khi lắng đọng. Giữ nguyên hình ảnh và chi tiết giác quan, tả chứ không kể.
 5. Từ ngữ hợp bối cảnh: cổ đại dùng từ cổ vừa phải và từ Hán Việt có chọn lọc, hiện đại dùng từ đời thường. Thành ngữ thì dùng thành ngữ Việt tương đương nếu tự nhiên, không có thì diễn đạt gọn và rõ.
 6. Xưng hô và tên riêng: theo đúng bảng thuật ngữ và ô xưng hô. Mặc định, cổ đại dùng ta, ngươi, nàng; hiện đại dùng chị, em, tôi, cô theo quan hệ. Chỉ đổi xưng hô khi quan hệ nhân vật đổi trong truyện. Khi nhiều nhân vật nữ cùng xuất hiện, dùng tên thay cho "nàng" để không nhầm người.
 7. Trình bày: lời thoại đặt trong ngoặc kép “ ”. Giữ nguyên cách chia đoạn của bản gốc.`;
-C.DEFAULT_STYLE_EN = `TRANSLATION STYLE — GL (GIRLS' LOVE) FICTION
+C.PREV_DEFAULT_STYLE_EN = `TRANSLATION STYLE — GL (GIRLS' LOVE) FICTION
 
 1. Faithful: translate every sentence and every idea, in the original order of events. Do not summarize, cut, or add ideas or notes. Do not change the meaning, and do not soften or intensify emotions relative to the source. Intimate scenes for adult readers are also translated in full, in a literary, delicate voice, never crude.
 2. Fluent: write the way a native English novelist writes; it must read smoothly. You may restructure sentences and split or merge clauses within a paragraph so it sounds natural. Avoid stiff translationese, e.g. write "her heart gave a sudden ache" rather than "in her heart, a burst of sourness". Avoid repeated words and needless filler.
@@ -995,7 +1035,9 @@ C.OLD_DEFAULT_STYLE_EN = `TRANSLATION STYLE — GL (GIRLS' LOVE) FICTION
 7. Idioms and allusions: use a natural English equivalent when one exists; otherwise express the meaning briefly and clearly.
 8. Dialogue: use standard double quotes “ ” consistently; keep each character's voice distinct.`;
 C.defaultStyle = target => target === 'en' ? C.DEFAULT_STYLE_EN : C.DEFAULT_STYLE;
-C.isDefaultStyle = s => { s = String(s || "").trim(); return [C.DEFAULT_STYLE, C.DEFAULT_STYLE_EN, C.OLD_DEFAULT_STYLE, C.OLD_DEFAULT_STYLE_EN].some(d => d.trim() === s); };
+C.OUTDATED_DEFAULT_STYLES = () => [C.PREV_DEFAULT_STYLE, C.PREV_DEFAULT_STYLE_EN, C.OLD_DEFAULT_STYLE, C.OLD_DEFAULT_STYLE_EN];
+C.isOutdatedDefaultStyle = s => { s = String(s || "").trim(); return !!s && C.OUTDATED_DEFAULT_STYLES().some(d => d.trim() === s); };
+C.isDefaultStyle = s => { s = String(s || "").trim(); return [C.DEFAULT_STYLE, C.DEFAULT_STYLE_EN].concat(C.OUTDATED_DEFAULT_STYLES()).some(d => d.trim() === s); };
 C.SAMPLE_TEXT = `第一章 雨夜
 雨下得很急，林晚站在屋檐下，手里握着一把没有撑开的伞。
 “你又忘了带伞？”苏棠从身后走来，声音轻得像怕惊动这场雨。
@@ -1846,7 +1888,7 @@ function prevContext(ch) {
 }
 function buildMessages(ch, idx, soften) {
   const ctx = prevContext(ch); const dir = chDir(ch);
-  const sys = C.buildSystemPrompt({ sample: ch.paras.map(p => p.zh).join('\n').slice(0, 4000), styleGuide: styleFor(dir), terms: chapterTerms(ch), prevSummary: ctx.prevSummary, prevTail: ctx.prevTail, direction: dir, address: [S.project.address, ch.address].map(x => (x || '').trim()).filter(Boolean).join('\n'), soften: !!soften });
+  const sys = C.buildSystemPrompt({ sample: ch.paras.map(p => p.zh).join('\n').slice(0, 4000), styleGuide: styleFor(dir), terms: chapterTerms(ch), prevSummary: ctx.prevSummary, prevTail: ctx.prevTail, direction: dir, address: [S.project.address, ch.address].map(x => (x || '').trim()).filter(Boolean).join('\n'), soften: !!soften, humor: !!S.project.humor });
   const tail = []; for (let i = idx[0] - 1; i >= 0 && tail.length < 2; i--) if (ch.paras[i].vi && ch.paras[i].vi.trim() && !ch.paras[i].omitted && !idx.includes(i)) tail.unshift(ch.paras[i].vi);
   return [{ role: 'system', content: sys }, { role: 'user', content: C.buildTranslateUser(idx.map(i => ch.paras[i].zh), tail, dir) }];
 }
@@ -2324,7 +2366,7 @@ function renderStyle(m) {
   const t = projTarget(); const isNew = (S.project.styleGuide || '').trim() === C.defaultStyle(t).trim();
   m.innerHTML = `<h2 class="serif">${esc(T('Văn phong — lệnh dịch gửi cho AI'))}</h2>
     <div class="note">${esc(T('Đây là “lệnh dịch”: được gửi cho AI ở đầu mỗi lần dịch, cùng bảng thuật ngữ, xưng hô và lưu ý theo ngôn ngữ nguồn. Bạn có thể sửa tự do; mỗi truyện giữ văn phong riêng.'))}</div>
-    ${isNew ? `<div class="small okc">✓ ${esc(T('Truyện này đang dùng văn phong mặc định mới.'))}</div>` : `<div class="note warn small" id="styleDiff">${esc(T('Văn phong của truyện này khác bản mặc định mới (có thể là bản cũ hoặc bạn đã sửa).'))}</div>`}
+    ${isNew ? `<div class="small okc">✓ ${esc(T('Truyện này đang dùng văn phong mặc định mới.'))}</div>` : `${C.isOutdatedDefaultStyle(S.project.styleGuide) ? `<div class="note warn small" id="styleOld">${esc(T('Truyện này đang dùng văn phong mặc định cũ. Bấm “Dùng văn phong mặc định mới” để cập nhật (bản mới có thêm mục “Hài hước, duyên dáng”).'))}</div>` : `<div class="note warn small" id="styleDiff">${esc(T('Văn phong của truyện này khác bản mặc định mới (có thể là bản cũ hoặc bạn đã sửa).'))}</div>`}`}
     <div class="row-flex" style="margin:8px 0"><button class="primary" data-act="resetStyle" data-t="${t}">${esc(T('Dùng văn phong mặc định mới'))}</button><span class="muted small">${esc(T('Tự động lưu.'))} ${esc(T('Ngôn ngữ đích:'))} ${esc(tgtLang(t))}</span></div>
     <textarea data-pf="styleGuide" class="serif" rows="24" style="line-height:1.6" aria-label="${esc(T('Văn phong'))}">${esc(S.project.styleGuide || '')}</textarea>
     <details class="adv"><summary class="small">${esc(T('Lưu ý tự động theo ngôn ngữ nguồn'))} — ${esc(dirLabel(projDir()))}</summary><div class="guide small"><ul>${C.guideFor(projDir()).map(x => '<li>' + esc(x) + '</li>').join('')}</ul></div></details>`;
@@ -2336,6 +2378,8 @@ function renderStory(m) {
     <div class="two"><div><label>${esc(T('Tác giả'))}</label><input data-pf="author" value="${esc(p.author || '')}"></div><div><label>${esc(T('Người dịch'))}</label><input data-pf="translator" value="${esc(p.translator || '')}"></div></div>
     <label>${esc(T('Dịch từ (mặc định cho mọi chương)'))}</label><select data-pf="direction" id="pDir">${dirOptions(projDir())}</select>
     <div class="muted small">${esc(T('Án Mực tự đoán khi bạn thêm chương đầu tiên. Từng chương có thể chọn hướng riêng trong “Nâng cao cho chương này”.'))}</div>
+    <label class="inline" style="margin-top:12px"><input type="checkbox" id="pHumor" data-pf="humor" ${p.humor ? 'checked' : ''}> ${esc(T('Tăng chất hài (truyện hài, nhẹ nhàng)'))}</label>
+    <div class="muted small">${esc(T('Bật cho truyện hài: AI dịch giọng tươi, dí dỏm hơn ở cảnh đời thường; cảnh nghiêm túc vẫn giữ nghiêm túc, không bịa thêm câu đùa. Mặc định tắt — văn phong mặc định đã có mục “Hài hước, duyên dáng” cho đoạn hài.'))}</div>
     <h3 class="serif" style="margin-top:22px">${esc(T('AI cho truyện này'))}</h3>
     <div class="two"><div><label>${esc(T('AI chính'))}</label><select data-pf="profileId">${profileOptions(p.profileId, T('— Dùng AI mặc định —'))}</select></div>
     <div><label>${esc(T('AI dự phòng (khi bị chặn)'))}</label><select data-pf="fallbackProfileId">${profileOptions(p.fallbackProfileId, T('— Dùng AI dự phòng chung —'))}</select></div></div>
