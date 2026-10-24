@@ -353,6 +353,9 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area
 .prow.gap .num{color:var(--warn);font-weight:700}
 .gapflag{font-size:.82rem}
 .jobitem .flagtxt{font-size:.84rem}
+.keptnote{font-size:.78rem;font-style:italic;opacity:.85;align-self:center}
+.splitlist{max-height:46vh;overflow:auto;margin:10px 0;padding-left:1.6em}
+.splitlist .splrow{padding:3px 0;border-bottom:1px dashed var(--line,#ddd)}
 </style>
 </head>
 <body>
@@ -496,6 +499,38 @@ Object.assign(window.AM_EN, {
   'Xong {d}/{n} chương — {b} chương còn đoạn AI bỏ sót': 'Done {d}/{n} chapters — {b} chapter(s) still have paragraphs the AI left out',
   '{n} chương còn đoạn AI bỏ sót chưa dịch được. Mở chương, bấm “Dịch lại tất cả đoạn thiếu” (hoặc “Dịch giảm nhẹ” nếu bị chặn).': '{n} chapter(s) still have paragraphs the AI left out. Open the chapter and tap “Translate all missing paragraphs” (or “Softened translation” if blocked).'
 });
+Object.assign(window.AM_EN, {
+  'Dòng ký hiệu/phân cách — giữ nguyên bản gốc, không cần AI.': 'Symbol/separator line — kept as in the original, no AI needed.',
+  'Dòng ngắn AI không trả lời — giữ nguyên bản gốc (sửa được).': 'Short line the AI did not answer — kept as in the original (editable).',
+  'Dòng ngắn — đã dịch riêng từng dòng.': 'Short line — translated on its own.',
+  'đang hỏi riêng từng dòng ngắn…': 'asking for each short line separately…',
+  'Đoạn {p} chỉ là ký hiệu/phân cách — giữ nguyên, không cần AI.': 'Paragraph {p} is only symbols/a separator — kept as is, no AI needed.',
+  'Đoạn {p} là dòng ngắn AI không trả lời — giữ nguyên bản gốc (sửa được).': 'Paragraph {p} is a short line the AI did not answer — kept as in the original (editable).',
+  'Đã điền {n} dòng ký hiệu/phân cách (đoạn {p}) — giữ nguyên bản gốc, không cần gọi AI. Chương đã đủ.': 'Filled {n} symbol/separator line(s) (paragraph {p}) with the original — no AI call needed. The chapter is complete.',
+  'Đã tự điền {n} dòng ký hiệu/phân cách (＊＊＊, ——, ……) mà AI bỏ qua — giữ nguyên bản gốc, không cần gọi AI.': 'Filled {n} symbol/separator line(s) (＊＊＊, ——, ……) the AI skipped with the original — no AI call needed.',
+  'AI không trả lời dòng ngắn này nên app giữ nguyên bản gốc. Bạn có thể sửa trực tiếp.': 'The AI did not answer this short line, so the original was kept. You can edit it directly.',
+  'giữ nguyên bản gốc': 'kept as original',
+  'không cần AI': 'no AI needed',
+  'gốc {a} ký tự': 'source {a} chars',
+  'AI trả về {b} ký tự': 'AI returned {b} chars'
+});
+Object.assign(window.AM_EN,{
+  'Tách chương': 'Split chapter',
+  'Đang dịch — đợi xong rồi tách chương.': 'Translating — wait until it finishes, then split.',
+  'Không thấy đủ dòng tiêu đề chương (第X章, 序, 番外, Chương N, Chapter N, 1. 2. 3.…) — cần ít nhất 2 tiêu đề để tách.': 'Not enough chapter heading lines found (第X章, 序, 番外, Chương N, Chapter N, 1. 2. 3.…) — at least 2 headings are needed to split.',
+  'Mở đầu': 'Opening',
+  'phần trước tiêu đề đầu tiên': 'text before the first heading',
+  'đoạn {i}': 'paragraph {i}',
+  '{n} đoạn': '{n} paragraphs',
+  'đã dịch {d}': '{d} translated',
+  'Tìm thấy {h} dòng tiêu đề trong “{t}” ({n} đoạn). Tách thành {k} chương — giữ nguyên bản dịch, trạng thái và đánh dấu thiếu đoạn của từng đoạn.': 'Found {h} heading lines in “{t}” ({n} paragraphs). Split into {k} chapters — every paragraph keeps its translation, status and missing marker.',
+  'Dòng tiêu đề thành tên chương (bản dịch của dòng đó, nếu có, thành tên tiếng Việt; chưa có thì bấm “Dịch tên”).': 'Heading lines become chapter titles (their translation, if any, becomes the translated title; otherwise tap “Translate title”).',
+  'Tách thành {k} chương': 'Split into {k} chapters',
+  'Đã tách thành {k} chương — giữ nguyên {v} đoạn đã dịch.': 'Split into {k} chapters — kept {v} translated paragraphs.',
+  'Còn {g} đoạn thiếu — bấm “Dịch lại tất cả đoạn thiếu” ở từng chương.': '{g} paragraphs still missing — tap “Retranslate all missing paragraphs” in each chapter.',
+  'Cả truyện đang nằm trong 1 chương ({n} đoạn), có {k} dòng tiêu đề chương. Tách thành {k2} chương? Bản dịch đã có được giữ nguyên.': 'The whole novel is in 1 chapter ({n} paragraphs) with {k} chapter headings. Split into {k2} chapters? Existing translations are kept.',
+  'Chương này dài {n} đoạn và có {k} dòng tiêu đề chương bên trong — có thể cả truyện nằm chung một chương.': 'This chapter has {n} paragraphs and {k} chapter headings inside — the whole novel may be in one chapter.'
+});
 </script>
 <script id="core">
 /* ===== LÕI XỬ LÝ (không phụ thuộc giao diện) ===== */
@@ -536,24 +571,70 @@ C.isHeading = line => {
   return HEAD_EN.test(t) || HEAD_VI.test(t) || HEAD_KO.test(t) || HEAD_TH.test(t);
 };
 C.isVolumeHeading = t => HEAD_VOL.test(t) && !/[章节節回]/.test(t);
-/* Tách một văn bản lớn thành các chương theo tiêu đề 第X章 / 第 X 章 / 序章 / 番外... */
+/* Tiêu đề yếu: số đứng riêng trên dòng ngắn — “1.”, “2、”, “(3)”, “十二、 xxx”. Chỉ tính khi là một dãy tăng dần liên tiếp (1, 2, 3…) */
+const CN_D = { 零: 0, 〇: 0, 一: 1, 二: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
+C.cnNum = s => {
+  s = String(s).replace(/[０-９]/g, d => String.fromCharCode(d.charCodeAt(0) - 0xFEE0));
+  if (/^\d+$/.test(s)) return +s;
+  let total = 0, cur = 0;
+  for (const ch of s) {
+    if (ch in CN_D) cur = CN_D[ch];
+    else if (ch === '十') { total += (cur || 1) * 10; cur = 0; }
+    else if (ch === '百') { total += (cur || 1) * 100; cur = 0; }
+    else if (ch === '千') { total += (cur || 1) * 1000; cur = 0; }
+    else return NaN;
+  }
+  return total + cur;
+};
+const WEAK_HEAD = /^[(（]?([0-9０-９]{1,3}|[零〇一二三四五六七八九十百两]{1,5})[)）]?(?:[.、．:：]\s*(.{0,24}))?$/;
+C.weakHeadingNum = line => {
+  const t = C.cleanLine(line); if (!t || t.length > 30 || /[。！？!?，,；;]$/.test(t)) return NaN;
+  const m = t.match(WEAK_HEAD); if (!m) return NaN;
+  if (!/[.、．:：]/.test(t) && !/^[(（]/.test(t) && !/^[0-9０-９]+$/.test(t)) return NaN; /* “一” đứng riêng dễ là chữ thường */
+  return C.cnNum(m[1]);
+};
+const STRONG_EXTRA = /^(序|序章|楔子|引子|尾声|尾聲|后记|後記|番外[一二三四五六七八九十0-9０-９]*)(?:[\s\u3000:：·.、—\-]|$)/;
+C.isStrongHeading = line => { const t = C.cleanLine(line); return C.isHeading(t) || (t.length <= 30 && STRONG_EXTRA.test(t) && !/[。！？]$/.test(t)); };
+/* Tìm dòng tiêu đề chương trong danh sách đoạn → [{i, title}] (rỗng nếu chưa tới 2 tiêu đề) */
+C.detectHeadings = (lines, min) => {
+  min = min == null ? 2 : min;
+  const strong = [], weak = [];
+  lines.forEach((l, i) => { const t = C.cleanLine(l); if (!t) return; if (C.isStrongHeading(t)) strong.push({ i, title: t }); else { const n = C.weakHeadingNum(t); if (n >= 0) weak.push({ i, title: t, n }); } });
+  /* dãy số liên tiếp dài nhất (bắt đầu từ 0 hoặc 1) */
+  let best = [];
+  weak.forEach((w, k) => {
+    if (w.n > 1) return; const chain = [w];
+    for (let j = k + 1; j < weak.length; j++) if (weak[j].n === chain[chain.length - 1].n + 1) chain.push(weak[j]);
+    if (chain.length > best.length) best = chain;
+  });
+  const all = strong.concat(best.length >= 2 ? best.map(w => ({ i: w.i, title: w.title })) : []).sort((a, b) => a.i - b.i);
+  return all.length >= min ? all : [];
+};
+/* Kế hoạch tách: [{title, head:[chỉ số dòng tiêu đề], start, end}] — thân chương là lines[start..end) (không gồm dòng tiêu đề).
+   Tiêu đề không có thân (vd. “第一卷” ngay trước “第一章”) được gộp vào tiêu đề sau. Phần trước tiêu đề đầu tiên: pre=true. */
+C.splitPlan = (lines, min) => {
+  const heads = C.detectHeadings(lines, min);
+  if (!heads.length) return [];
+  const out = []; let carry = null;
+  if (heads[0].i > 0 && lines.slice(0, heads[0].i).some(x => C.cleanLine(x))) out.push({ title: '', head: [], start: 0, end: heads[0].i, pre: true });
+  heads.forEach((h, k) => {
+    const end = k + 1 < heads.length ? heads[k + 1].i : lines.length;
+    const body = lines.slice(h.i + 1, end).some(x => C.cleanLine(x));
+    const titles = (carry ? carry.titles : []).concat(h.title), head = (carry ? carry.head : []).concat(h.i);
+    if (!body) { carry = { titles, head }; return; }
+    carry = null; out.push({ title: titles.join(' · '), head, start: h.i + 1, end });
+  });
+  if (carry && out.length) { const last = out[out.length - 1]; last.end = lines.length; }
+  return out;
+};
+/* Tách một văn bản lớn thành các chương theo tiêu đề 第X章 / 序章 / 番外 / Chương N / Chapter N / 1. 2. 3. ...
+   Một tiêu đề duy nhất ở dòng đầu = tên chương; còn lại cần ≥ 2 tiêu đề mới tách. */
 C.splitChapters = text => {
-  const lines = String(text || '').replace(/\r\n?/g, '\n').split('\n');
-  const out = []; const pre = []; let cur = null;
-  for (const raw of lines) {
-    const t = C.cleanLine(raw); if (!t) continue;
-    if (C.isHeading(t)) { cur = { title: t, paras: [] }; out.push(cur); }
-    else if (cur) cur.paras.push(t); else pre.push(t);
-  }
-  if (!out.length) return [{ title: '', paras: pre }];
-  if (pre.length) out.unshift({ title: 'Mở đầu', paras: pre });
-  const res = []; let carry = '';
-  for (const c of out) {
-    if (!c.paras.length) { carry = carry ? carry + ' · ' + c.title : c.title; continue; }
-    if (carry) { c.title = carry + ' · ' + c.title; carry = ''; }
-    res.push(c);
-  }
-  return res;
+  const lines = C.splitParagraphs(text);
+  if (lines.length && C.isStrongHeading(lines[0]) && !C.splitPlan(lines).length) return [{ title: C.cleanLine(lines[0]), paras: lines.slice(1) }];
+  const plan = C.splitPlan(lines);
+  if (!plan.length) return [{ title: '', paras: lines }];
+  return plan.map(p => ({ title: p.pre ? 'Mở đầu' : p.title, paras: lines.slice(p.start, p.end) })).filter(p => p.paras.length);
 };
 /* Gom đoạn thành từng phần ~maxChars ký tự, chỉ cắt ở ranh giới đoạn */
 C.chunkParagraphs = (zhList, indices, maxChars, maxParas) => {
@@ -864,14 +945,36 @@ C.parseTermSuggestions = (text, opts) => {
 
 /* ---------- Đọc kết quả ---------- */
 C.stripThink = t => String(t || '').replace(/<think>[\s\S]*?(<\/think>|$)/g, '');
+/* Dòng không có chữ cái nào (chỉ dấu câu, ký hiệu, số, khoảng trắng): ＊＊＊, ———, ……, ※※※, ◆◇◆, “1.”… → không cần AI, giữ nguyên. */
+C.noLetters = s => { const t = String(s || '').trim(); return !!t && !/\p{L}/u.test(t); };
+/* Dòng rất ngắn (≤ 12 ký tự, ví dụ “嗯。”, “「……」”, tên riêng, từ tượng thanh): AI hay trả rỗng/giữ nguyên/bỏ qua → được phép giữ nguyên bản gốc */
+C.SHORT_KEEP = 12;
+C.isShortLine = s => { const t = String(s || '').trim(); return !!t && [...t].length <= C.SHORT_KEEP; };
+/* Lời nhắc tối giản cho một dòng ngắn (không dùng định dạng [n]) — lượt cuối khi AI cứ bỏ qua dòng này */
+C.buildLineMessages = (line, terms, direction) => {
+  const en = C.targetOf(direction) === 'en';
+  const gl = (terms || []).length ? (en ? '\nGlossary: ' : '\nThuật ngữ: ') + terms.map(t => t.zh + ' → ' + t.vi).join('; ') : '';
+  return [
+    { role: 'system', content: (en ? 'You translate one line of a novel. Return only the translation of the line — no numbering, no quotes around it, no explanation. If the line is only symbols, a number, a name or a sound that needs no translation, return it unchanged.' : 'Bạn dịch một dòng trong truyện. Chỉ trả về bản dịch của dòng đó — không đánh số, không giải thích. Nếu dòng chỉ là ký hiệu, số, tên riêng hoặc từ tượng thanh không cần dịch thì trả về nguyên dòng.') + gl },
+    { role: 'user', content: (en ? 'Translate exactly this line into English, return only the translation:\n' : 'Dịch đúng dòng này sang tiếng Việt, chỉ trả về bản dịch:\n') + String(line || '').trim() }
+  ];
+};
+C.cleanLineResult = t => {
+  const s = C.stripThink(t || '').trim(); if (!s || C.looksLikeRefusal(s)) return '';
+  const lines = s.split(/\n+/).map(x => x.trim()).filter(Boolean).filter(x => !/^(Dịch đúng dòng|Translate exactly this line)/i.test(x));
+  return (lines[0] || '').replace(/^[\[【［]1[\]】］][ \t:：]*/, '').trim();
+};
 C.parseNumbered = text => {
-  const re = /(?:^|\n)[ \t>*_#]*[\[【［](\d{1,4})[\]】］][ \t*_:：.]*/g;
+  /* Sau số [n] chỉ ăn dấu đóng in đậm “**”, khoảng trắng, dấu “:” — KHÔNG ăn “*”, “.” của nội dung: dòng phân cách “* * *”, “***”, “……” phải được giữ lại */
+  const re = /(?:^|\n)[ \t>*_#]*[\[【［](\d{1,4})[\]】］](?:\*\*(?!\*))?[ \t:：]*(?:\.(?=[ \t]))?[ \t]*/g;
   const marks = []; let m;
   while ((m = re.exec(text))) marks.push({ n: +m[1], start: m.index, end: re.lastIndex });
   if (!marks.length) return null;
   const map = {};
   marks.forEach((mk, k) => {
-    const seg = text.slice(mk.end, k + 1 < marks.length ? marks[k + 1].start : text.length).replace(/^\*\*|\*\*$/g, '').replace(/[\s*_]+$/, '').trim();
+    const raw = text.slice(mk.end, k + 1 < marks.length ? marks[k + 1].start : text.length).trim();
+    let seg = raw.replace(/^\*\*|\*\*$/g, '').replace(/[\s*_]+$/, '').trim();
+    if (C.noLetters(raw) && (!/^[\s*_#>`]*$/.test(raw) || (raw.match(/\*/g) || []).length >= 3)) seg = raw; /* dòng phân cách/ký hiệu: giữ nguyên, không cắt “*” */
     if (seg && !map[mk.n]) map[mk.n] = seg;
   });
   return map;
@@ -882,7 +985,7 @@ C.blockReasonVi = r => (C.lang === 'en' ? { SAFETY: 'safety filter', PROHIBITED_
 C.interpretResult = (r, n, src) => {
   const text = C.stripThink(r.text || '').trim();
   if (r.finish === 'blocked') return { status: 'blocked', message: M('Nhà cung cấp đã chặn nội dung', 'The provider blocked this content') + (r.reason ? ' (' + C.blockReasonVi(r.reason) + ')' : '') + '.', text };
-  if (!text) return { status: 'blocked', message: M('Model trả về kết quả rỗng — có thể đã bị bộ lọc nội dung chặn.', 'The model returned nothing — it may have been stopped by a content filter.'), text };
+  if (!text) return { status: 'blocked', message: M('Model trả về kết quả rỗng — có thể đã bị bộ lọc nội dung chặn.', 'The model returned nothing — it may have been stopped by a content filter.'), text, empty: true };
   let map = C.parseNumbered(text);
   if (!map) {
     if (C.looksLikeRefusal(text)) return { status: 'blocked', message: M('Model từ chối dịch phần này: “', 'The model refused this part: “') + text.slice(0, 140) + '”', text };
@@ -894,6 +997,7 @@ C.interpretResult = (r, n, src) => {
     }
   }
   Object.keys(map).forEach(k => { if (+k < 1 || +k > n) delete map[k]; });
+  if (src) Object.keys(map).forEach(k => { if (/^[\s*_#>`~-]*$/.test(map[k]) && !C.noLetters(src[k - 1])) delete map[k]; });
   const fix = C.repairMap(map, n, src);
   const truncated = r.finish === 'length';
   if (truncated) { /* bị cắt vì giới hạn độ dài: khối cuối cùng có thể dở dang → coi như thiếu, sẽ dịch bù */
@@ -1337,6 +1441,28 @@ const headingOf = html => { const m = String(html).match(/<h[1-3][^>]*>([\s\S]*?
 const resolvePath = (base, href) => { const parts = (base + href).split('/'); const r = []; for (const x of parts) { if (!x || x === '.') continue; if (x === '..') r.pop(); else r.push(x); } return r.join('/'); };
 const decodeXmlBytes = d => { const head = new TextDecoder('latin1').decode(d.subarray(0, 200)); const m = head.match(/encoding=["']([\w-]+)["']/i); let enc = m ? m[1].toLowerCase() : 'utf-8'; if (/^(gbk|gb2312|gb_2312)/.test(enc)) enc = 'gb18030'; try { return new TextDecoder(enc).decode(d).replace(/^\ufeff/, ''); } catch (e) { return utf8(d); } };
 
+/* Một tệp xhtml chứa nhiều chương (cả cuốn trong một tệp): tách theo thẻ h1/h2/h3 — chọn cấp cao nhất xuất hiện ≥ 2 lần.
+   Trả về [{title, text}] hoặc null nếu không đủ 2 tiêu đề. */
+C.splitHtmlHeadings = html => {
+  const body = String(html).replace(/<head[\s\S]*?<\/head>/i, '');
+  const cnt = [1, 2, 3].map(l => (body.match(new RegExp('<h' + l + '\\b', 'gi')) || []).length);
+  const lv = [1, 2, 3].find(l => cnt[l - 1] >= 2); if (!lv) return null;
+  const re = new RegExp('<h' + lv + '\\b', 'gi'); const pos = []; let m; while ((m = re.exec(body))) pos.push(m.index);
+  const out = []; let carry = '';
+  const pre = C.htmlToText(body.slice(0, pos[0]));
+  const preLines = pre.split('\n').filter(Boolean); const preHead = headingOf(body.slice(0, pos[0]));
+  if (preHead && preLines[0] === preHead) preLines.shift();
+  if (preLines.length) out.push({ title: preHead || '', text: preLines.join('\n') });
+  pos.forEach((p, k) => {
+    const seg = body.slice(p, k + 1 < pos.length ? pos[k + 1] : body.length);
+    const hm = seg.match(new RegExp('<h' + lv + '\\b[^>]*>([\\s\\S]*?)<\\/h' + lv + '>', 'i'));
+    const t = hm ? C.htmlToText(hm[1]).replace(/\n/g, ' ').trim() : '';
+    const text = C.htmlToText(hm ? seg.slice(hm.index + hm[0].length) : seg);
+    if (!text.trim()) { carry = carry ? carry + ' · ' + t : t; return; }
+    out.push({ title: carry ? carry + ' · ' + t : t, text }); carry = '';
+  });
+  return out.filter(x => x.title).length >= 2 ? out : null;
+};
 /* EPUB → [{title, text}] theo thứ tự spine; bỏ mục lục, bìa */
 C.readEpub = async buf => C.readEpubFiles(await C.unzip(buf), '');
 /* Đọc một gói EPUB nằm trong danh sách file đã giải nén, gốc gói = root (vd. '' hoặc 'X.epub/' — EPUB “dạng thư mục” iPhone nén lại).
@@ -1360,7 +1486,9 @@ C.readEpubFiles = (all, root) => {
     const it = items[m[1]]; if (!it || /nav/.test(it.props) || !/html/.test(it.mt || 'html')) continue;
     if (/(^|\/)(toc|nav|cover|copyright)[^/]*\.x?html?$/i.test(it.href)) continue;
     const f = get(resolvePath(base, it.href)); if (!f) continue;
-    const html = decodeXmlBytes(f.data); if (/epub:type=["'][^"']*\b(titlepage|toc|cover|copyright-page)\b/i.test(html)) continue; const text = C.htmlToText(html); if (!text.trim()) continue;
+    const html = decodeXmlBytes(f.data); if (/epub:type=["'][^"']*\b(titlepage|toc|cover|copyright-page)\b/i.test(html)) continue;
+    const segs = C.splitHtmlHeadings(html); if (segs) { segs.forEach(x => out.push(x)); continue; }
+    const text = C.htmlToText(html); if (!text.trim()) continue;
     let t = headingOf(html); const lines = text.split('\n'); if (t && lines[0] === t) lines.shift();
     if (!lines.join('').trim()) continue;
     out.push({ title: t || '', text: lines.join('\n') });
@@ -2158,9 +2286,55 @@ async function openProject(id) {
   localStorage.setItem('dichtruyen_last', id);
   renderProject();
   /* mở lại app sau khi cập nhật: nhắc chương còn đoạn AI bỏ sót (đã lưu) — chỉ dịch bù các đoạn đó */
+  let symFixed = 0;
+  for (const c of chs) { if (!hasAny(c)) continue; const f = fillSymbolParas(c, gapInfo(c).all); if (f.length) { symFixed += f.length; await saveNow('chapters', c); } }
+  if (symFixed) { renderSide(); renderMain(); toast(T('Đã tự điền {n} dòng ký hiệu/phân cách (＊＊＊, ——, ……) mà AI bỏ qua — giữ nguyên bản gốc, không cần gọi AI.', { n: symFixed }), 'ok'); }
   const gapChs = chs.filter(c => gapInfo(c).holes.length);
   if (gapChs.length) toast(T('{n} chương còn đoạn AI bỏ sót ({t}). Chỉ dịch bù các đoạn đó, không dịch lại cả chương.', { n: gapChs.length, t: gapChs.slice(0, 3).map(c => c.title).join(', ') + (gapChs.length > 3 ? ', …' : '') }), 'warn', 15000,
     { label: T('Dịch bù ngay'), fn: () => { const c = gapChs[0]; S.chapterId = c.id; S.tab = 'editor'; S.mtab = 'tgt'; renderProject(); fixAll(); } });
+  /* cả cuốn nằm trong một chương (EPUB một tệp xhtml): gợi ý tách chương */
+  if (chs.length === 1 && chs[0].paras.length > 150) {
+    const plan = splitPlanOf(chs[0]);
+    if (plan.length >= 2) toast(T('Cả truyện đang nằm trong 1 chương ({n} đoạn), có {k} dòng tiêu đề chương. Tách thành {k2} chương? Bản dịch đã có được giữ nguyên.', { n: chs[0].paras.length, k: plan.filter(r => !r.pre).length, k2: plan.length }), 'warn', 20000,
+      { label: T('Tách chương'), fn: () => { S.chapterId = chs[0].id; S.tab = 'editor'; renderProject(); openSplit(chs[0]); } });
+  }
+}
+/* ---------- Tách một chương dài (cả cuốn trong một tệp) thành nhiều chương theo dòng tiêu đề ---------- */
+const splitPlanOf = ch => ch ? C.splitPlan(ch.paras.map(p => p.zh)) : [];
+function openSplit(ch) {
+  if (!ch) return; if (S.busy) return toast(T('Đang dịch — đợi xong rồi tách chương.'), 'warn');
+  const plan = splitPlanOf(ch);
+  if (!plan.length) return toast(T('Không thấy đủ dòng tiêu đề chương (第X章, 序, 番外, Chương N, Chapter N, 1. 2. 3.…) — cần ít nhất 2 tiêu đề để tách.'), 'warn', 9000);
+  const done = r => ch.paras.slice(r.start, r.end).filter(p => p.vi && p.vi.trim()).length;
+  const rows = plan.map((r, k) => `<li class="splrow"><b>${esc(r.pre ? (ch.title || T('Mở đầu')) : r.title)}</b> <span class="muted small">· ${esc(r.pre ? T('phần trước tiêu đề đầu tiên') : T('đoạn {i}', { i: r.head.map(i => i + 1).join(', ') }))} · ${esc(T('{n} đoạn', { n: r.end - r.start }))} · ${esc(T('đã dịch {d}', { d: done(r) }))}</span></li>`).join('');
+  const heads = plan.filter(r => !r.pre).length;
+  openModal(T('Tách chương'), `<div class="note">${esc(T('Tìm thấy {h} dòng tiêu đề trong “{t}” ({n} đoạn). Tách thành {k} chương — giữ nguyên bản dịch, trạng thái và đánh dấu thiếu đoạn của từng đoạn.', { h: heads, t: ch.titleVi || ch.title, n: ch.paras.length, k: plan.length }))}</div>
+    <ol class="splitlist" id="splitList">${rows}</ol>
+    <div class="muted small">${esc(T('Dòng tiêu đề thành tên chương (bản dịch của dòng đó, nếu có, thành tên tiếng Việt; chưa có thì bấm “Dịch tên”).'))}</div>
+    <div class="row-flex" style="margin-top:12px"><button class="primary" data-act="doSplit">${esc(T('Tách thành {k} chương', { k: plan.length }))}</button><button data-act="closeModal">${esc(T('Hủy'))}</button></div>`);
+}
+async function doSplit(ch) {
+  if (!ch || S.busy) return; const plan = splitPlanOf(ch); if (plan.length < 2 && !(plan.length === 1 && !plan[0].pre)) { closeModal(); return; }
+  const wasStale = isStale(ch), base = Object.assign({}, ch), orig = ch.paras;
+  const later = S.chapters.filter(c => c.id !== ch.id && c.order > ch.order);
+  const parts = plan.map((r, k) => {
+    const paras = orig.slice(r.start, r.end).map(p => Object.assign({}, p));
+    const hv = r.head.map(i => (orig[i].vi || '').trim());
+    const c = k === 0 ? ch : Object.assign({}, base, { id: C.uid(), summary: '' });
+    c.paras = paras; c.order = ch.order + k; c.updatedAt = Date.now();
+    if (!r.pre) { c.title = r.title; c.titleVi = hv.every(Boolean) ? hv.join(' · ') : ''; }
+    const nv = paras.filter(p => p.vi && p.vi.trim()).length;
+    c.status = !nv ? 'todo' : nv === paras.length && base.status === 'done' ? 'done' : 'draft';
+    if (base.translatedSrc) { if (wasStale) c.translatedSrc = base.translatedSrc; else c.translatedSrc = srcHash(c); }
+    delete c.splitFrom; if (k) c.splitFrom = ch.id;
+    return c;
+  });
+  for (const c of later) { c.order += parts.length - 1; await DB.put('chapters', c); }
+  for (const c of parts) { await DB.put('chapters', c); if (c !== ch) S.chapters.push(c); }
+  delete S.jobs[ch.id]; S.rowMsg = {}; S.issues = null; S.splitOffered = true;
+  closeModal(); S.chapterId = ch.id; S.tab = 'editor'; renderProject();
+  const gaps = parts.reduce((a, c) => a + gapInfo(c).holes.length, 0);
+  toast(T('Đã tách thành {k} chương — giữ nguyên {v} đoạn đã dịch.', { k: parts.length, v: parts.reduce((a, c) => a + c.paras.filter(p => p.vi && p.vi.trim()).length, 0) }) + (gaps ? ' ' + T('Còn {g} đoạn thiếu — bấm “Dịch lại tất cả đoạn thiếu” ở từng chương.', { g: gaps }) : ''), 'ok', 9000);
 }
 function confirmLeaveJob() {
   if (S.busy) { if (!confirm(T('Đang dịch. Dừng lại và chuyển trang?'))) return false; S.busy.abort(); S.busy = null; }
@@ -2238,6 +2412,31 @@ function gapInfo(ch) {
   const holes = [], trailing = [];
   if (last >= 0) ch.paras.forEach((p, i) => { if (isEmptyPara(p)) (p.missing || i < last ? holes : trailing).push(i); });
   return { holes, trailing, all: holes.concat(trailing).sort((a, b) => a - b) };
+}
+/* Dòng chỉ có ký hiệu/dấu câu/số (＊＊＊, ———, ……, 1.): điền nguyên bản gốc, không gọi AI. Trả về các chỉ số đã điền. */
+function fillSymbolParas(ch, idxs) {
+  const out = [];
+  (idxs || ch.paras.map((p, i) => i)).forEach(i => {
+    const p = ch.paras[i]; if (!p || p.omitted || (p.vi && p.vi.trim()) || !C.noLetters(p.zh)) return;
+    setViLive(ch, i, String(p.zh).trim()); delete p.missing; delete p.softened; p.keptSrc = 'sym'; out.push(i);
+  });
+  return out;
+}
+/* Lượt cuối cho một dòng ngắn AI cứ bỏ qua: hỏi riêng bằng lời nhắc tối giản; vẫn rỗng mà ≤ 12 ký tự → giữ nguyên bản gốc (có ghi chú, sửa được).
+   Trả về 'ai' | 'kept' | '' (vẫn thiếu). */
+async function lineFallback(ch, i, profile, signal) {
+  const p = ch.paras[i]; const src = String(p.zh || '').trim(); if (!src) return '';
+  if (C.noLetters(src)) { fillSymbolParas(ch, [i]); return 'kept'; }
+  let v = '';
+  if (profile) {
+    try {
+      const r = await C.chat(profile, C.buildLineMessages(src, chapterTerms(ch).filter(t => src.includes(t.zh)), chDir(ch)), { signal, maxTokens: C.maxTokensFor(profile) ? 400 : 0 });
+      if (r.finish !== 'blocked') v = C.cleanLineResult(r.text);
+    } catch (e) { if (e && e.name === 'AbortError') throw e; if (!C.isShortLine(src)) return ''; }
+  }
+  if (v) { setViLive(ch, i, v); delete p.missing; delete p.omitted; delete p.softened; if (v === src) p.keptSrc = 'short'; else delete p.keptSrc; return 'ai'; } /* trả về y nguyên (tên, tiếng động…) cũng được nhận */
+  if (C.isShortLine(src)) { setViLive(ch, i, src); delete p.missing; delete p.softened; p.keptSrc = 'short'; return 'kept'; }
+  return '';
 }
 const paraList = idx => { const s = idx.map(i => i + 1); return s.length > 12 ? s.slice(0, 12).join(', ') + ', …' : s.join(', '); };
 const missMsg = idx => T(idx.length > 1 ? 'AI bỏ sót các đoạn {p}' : 'AI bỏ sót đoạn {p}', { p: paraList(idx) });
@@ -2349,6 +2548,7 @@ function renderEditor(m) {
     </div>
     ${C.looksFontLocked(srcText) ? `<div class="note warn">${esc(T('Chữ trong chương này có vẻ bị vỡ — file gốc khóa chữ bằng font riêng. Bản dịch sẽ sai. Hãy tìm bản txt UTF-8.'))}</div>` : ''}
     ${gapNote}
+    ${ch.paras.length > 150 && splitPlanOf(ch).length >= 2 ? `<div class="note warn" id="splitNote">${esc(T('Chương này dài {n} đoạn và có {k} dòng tiêu đề chương bên trong — có thể cả truyện nằm chung một chương.', { n: ch.paras.length, k: splitPlanOf(ch).filter(r => !r.pre).length }))} <div class="row-flex"><button class="small primary" data-act="splitCh" ${running ? 'disabled' : ''}>${esc(T('Tách chương'))}</button></div></div>` : ''}
     ${isStale(ch) ? `<div class="note warn" id="staleNote">${esc(T('Nguồn hoặc ngôn ngữ đã đổi. Bản dưới là lần dịch trước.'))}</div>` : ''}
     <details class="adv chadv" id="chAdv" ${S.chAdvOpen ? 'open' : ''}><summary>${esc(T('Nâng cao cho chương này'))}</summary>
       <div class="ed-row">
@@ -2363,7 +2563,7 @@ function renderEditor(m) {
         <button data-act="review" ${running ? 'disabled' : ''}>${esc(T('Nhờ AI góp ý'))}</button>
         <button data-act="summarize" ${running ? 'disabled' : ''}>${esc(T('Tóm tắt (AI)'))}</button>
       </div>
-      <div class="row-flex"><button data-act="pasteTrans">${I('paste')} ${esc(T('Dán bản dịch có sẵn'))}</button><button data-act="editSource">${esc(T('Sửa bản gốc'))}</button><button class="danger" data-act="delChapter">${I('trash')} ${esc(T('Xóa chương'))}</button></div>
+      <div class="row-flex"><button data-act="pasteTrans">${I('paste')} ${esc(T('Dán bản dịch có sẵn'))}</button><button data-act="editSource">${esc(T('Sửa bản gốc'))}</button><button data-act="splitCh" ${running ? 'disabled' : ''}>${esc(T('Tách chương'))}</button><button class="danger" data-act="delChapter">${I('trash')} ${esc(T('Xóa chương'))}</button></div>
       <label class="small">${esc(T('Tóm tắt chương (làm bối cảnh khi dịch chương sau)'))}</label><textarea data-cf="summary" rows="3" placeholder="${esc(T('Tóm tắt ngắn diễn biến chương…'))}">${esc(ch.summary || '')}</textarea>
       <div class="muted small">${esc(T('AI:'))} <b>${esc(prim ? prim.name + ' · ' + prim.model : T('chưa kết nối'))}</b>${fb ? ' · ' + esc(T('dự phòng:')) + ' ' + esc(fb.name) : ''}</div>
     </details>
@@ -2388,6 +2588,7 @@ function renderEditor(m) {
     return `<div class="prow ${iss ? 'flag' : ''} ${p.omitted ? 'omit' : ''} ${p.softened ? 'soft' : ''} ${gap ? 'gap' : ''}" id="row-${i}"><div class="zh serif"><span class="num">${i + 1}</span>${hl(p.zh)}</div>
       <div class="vi"><span class="num m">${i + 1}</span><textarea class="vi serif" data-i="${i}" rows="1" lang="${tgt}" placeholder="${esc(gap ? T('(chưa dịch — AI bỏ sót đoạn này)') : T('(chưa dịch)'))}">${esc(p.vi || '')}</textarea>
       <div class="ptools"><button class="small" data-act="retransPara" data-i="${i}" ${running ? 'disabled' : ''}>↻ ${esc(T('Dịch lại'))}</button>
+      ${p.keptSrc === 'short' && p.vi && p.vi.trim() ? `<span class="muted small keptnote" title="${esc(T('AI không trả lời dòng ngắn này nên app giữ nguyên bản gốc. Bạn có thể sửa trực tiếp.'))}">${esc(T('giữ nguyên bản gốc'))}</span>` : ''}
       ${gap ? `<span class="flagtxt gapflag">⚠ ${esc(T('AI bỏ sót đoạn {a} — chưa dịch. Bấm “Dịch lại”.', { a: i + 1 }))}</span>` : ''}
       ${iss ? `<span class="flagtxt">⚠ ${esc(T('Thiếu thuật ngữ:'))} ${iss.map(x => esc(x.zh + ' → ' + x.vi)).join('; ')}</span>` : ''}
       ${rm ? `<span class="errtxt">${esc(rm)}</span> ${fallbackProfile() ? `<button class="small" data-act="retransPara" data-i="${i}" data-other="1">${esc(T('Dịch lại với model khác'))} (${esc(fallbackProfile().name)})</button>` : ''}${S.rowBlocked && S.rowBlocked[i] ? `<button class="small" data-act="softenPara" data-i="${i}" ${running ? 'disabled' : ''}>${esc(T('Dịch giảm nhẹ'))}</button>` : ''}` : ''}
@@ -2457,12 +2658,13 @@ function renderJob() {
   const others = id => S.settings.profiles.filter(p => p.id !== id);
   const J = JOBST();
   const nPart = j.chunks.filter(c => c.status === 'partial').length;
+  const jch = S.chapters.find(c => c.id === S.chapterId);
   el.innerHTML = `<div class="panel"><h4>${esc(T('Tiến độ dịch: {d}/{n} phần', { d, n }))} ${runHere ? '<span class="st run">— ' + esc(T('đang chạy')) + '</span>' : ''} <span class="spacer"></span>${nPart && !S.busy ? `<button class="small primary" data-act="fixAll">${esc(T('Dịch lại tất cả đoạn thiếu'))}</button>` : ''}<button class="small link" data-act="closeJob">${esc(T('Ẩn'))}</button></h4>
     <div class="progress"><div style="width:${n ? Math.round(d / n * 100) : 0}%"></div></div>
     <div class="joblist">${j.chunks.map((c, k) => {
       const fb = fallbackProfile(c.profileId); const canAct = !S.busy && !['run', 'wait'].includes(c.status);
       return `<div class="jobitem"><span>${esc(T('Phần {k} · đoạn {a}–{b}', { k: k + 1, a: c.idx[0] + 1, b: c.idx[c.idx.length - 1] + 1 }))}</span>
-      <span class="st ${c.status}">${J[c.status]}</span>${c.softened ? `<span class="st softened" title="${esc(T('Phần này được dịch theo cách giảm nhẹ. Có thể dịch lại bằng model khác.'))}">${esc(J.softened)}</span>` : ''}<span class="muted">${esc(c.profileName || '')}${c.chars ? ' · ' + c.chars + ' ' + esc(T('ký tự')) : ''}</span>
+      <span class="st ${c.status}">${J[c.status]}</span>${c.softened ? `<span class="st softened" title="${esc(T('Phần này được dịch theo cách giảm nhẹ. Có thể dịch lại bằng model khác.'))}">${esc(J.softened)}</span>` : ''}<span class="muted">${esc(c.local ? T('không cần AI') : c.profileName || '')} · ${esc(T('gốc {a} ký tự', { a: c.idx.reduce((a, i) => a + [...String(((jch && jch.paras[i]) || {}).zh || '').trim()].length, 0) }))}${c.chars ? ' · ' + esc(T('AI trả về {b} ký tự', { b: c.chars })) : ''}</span>
       ${c.msg ? `<span class="${c.status === 'blocked' || c.status === 'error' ? 'errtxt' : c.status === 'partial' || (c.status === 'run' && c.repairing) ? 'flagtxt' : 'muted'}">${esc(c.msg)}</span>` : ''}
       ${canAct && c.status === 'partial' ? `<button class="small primary" data-act="fixChunk" data-k="${k}" title="${esc(T('Chỉ dịch những đoạn AI bỏ sót trong phần này, không dịch lại cả phần'))}">${esc(T('Dịch lại đoạn thiếu'))}</button>` : ''}
       ${canAct && c.status === 'partial' && c.blockedMissing ? `<button class="small" data-act="fixChunkSoft" data-k="${k}" title="${esc(T('Dịch lại phần này: giữ cốt truyện, cảm xúc, lời thoại; cảnh quá lộ liễu được viết tiết chế, gợi tả.'))}">${esc(T('Dịch giảm nhẹ'))}</button>` : ''}
@@ -2502,7 +2704,11 @@ function buildMessages(ch, idx, soften, retry) {
 }
 /* Dịch một phần (chunk) và cập nhật giao diện */
 async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
-  chunk.status = 'run'; chunk.msg = ''; chunk.repairing = false; chunk.blockedMissing = false; chunk.profileId = profile ? profile.id : ''; chunk.profileName = profile ? profile.name : ''; chunk.chars = 0; renderJob();
+  if (chunk.idx.every(i => C.noLetters(ch.paras[i].zh))) { /* chỉ toàn dòng ký hiệu/phân cách → không cần AI */
+    chunk.idx.forEach(i => { const p = ch.paras[i]; setViLive(ch, i, String(p.zh).trim()); delete p.missing; delete p.omitted; delete p.softened; p.keptSrc = 'sym'; }); chunk.status = 'done'; chunk.chars = 0; chunk.local = true; chunk.msg = T('Dòng ký hiệu/phân cách — giữ nguyên bản gốc, không cần AI.');
+    ch.translatedDir = chDir(ch); ch.translatedSrc = srcHash(ch); await saveNow('chapters', ch); renderJob(); return;
+  }
+  chunk.status = 'run'; chunk.msg = ''; chunk.local = false; chunk.repairing = false; chunk.blockedMissing = false; chunk.profileId = profile ? profile.id : ''; chunk.profileName = profile ? profile.name : ''; chunk.chars = 0; renderJob();
   const snapshot = chunk.idx.map(i => ch.paras[i].vi);
   const n = chunk.idx.length;
   let res;
@@ -2521,6 +2727,14 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
     chunk.idx.forEach((i, k) => setViLive(ch, i, snapshot[k]));
     if (e && e.name === 'AbortError') { chunk.status = 'stopped'; chunk.msg = T('Đã dừng — bản dịch cũ được giữ nguyên.'); renderJob(); throw e; }
     res = { status: 'error', message: String(e && e.message || e) };
+  }
+  if (n === 1 && res.status === 'blocked' && res.empty && C.isShortLine(ch.paras[chunk.idx[0]].zh)) {
+    /* dòng ngắn (“嗯。”, “「……」”…) mà AI trả rỗng: không phải bị chặn — hỏi riêng bằng lời nhắc tối giản, vẫn rỗng thì giữ nguyên bản gốc */
+    const how = await lineFallback(ch, chunk.idx[0], profile, signal);
+    if (how) {
+      chunk.status = 'done'; chunk.msg = how === 'kept' ? T('Dòng ngắn AI không trả lời — giữ nguyên bản gốc (sửa được).') : T('Dòng ngắn — đã dịch riêng từng dòng.');
+      ch.translatedDir = chDir(ch); ch.translatedSrc = srcHash(ch); await saveNow('chapters', ch); renderJob(); if (ch.id === S.chapterId) updateStats(); return;
+    }
   }
   if (res.status === 'blocked' || res.status === 'error') {
     chunk.idx.forEach((i, k) => setViLive(ch, i, snapshot[k]));
@@ -2547,7 +2761,7 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
       }
     }
   } else {
-    Object.keys(res.map).forEach(k => { const i = chunk.idx[k - 1]; if (i != null) { setViLive(ch, i, res.map[k]); delete ch.paras[i].omitted; delete ch.paras[i].missing; if (soften) ch.paras[i].softened = true; else delete ch.paras[i].softened; } });
+    Object.keys(res.map).forEach(k => { const i = chunk.idx[k - 1]; if (i != null) { setViLive(ch, i, res.map[k]); delete ch.paras[i].omitted; delete ch.paras[i].missing; delete ch.paras[i].keptSrc; if (soften) ch.paras[i].softened = true; else delete ch.paras[i].softened; } });
     chunk.softened = !!soften;
     chunk.idx.forEach((i, k) => { if (!res.map[k + 1]) setViLive(ch, i, snapshot[k]); });
     chunk.status = res.status; chunk.msg = res.message || '';
@@ -2563,14 +2777,18 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
 /* Dịch bù các đoạn AI bỏ sót: cùng ngữ cảnh, thuật ngữ, văn phong; lượt 1 theo nhóm nhỏ (≤3 đoạn liền nhau, kèm đoạn nghi bị gộp),
    lượt 2–3 từng đoạn một. Bị chặn → tự dịch giảm nhẹ nếu chính sách cho phép. Trả về các đoạn vẫn còn thiếu. */
 async function repairParas(ch, need, suspects, profile, signal, soften, onMsg) {
-  let todo = need.slice(); const blocked = new Set(), done = new Set(), softDone = new Set();
+  const local = fillSymbolParas(ch, need); /* dòng ký hiệu/phân cách: giữ nguyên, không gọi AI */
+  let todo = need.filter(i => !local.includes(i)); const blocked = new Set(), done = new Set(), softDone = new Set(), kept = [], lined = [];
   const pol = blockPolicy(); const autoSoft = !!soften || pol === 'soften' || pol === 'fallback_soften';
   const ask = (g, soft) => C.runChunk(profile, buildMessages(ch, g, soft, true), g.length, { signal, src: g.map(i => ch.paras[i].zh) });
   try {
     for (let round = 1; round <= 3 && todo.length; round++) {
-      onMsg(missMsg(todo) + ' — ' + T('đang tự dịch lại… (lần {r}/3)', { r: round }));
+      /* lượt 2–3 bỏ qua dòng ngắn: AI đã bỏ qua một lần thì hỏi lại theo định dạng [n] cũng vô ích → để lượt cuối hỏi riêng từng dòng */
+      const ask1 = round === 1 ? todo : todo.filter(i => !C.isShortLine(ch.paras[i].zh));
+      if (!ask1.length) break;
+      onMsg(missMsg(ask1) + ' — ' + T('đang tự dịch lại… (lần {r}/3)', { r: round }));
       const extra = round === 1 ? (suspects || []).filter(i => !todo.includes(i)) : [];
-      for (const g of C.smallGroups(todo.concat(extra).sort((a, b) => a - b), round === 1 ? 3 : 1)) {
+      for (const g of C.smallGroups(ask1.concat(extra).sort((a, b) => a - b), round === 1 ? 3 : 1)) {
         if (!g.some(i => todo.includes(i) && !done.has(i))) continue;
         let soft = !!soften;
         let r = await ask(g, soft);
@@ -2582,7 +2800,7 @@ async function repairParas(ch, need, suspects, profile, signal, soften, onMsg) {
         g.forEach((i, k) => {
           const v = r.map[k + 1]; const isNeed = todo.includes(i);
           if (!v || (!isNeed && !whole)) return; /* đoạn nghi bị gộp chỉ được thay khi cả nhóm trả về đủ */
-          setViLive(ch, i, v); const p = ch.paras[i]; delete p.omitted; delete p.missing;
+          setViLive(ch, i, v); const p = ch.paras[i]; delete p.omitted; delete p.missing; delete p.keptSrc;
           if (soft) p.softened = true; else delete p.softened;
           if (isNeed) { done.add(i); blocked.delete(i); if (soft) softDone.add(i); }
         });
@@ -2590,19 +2808,36 @@ async function repairParas(ch, need, suspects, profile, signal, soften, onMsg) {
       todo = todo.filter(i => !done.has(i));
       await saveNow('chapters', ch);
     }
+    /* lượt cuối: dòng ngắn (≤ 30 ký tự) vẫn thiếu → hỏi riêng từng dòng, lời nhắc tối giản; ≤ 12 ký tự mà vẫn rỗng → giữ nguyên bản gốc */
+    const shortLeft = todo.filter(i => [...String(ch.paras[i].zh || '').trim()].length <= 30);
+    if (shortLeft.length) onMsg(missMsg(shortLeft) + ' — ' + T('đang hỏi riêng từng dòng ngắn…'));
+    for (const i of shortLeft) {
+      const how = await lineFallback(ch, i, profile, signal);
+      if (how) { done.add(i); blocked.delete(i); (how === 'kept' ? kept : lined).push(i); }
+    }
+    todo = todo.filter(i => !done.has(i));
+    await saveNow('chapters', ch);
   } finally {
     todo.forEach(i => { if (!(ch.paras[i].vi && ch.paras[i].vi.trim())) ch.paras[i].missing = true; });
   }
-  return { left: todo, blocked: [...blocked].filter(i => todo.includes(i)), soft: softDone.size > 0 };
+  return { left: todo, blocked: [...blocked].filter(i => todo.includes(i)), soft: softDone.size > 0, local, kept, lined };
 }
 function finishRepair(chunk, need, r) {
   chunk.repairing = false; chunk.blockedMissing = r.blocked.length > 0;
   if (r.soft) chunk.softened = true;
-  const fixed = need.filter(i => !r.left.includes(i));
-  if (!r.left.length) { chunk.status = 'done'; chunk.msg = missMsg(need) + ' — ' + T('đã tự dịch bù.') + (r.soft ? ' ' + T('(dịch giảm nhẹ)') : ''); return; }
+  const loc = r.local || [], kept = r.kept || [];
+  const notes = (loc.length ? ' ' + T('Đoạn {p} chỉ là ký hiệu/phân cách — giữ nguyên, không cần AI.', { p: paraList(loc) }) : '')
+    + (kept.length ? ' ' + T('Đoạn {p} là dòng ngắn AI không trả lời — giữ nguyên bản gốc (sửa được).', { p: paraList(kept) }) : '');
+  const ai = need.filter(i => !loc.includes(i) && !kept.includes(i));
+  const fixed = ai.filter(i => !r.left.includes(i));
+  if (!r.left.length) {
+    chunk.status = 'done'; if (!ai.length && !kept.length) { chunk.local = true; chunk.chars = 0; }
+    chunk.msg = (ai.length ? missMsg(ai) + ' — ' + T('đã tự dịch bù.') + (r.soft ? ' ' + T('(dịch giảm nhẹ)') : '') : '') + notes;
+    chunk.msg = chunk.msg.trim(); return;
+  }
   chunk.status = 'partial';
   chunk.msg = missMsg(r.left) + ' — ' + T('bấm “Dịch lại đoạn thiếu”.') + (fixed.length ? ' ' + T('Đã tự dịch bù: {p}.', { p: paraList(fixed) }) : '')
-    + (r.blocked.length ? ' ' + T('Đoạn {p}: AI không trả lời hoặc bị chặn — thử “Dịch giảm nhẹ” hoặc model khác.', { p: paraList(r.blocked) }) : '');
+    + (r.blocked.length ? ' ' + T('Đoạn {p}: AI không trả lời hoặc bị chặn — thử “Dịch giảm nhẹ” hoặc model khác.', { p: paraList(r.blocked) }) : '') + notes;
 }
 async function repairChunk(ch, chunk, need, suspects, profile, signal, soften) {
   if (!need.length) return;
@@ -2623,8 +2858,9 @@ async function fixChunk(k, soften) {
   const ch = curCh(); const j = ch && S.jobs[ch.id]; const c = j && j.chunks[k]; if (!c || S.busy) return;
   const need = c.idx.filter(i => isEmptyPara(ch.paras[i]) || ch.paras[i].missing);
   if (!need.length) { c.status = 'done'; c.msg = ''; renderJob(); return; }
-  const prof = getProfile(c.profileId) || primaryProfile(); if (!prof) return toast(T('Chưa có hồ sơ AI.'), 'err');
-  const ctrl = new AbortController(); S.busy = ctrl; c.profileId = prof.id; c.profileName = prof.name;
+  const prof = getProfile(c.profileId) || primaryProfile();
+  if (!prof && !need.every(i => C.noLetters(ch.paras[i].zh))) return toast(T('Chưa có hồ sơ AI.'), 'err');
+  const ctrl = new AbortController(); S.busy = ctrl; if (prof) { c.profileId = prof.id; c.profileName = prof.name; }
   renderJob();
   try { await repairChunk(ch, c, need, [], prof, ctrl.signal, !!soften); }
   catch (e) { /* đã ghi vào thông báo của phần */ }
@@ -2638,6 +2874,16 @@ async function fixChunk(k, soften) {
 /* Nút “Dịch lại tất cả đoạn thiếu”: chỉ dịch các đoạn còn trống (AI bỏ sót + đoạn cuối chưa dịch tới), không dịch lại cả chương */
 async function fixAll() {
   const ch = curCh(); if (!ch || S.busy) return;
+  const loc = fillSymbolParas(ch, gapInfo(ch).all);
+  if (loc.length) {
+    await saveNow('chapters', ch);
+    const j = S.jobs[ch.id]; if (j) j.chunks.forEach(c => { if (c.status === 'partial' && c.idx.every(i => !isEmptyPara(ch.paras[i]))) { c.status = 'done'; c.blockedMissing = false; c.local = true; c.chars = 0; c.msg = T('Dòng ký hiệu/phân cách — giữ nguyên bản gốc, không cần AI.'); } });
+    if (!gapInfo(ch).all.length) {
+      const qi = S.queue && S.queue.items.find(x => x.id === ch.id); if (qi && qi.st === 'warn') { qi.st = 'done'; qi.bad = 0; }
+      afterTranslate(ch); renderQbar(); renderJob();
+      return toast(T('Đã điền {n} dòng ký hiệu/phân cách (đoạn {p}) — giữ nguyên bản gốc, không cần gọi AI. Chương đã đủ.', { n: loc.length, p: paraList(loc) }), 'ok');
+    }
+  }
   if (!gapInfo(ch).all.length) { const j = S.jobs[ch.id]; if (j) j.chunks.forEach(c => { if (c.status === 'partial') { c.status = 'done'; c.msg = ''; } }); renderJob(); return toast(T('Không còn đoạn nào thiếu.')); }
   await runQueue([{ id: ch.id, mode: 'empty' }]);
 }
@@ -2658,6 +2904,13 @@ async function translateOne(ch, mode, signal, prof) {
   let idx = ch.paras.map((p, i) => i);
   if (mode === 'empty') idx = idx.filter(i => !(ch.paras[i].vi && ch.paras[i].vi.trim()));
   if (!idx.length) return { bad: 0, skip: true };
+  /* dòng chỉ có ký hiệu/dấu câu/số (＊＊＊, ———, ……, 1.) → giữ nguyên, không gửi AI */
+  const sym = idx.filter(i => C.noLetters(ch.paras[i].zh) && !ch.paras[i].omitted);
+  if (sym.length) {
+    sym.forEach(i => { const p = ch.paras[i]; setViLive(ch, i, String(p.zh).trim()); delete p.missing; delete p.softened; p.keptSrc = 'sym'; });
+    idx = idx.filter(i => !sym.includes(i)); await saveNow('chapters', ch);
+    if (!idx.length) { ch.translatedDir = chDir(ch); if (ch.status === 'todo' && hasAny(ch)) { ch.status = 'draft'; await saveNow('chapters', ch); } return { bad: 0, local: sym.length }; }
+  }
   const size = Math.max(300, Number(S.settings.chunkSize) || 1200); const zh = ch.paras.map(p => p.zh);
   /* tối đa 24 đoạn mỗi phần (chương nhiều câu thoại ngắn dễ bị AI gộp/bỏ); chế độ “còn trống” dịch từng dãy liền nhau riêng — không ghép đoạn 28 với đoạn 37 */
   const runs = mode === 'empty' ? C.contiguousRuns(idx) : [idx];
@@ -3561,6 +3814,8 @@ const A = {
   pasteTrans: () => openPasteTranslation(),
   summarize: () => summarizeChapter(),
   editSource: () => openEditSource(),
+  splitCh: () => openSplit(curCh()),
+  doSplit: () => doSplit(curCh()),
   gpToggle: () => { S.gpOpen = !S.gpOpen; const g = $('.edgrid'); if (g) g.classList.toggle('gp-open', S.gpOpen); const b = $('.gptoggle'); if (b) b.setAttribute('aria-expanded', S.gpOpen); },
   qaAdd: async () => {
     const zh = ($('#qaZh') || {}).value; const vi = ($('#qaVi') || {}).value;
@@ -3622,7 +3877,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('input', e => {
   const t = e.target; const ch = curCh();
-  if (t.matches('textarea.vi') && ch) { const p = ch.paras[Number(t.dataset.i)]; p.vi = t.value; delete p.omitted; if (t.value.trim()) delete p.missing; autosize(t); scheduleSave('chapters', ch); clearTimeout(timers._st); timers._st = setTimeout(updateStats, 300); }
+  if (t.matches('textarea.vi') && ch) { const p = ch.paras[Number(t.dataset.i)]; p.vi = t.value; delete p.omitted; if (t.value.trim()) delete p.missing; delete p.keptSrc; autosize(t); scheduleSave('chapters', ch); clearTimeout(timers._st); timers._st = setTimeout(updateStats, 300); }
   else if (t.dataset.cf && ch && t.tagName !== 'SELECT') { ch[t.dataset.cf] = t.value; scheduleSave('chapters', ch); if (t.dataset.cf === 'title' || t.dataset.cf === 'titleVi') { clearTimeout(timers._sd); timers._sd = setTimeout(renderSide, 500); } }
   else if (t.dataset.sg && S.project) { const x = (S.project.termSuggest || []).find(y => y.id === t.dataset.sg); if (x) { x.vi = t.value; scheduleSave('projects', S.project); } }
   else if (t.dataset.g && S.project) { const g = S.project.glossary.find(x => x.id === t.dataset.id); if (g) { g[t.dataset.g] = t.value; scheduleSave('projects', S.project); } }
@@ -3673,7 +3928,7 @@ window.addEventListener('beforeunload', e => { if (pending.size || S.busy) { e.p
 
 
 /* ---------- Ứng dụng trên màn hình chính (PWA) ---------- */
-const APP_BUILD = '147953a54137';
+const APP_BUILD = '546f2e7f2317';
 const ONLINE_ORIGIN = /^https?:$/.test(location.protocol);
 function setThemeMeta(t) { document.querySelectorAll('meta[name=theme-color]').forEach(m => { m.content = t === 'dark' ? '#1a1714' : '#f3eee6'; m.removeAttribute('media'); }); }
 // Service worker chỉ chạy khi mở qua http(s); mở file:// thì bỏ qua (app vẫn chạy trọn trong một file)
