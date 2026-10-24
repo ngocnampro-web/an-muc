@@ -105,7 +105,7 @@ mark.term{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px;b
 .joblist{display:flex;flex-direction:column;gap:4px;margin-top:8px;max-height:260px;overflow:auto}
 .jobitem{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.84rem;padding:4px 0;border-bottom:1px dashed var(--line)}
 .jobitem select{width:auto;min-height:34px;padding:4px 8px;font-size:.84rem}
-.st{font-weight:600}.st.done{color:var(--ok)}.st.run{color:var(--cin)}.st.blocked,.st.error{color:var(--cin)}.st.partial,.st.stopped{color:var(--warn)}.st.omitted{color:var(--muted)}
+.st{font-weight:600}.st.done{color:var(--ok)}.st.run{color:var(--cin)}.st.blocked,.st.error{color:var(--cin)}.st.partial,.st.stopped{color:var(--warn)}.st.omitted{color:var(--muted)}.st.softened{color:var(--warn);border:1px solid currentColor;border-radius:999px;padding:0 7px;font-size:.74rem;margin-left:6px;white-space:nowrap}
 .errtxt{color:var(--cin)}.flagtxt{color:var(--warn)}.okc{color:var(--ok)}
 .review{white-space:pre-wrap;font-family:var(--serif);font-size:.95rem;max-height:420px;overflow:auto}
 .cols-head{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:16px 16px 0 0;background:var(--sheet);position:sticky;top:0;z-index:3}
@@ -134,7 +134,7 @@ textarea.vi:hover{border-color:var(--line)}
 textarea.vi:focus{border-color:var(--cin);background:var(--paper)}
 textarea.vi.empty{background:var(--paper)}
 .ptools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.8rem;opacity:.35;transition:opacity .15s}
-.prow:hover .ptools,.prow:focus-within .ptools,.ptools:has(.errtxt),.ptools:has(.flagtxt){opacity:1}
+.prow:hover .ptools,.prow:focus-within .ptools,.ptools:has(.errtxt),.ptools:has(.flagtxt),.ptools:has(.softened){opacity:1}
 .ptools button{min-height:28px;padding:2px 9px;font-size:.78rem}
 .stats{margin-top:10px;color:var(--muted);font-size:.82rem;white-space:pre-wrap}
 .guide{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 14px;margin:10px 0}
@@ -190,6 +190,20 @@ button.on{border-color:var(--cin);color:var(--cin)}
 .gterms{display:flex;flex-direction:column;gap:4px;max-height:40vh;overflow:auto}
 .gterm{display:grid;grid-template-columns:minmax(4rem,auto) 1fr;gap:6px;align-items:center}
 .gterm input{min-height:32px;padding:4px 8px;font-size:.88rem}
+.sgbox{border:1px solid var(--warn);border-radius:8px;padding:8px;margin:8px 0;display:flex;flex-direction:column;gap:6px}
+.sghead{display:flex;align-items:center;gap:6px}
+.sglist{display:flex;flex-direction:column;gap:6px;max-height:40vh;overflow:auto}
+.sgitem{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px 6px;align-items:center;padding-bottom:6px;border-bottom:1px dashed var(--line,#e5ddd0)}
+.sgitem:last-child{border-bottom:0}
+.sgitem>span{grid-column:1/-1;font-weight:600}
+.sgitem .sgnote{grid-column:1/-1;margin-top:-2px}
+.sgitem input{width:100%;min-width:0}
+.sgitem>*{order:2}.sgitem>span{order:0}.sgitem .sgnote{order:1;margin-top:-4px}
+.sgitem input{min-height:32px;padding:4px 8px;font-size:.88rem}
+.sgitem button{min-height:30px;padding:2px 9px;font-size:.78rem}
+.sgnote{grid-column:1/-1;margin-top:-3px}
+.softc{color:var(--warn)}
+.blockhint{margin-top:6px}
 .qa{display:grid;grid-template-columns:1fr 1fr auto;gap:4px}
 .qa input{min-height:34px;padding:4px 8px;font-size:.88rem;min-width:0}
 .gptoggle{display:none}
@@ -302,6 +316,45 @@ body.dragging::after{content:"⇩";position:fixed;inset:10px;border:3px dashed v
 <script id="i18n">
 /* Từ điển giao diện tiếng Anh cho Án Mực */
 window.AM_EN = {"Chưa dịch": "Not translated", "Đã dịch nháp": "Draft translated", "Đã duyệt": "Approved", "chờ": "waiting", "đang dịch…": "translating…", "xong": "done", "thiếu đoạn": "missing lines", "bị chặn": "blocked", "lỗi": "error", "đã dừng": "stopped", "đã lược": "left out", "Bản Anh": "English", "Bản Việt": "Vietnamese", "Tiếng Anh": "English", "Tiếng Việt": "Vietnamese", "Đóng": "Close", "Đang lưu…": "Saving…", "Đã lưu ✓": "Saved ✓", "Lỗi lưu!": "Save failed!", "Không lưu được dữ liệu: ": "Could not save data: ", "Về trang dự án": "Back to projects", "Dịch từng chương": "Chapter by chapter", "Cài đặt AI": "AI settings", "Giao diện sáng / tối": "Light / dark", "Ngôn ngữ giao diện": "Interface language", "Chương": "Chapters", "Gốc": "Source", "Đang dịch. Dừng lại và chuyển trang?": "Translating. Stop and leave this page?", "Bàn dịch": "Translation desk", "Mỗi truyện là một dự án: chương, bảng thuật ngữ, văn phong và bản dịch. Mọi thứ nằm trong trình duyệt này trên máy của bạn — hãy tải bản sao lưu (.json) thường xuyên.": "Each novel is a project: chapters, glossary, style guide and translation. Everything stays in this browser on your device — download a backup (.json) often.", "Dự án mới": "New project", "Đưa file thành dự án": "Turn a file into a project", "Nhập bản sao lưu (.json)": "Import backup (.json)", "Tạo dự án mẫu": "Create sample project", "Bước đầu tiên: bấm biểu tượng bánh răng <b>Cài đặt AI</b> ở góc trên và thêm ít nhất một hồ sơ AI (ví dụ DeepSeek, OpenRouter hoặc Gemini) kèm khóa API của bạn.": "First step: click the gear icon <b>AI settings</b> at the top and add at least one AI profile (e.g. DeepSeek, OpenRouter or Gemini) with your API key.", "Không tên": "Untitled", "{n} chương · {ok} đã duyệt": "{n} chapters · {ok} approved", "Sửa lần cuối:": "Last edited:", "Chưa có dự án nào.": "No projects yet.", "Truyện mới": "New novel", "Tên truyện": "Novel title", "Ví dụ: Mưa trên mái hiên": "e.g. Rain on the eaves", "Tác giả": "Author", "Người dịch": "Translator", "Dịch từ": "Translate from", "Văn phong mặc định sẽ theo ngôn ngữ đích (Việt hoặc Anh). Có thể đổi riêng cho từng chương.": "The default style guide follows the target language (Vietnamese or English). Each chapter can override the direction.", "Lưu": "Save", "Hủy": "Cancel", "Thuật ngữ": "Glossary", "Văn phong": "Style", "Xuất sách": "Export book", "Dự án": "Project", "txt, epub, zip, docx": "txt, epub, zip, docx", "Đưa file": "Add file", "Mới": "New", "đã đổi": "changed", "Lên": "Up", "Xuống": "Down", "Chưa có chương. Bấm “Mới” để dán chữ, hoặc “Đưa file”.": "No chapters yet. Click “New” to paste text, or “Add file”.", "Bấm một chương, rồi bấm Dịch. Không tự chạy.": "Pick a chapter, then click Translate. Nothing runs on its own.", "Tải từng chương (.zip)": "Download chapters (.zip)", "chưa dịch": "not translated", "nháp": "draft", "đã duyệt": "approved", "Chưa chọn chương": "No chapter selected", "Dán chữ vào một chương mới, hoặc đưa file txt, epub, zip, docx.": "Paste text into a new chapter, or add a txt, epub, zip or docx file.", "Theo dự án": "Project default", "Trạng thái": "Status", "Xưng hô": "Forms of address", "Chỉ điền khi truyện này cần, ví dụ: A xưng em, B xưng chị": "Only if this novel needs it, e.g. A calls herself em, B calls herself chị", "Dịch cả chương": "Translate chapter", "Dịch đoạn còn trống": "Translate empty paragraphs", "Dừng": "Stop", "Kiểm tra nhất quán": "Consistency check", "Nhờ AI góp ý": "AI feedback", "Tóm tắt (AI)": "Summarize (AI)", "Bôi đen chữ trong cột Gốc rồi bấm": "Select text in the Source column, then click", "Thuật ngữ từ chữ đã chọn": "Term from selection", "Sửa bản gốc": "Edit source", "Xóa chương": "Delete chapter", "Hồ sơ AI:": "AI profile:", "chưa có — mở Cài đặt AI": "none — open AI settings", "dự phòng:": "fallback:", "{n} thuật ngữ xuất hiện trong chương sẽ được gửi kèm.": "{n} glossary terms found in this chapter will be sent along.", "Chương này lẫn chữ Hán và chữ Việt. Chọn “Tự nhận” để dịch chữ Hán, viết mượt chỗ Hán Việt còn cứng, và giữ câu Việt đã xuôi.": "This chapter mixes Chinese characters and Vietnamese. Choose “Auto” to translate the Chinese, smooth stiff Sino-Vietnamese, and keep fluent Vietnamese as is.", "Chữ trong chương này có vẻ bị vỡ — file gốc khóa chữ bằng font riêng. Bản dịch sẽ sai. Hãy tìm bản txt UTF-8.": "The text in this chapter looks garbled — the source file locks text with a custom font. The translation will be wrong. Find a UTF-8 txt version.", "Nguồn hoặc ngôn ngữ đã đổi. Bản dưới là lần dịch trước.": "Source or language changed. The text below is from the previous translation.", "Tóm tắt chương": "Chapter summary", "(dùng làm bối cảnh khi dịch chương sau — có thể tự viết hoặc bấm “Tóm tắt (AI)”)": "(used as context when translating the next chapter — write it yourself or click “Summarize (AI)”)", "Tóm tắt ngắn diễn biến chương…": "Short summary of what happens…", "chữ": "chars", "đoạn": "paragraphs", "Tên chương (gốc)": "Chapter title (source)", "Chép": "Copy", "Tải xuống": "Download", "Văn bản (.txt)": "Text (.txt)", "PDF (qua hộp thoại in)": "PDF (via print dialog)", "Dán bản dịch có sẵn, mỗi dòng một đoạn": "Paste an existing translation, one line per paragraph", "Dán bản dịch": "Paste translation", "Tên chương tiếng Anh": "English chapter title", "Tên chương tiếng Việt": "Vietnamese chapter title", "Nhờ AI dịch tên chương": "Ask AI to translate the title", "Dịch tên": "Translate title", "(chưa dịch)": "(not translated)", "Dịch lại": "Retranslate", "Thiếu thuật ngữ:": "Missing terms:", "Dịch lại với model khác": "Retranslate with another model", "Gốc: {a} chữ{h} · {p} đoạn   |   Bản dịch: {w} từ · {c} ký tự · đã dịch {d}/{p} đoạn": "Source: {a} chars{h} · {p} paragraphs   |   Translation: {w} words · {c} characters · {d}/{p} paragraphs translated", "chữ Hán": "Chinese chars", "Tiến độ dịch: {d}/{n} phần": "Progress: {d}/{n} parts", "đang chạy": "running", "Ẩn": "Hide", "Phần {k} · đoạn {a}–{b}": "Part {k} · paragraphs {a}–{b}", "ký tự": "characters", "Thử lại": "Retry", "Điền dòng ghi chú “đoạn này lược” vào các đoạn còn trống của phần này": "Fill the empty paragraphs of this part with a “passage left out” note", "Lược phần này": "Leave this part out", "Kiểm tra nhất quán thuật ngữ": "Glossary consistency check", "Có {n} chỗ bản dịch chưa chứa cách dịch trong bảng thuật ngữ (có thể đúng nếu bạn cố ý diễn đạt khác):": "{n} places where the translation doesn’t contain the glossary rendering (may be fine if you phrased it differently on purpose):", "Đoạn": "Paragraph", "Không phát hiện vấn đề. (Thuật ngữ 1 ký tự như đại từ được bỏ qua.)": "No issues found. (One-character terms such as pronouns are skipped.)", "Góp ý của AI": "AI feedback", "đang viết…": "writing…", "(chỉ là gợi ý — không tự sửa bản dịch)": "(suggestions only — the translation is not changed)", "Thử lại lần {a}…": "Retry #{a}…", "Đã dừng — bản dịch cũ được giữ nguyên.": "Stopped — the previous translation was kept.", "Hồ sơ chính bị chặn → đã dịch bằng hồ sơ dự phòng.": "Main profile was blocked → translated with the fallback profile.", "Không dịch được tên chương.": "Could not translate the chapter title.", "Chưa có hồ sơ AI. Mở “Cài đặt AI” để thêm.": "No AI profile yet. Open “AI settings” to add one.", "Chương này đã có bản dịch. Dịch lại toàn bộ sẽ thay thế các đoạn đã dịch. Tiếp tục?": "This chapter already has a translation. Retranslating will replace translated paragraphs. Continue?", "Không còn đoạn nào trống.": "No empty paragraphs left.", "Đã dừng dịch.": "Translation stopped.", "{n} phần chưa dịch xong (bị chặn/lỗi/thiếu đoạn). Xem bảng tiến độ để thử lại.": "{n} parts not finished (blocked/error/missing lines). See the progress panel to retry.", "Đã dịch xong chương!": "Chapter translated!", "Đã điền ghi chú lược. Có thể dịch lại phần này bất cứ lúc nào.": "Left-out note filled in. You can retranslate this part any time.", "Chưa có hồ sơ AI phù hợp. Mở “Cài đặt AI”.": "No suitable AI profile. Open “AI settings”.", "Bị chặn: ": "Blocked: ", "Lỗi: ": "Error: ", "Chưa có hồ sơ AI.": "No AI profile yet.", "Chưa có đoạn nào được dịch để góp ý.": "No translated paragraphs to review yet.", "Phần": "Part", "Phần {g}: bị chặn hoặc kết quả rỗng — thử hồ sơ khác. ": "Part {g}: blocked or empty result — try another profile. ", "Đã dừng.": "Stopped.", "Chương chưa có bản dịch để tóm tắt.": "This chapter has no translation to summarize.", "Đang tóm tắt…": "Summarizing…", "Không tóm tắt được (bị chặn hoặc rỗng). Hãy tự viết tóm tắt hoặc dùng hồ sơ khác.": "Could not summarize (blocked or empty). Write the summary yourself or use another profile.", "Đã tạo tóm tắt.": "Summary created.", "Thêm chương": "Add chapters", "Dán chữ gốc hoặc đưa file <b>txt, epub, zip, docx</b> (txt nhận UTF-8, UTF-16 và GBK). Nếu bật “Tự tách chương”, văn bản được chia theo dòng tiêu đề như <span class=\"zhfont\">第1章 / 序章 / 番外</span>, “Chương 1”, “Chapter 1”, “제1화”.": "Paste source text or add a <b>txt, epub, zip or docx</b> file (txt accepts UTF-8, UTF-16 and GBK). With “Split chapters” on, text is split at heading lines such as <span class=\"zhfont\">第1章 / 序章 / 番外</span>, “Chương 1”, “Chapter 1”, “제1화”.", "Tên chương (khi không tự tách)": "Chapter title (when not splitting)", "Ví dụ: 第一章": "e.g. 第一章", "Chữ gốc": "Source text", "Dán nội dung vào đây…": "Paste the text here…", "Tự tách chương theo tiêu đề": "Split chapters by heading", "Thêm từ chữ đã dán": "Add from pasted text", "Đưa file…": "Add file…", "Sẽ tạo {n} chương.": "Will create {n} chapters.", "Chữ lẫn Hán–Việt: sẽ đặt hướng “Tự nhận”.": "Mixed Chinese–Vietnamese text: direction will be set to “Auto”.", "Chưa có văn bản.": "No text yet.", "Không tìm thấy đoạn văn nào.": "No paragraphs found.", "Đã thêm {n} chương.": "Added {n} chapters.", "File lớn hơn 20 MB. Chia nhỏ rồi đưa lại.": "File is larger than 20 MB. Split it and try again.", "“{f}”: chữ trong file bị vỡ — file khóa chữ bằng font riêng. Cần bản txt UTF-8.": "“{f}”: the text is garbled — the file locks text with a custom font. A UTF-8 txt is needed.", "Mỗi dòng là một đoạn. Bản dịch được giữ theo thứ tự đoạn — nếu bạn thêm/bớt dòng ở giữa, hãy kiểm tra lại cột bản dịch.": "One line per paragraph. Translations follow paragraph order — if you add/remove lines in the middle, check the translation column.", "Dán bản dịch có sẵn": "Paste an existing translation", "Dán bản dịch (ví dụ tải từ Án Mực bản web). Mỗi dòng không trống sẽ được ghép lần lượt vào đoạn 1, 2, 3… của chương này ({n} đoạn).": "Paste a translation (e.g. downloaded from the Án Mực web version). Each non-empty line goes into paragraph 1, 2, 3… of this chapter ({n} paragraphs).", "Chỉ điền vào đoạn còn trống": "Only fill empty paragraphs", "Ghép vào chương": "Merge into chapter", "{l} dòng cho {n} đoạn.": "{l} lines for {n} paragraphs.", "Dư {x} dòng — sẽ bỏ qua.": "{x} extra lines — will be skipped.", "Thiếu {x} dòng.": "{x} lines short.", "Đã ghép {n} đoạn.": "Merged {n} paragraphs.", "Thêm thuật ngữ": "Add term", "Bản dịch (nhiều cách dịch chấp nhận được thì ngăn cách bằng / )": "Translation (separate acceptable alternatives with / )", "Ghi chú (vai trò, xưng hô…)": "Note (role, forms of address…)", "Thêm": "Add", "Thiếu chữ gốc.": "Source text is missing.", "Đã lưu thuật ngữ.": "Term saved.", "Bảng thuật ngữ": "Glossary", "Tên nhân vật, danh xưng, địa danh, quy ước xưng hô (ta/ngươi/nàng…). Thuật ngữ xuất hiện trong chương sẽ được <mark class=\"term\">tô sáng</mark> và tự động gửi kèm cho AI. Nếu chấp nhận nhiều cách dịch, ngăn cách bằng “/” (ví dụ: <i>sư tỷ / sư tỉ</i>).": "Character names, titles, places, address conventions (ta/ngươi/nàng…). Terms found in a chapter are <mark class=\"term\">highlighted</mark> and sent to the AI automatically. For several accepted renderings, separate with “/” (e.g. <i>sư tỷ / sư tỉ</i>).", "Thêm dòng": "Add row", "Nhập CSV…": "Import CSV…", "Xuất CSV": "Export CSV", "Tìm…": "Search…", "{n} mục · CSV gồm 3 cột: Tiếng Trung, Tiếng Việt, Ghi chú": "{n} entries · CSV has 3 columns: Chinese, Vietnamese, Note", "Bản dịch": "Translation", "Ghi chú": "Note", "Xóa": "Delete", "Chưa có thuật ngữ.": "No terms yet.", "Hướng dẫn văn phong": "Style guide", "Nội dung này được gửi cho AI ở đầu mỗi lần dịch, cùng với lưu ý theo ngôn ngữ nguồn. Bạn có thể sửa tự do theo phong cách của mình.": "This text is sent to the AI at the start of every translation, together with notes for the source language. Edit it freely to your own style.", "Lưu ý theo nguồn": "Notes for the source", "Khôi phục mặc định (tiếng Việt)": "Restore default (Vietnamese)", "Dùng bản mặc định tiếng Anh": "Use the English default", "Tự động lưu.": "Saved automatically.", "Ngôn ngữ đích của dự án:": "Project target language:", "Chưa chọn chương nào.": "No chapters selected.", "Có {n} đoạn chưa dịch trong các chương đã chọn — các đoạn này sẽ bị bỏ qua. Tiếp tục xuất?": "{n} paragraphs in the selected chapters are not translated — they will be skipped. Export anyway?", "Không mở được hộp thoại in.": "Could not open the print dialog.", "Trong hộp thoại in, chọn “Lưu thành PDF”.": "In the print dialog, choose “Save as PDF”.", "Tên sách": "Book title", "Ngôn ngữ của sách": "Book language", "Chọn chương": "Choose chapters", "Chỉ chương đã duyệt": "Approved chapters only", "Chọn tất cả": "Select all", "Bỏ chọn": "Select none", "Chưa có chương.": "No chapters yet.", "Xuất EPUB": "Export EPUB", "PDF (in)": "PDF (print)", "EPUB 3 đọc được trên Apple Books, Google Play Sách, Kobo, Calibre…; gửi tới Kindle qua “Send to Kindle”. Word là tệp .docx thật. PDF mở hộp thoại in của trình duyệt — chọn “Lưu thành PDF”. Chỉ xuất phần bản dịch.": "EPUB 3 works in Apple Books, Google Play Books, Kobo, Calibre…; send to Kindle via “Send to Kindle”. Word is a real .docx file. PDF opens the browser print dialog — choose “Save as PDF”. Only the translation is exported.", "Sao lưu dự án": "Back up project", "Tệp .json chứa toàn bộ chương, bản dịch, thuật ngữ và văn phong (không chứa khóa API).": "The .json file contains all chapters, translations, glossary and style (no API keys).", "Tải bản sao lưu (.json)": "Download backup (.json)", "Thiết lập dự án": "Project settings", "Dịch từ (mặc định cho mọi chương)": "Translate from (default for all chapters)", "Từng chương có thể chọn hướng riêng ở Bàn dịch. Ngôn ngữ đích quyết định lời nhắc gửi AI và nhãn khi xuất sách.": "Each chapter can pick its own direction in the desk. The target language decides the AI prompt and the labels in exported books.", "Hồ sơ AI cho dự án này": "AI profiles for this project", "Hồ sơ chính": "Main profile", "— Dùng hồ sơ mặc định trong Cài đặt —": "— Use the default profile from Settings —", "Hồ sơ dự phòng (khi bị chặn)": "Fallback profile (when blocked)", "— Dùng hồ sơ dự phòng trong Cài đặt —": "— Use the fallback profile from Settings —", "Tự động thử lại bằng hồ sơ dự phòng khi một phần bị chặn": "Automatically retry with the fallback profile when a part is blocked", "Nếu tắt, phần bị chặn sẽ được đánh dấu “bị chặn” và bạn tự bấm “Dịch lại với model khác” (hoặc “Lược phần này”).": "If off, a blocked part is marked “blocked” and you click “Retranslate with another model” (or “Leave this part out”) yourself.", "Xóa dự án…": "Delete project…", "Mặc định của Google": "Google default", "Chặn từ mức thấp trở lên (chặt nhất)": "Block low and above (strictest)", "Chặn từ mức trung bình trở lên": "Block medium and above", "Chỉ chặn mức cao": "Block only high", "Không chặn (BLOCK_NONE)": "No blocking (BLOCK_NONE)", "Tắt bộ lọc (OFF)": "Filter off (OFF)", "🔒 Khóa API chỉ được lưu trong trình duyệt này (localStorage) trên máy của bạn và chỉ được gửi thẳng tới địa chỉ API của hồ sơ tương ứng. Bản sao lưu dự án không chứa khóa. Không nên dùng trên máy tính công cộng.": "🔒 API keys are stored only in this browser (localStorage) on your device and are sent only to the API address of the matching profile. Project backups do not contain keys. Avoid using this on a public computer.", "Lưu ý: Mỗi nhà cung cấp AI có chính sách riêng về tiểu thuyết dành cho người lớn. Hãy đọc điều khoản sử dụng của nhà cung cấp bạn chọn. Nếu một phần bị chặn, hãy thử dịch lại bằng model khác.": "Note: each AI provider has its own policy on adult fiction. Read the terms of use of the provider you choose. If a part is blocked, try retranslating with another model.", "Hồ sơ AI": "AI profiles", "Gemini gốc": "Native Gemini", "mặc định": "default", "dự phòng": "fallback", "Kiểm tra kết nối": "Test connection", "Sửa": "Edit", "Chưa có hồ sơ nào.": "No profiles yet.", "Mẫu hồ sơ": "Profile template", "Thêm hồ sơ": "Add profile", "Hồ sơ mặc định": "Default profile", "— chọn —": "— choose —", "Hồ sơ dự phòng (dùng khi bị chặn)": "Fallback profile (used when blocked)", "— không có —": "— none —", "Kích thước mỗi phần khi dịch (số ký tự bản gốc, khuyên dùng 1000–2000)": "Part size per request (source characters, 1000–2000 recommended)", "Xong": "Done", "Sửa hồ sơ AI": "Edit AI profile", "Thêm hồ sơ AI": "Add AI profile", "Tên hồ sơ": "Profile name", "Loại API": "API type", "Tương thích OpenAI (Chat Completions)": "OpenAI-compatible (Chat Completions)", "Google Gemini gốc (generateContent)": "Native Google Gemini (generateContent)", "Khóa API": "API key", "Dán khóa API vào đây": "Paste your API key here", "Hiện": "Show", "Khóa chỉ lưu trong localStorage của trình duyệt này.": "The key is stored only in this browser’s localStorage.", "Tên model": "Model name", "Nhiệt độ (0–2; 0.6–0.9 cho văn chương)": "Temperature (0–2; 0.6–0.9 for fiction)", "Hiển thị kết quả dần dần (streaming)": "Show results as they arrive (streaming)", "Mức lọc an toàn của Gemini (safetySettings — áp dụng cho 4 nhóm: quấy rối, thù ghét, khiêu dâm, nguy hiểm)": "Gemini safety level (safetySettings — applied to 4 categories: harassment, hate, sexually explicit, dangerous)", "Theo tài liệu của Google, một số mức (BLOCK_NONE/OFF) có thể không khả dụng với mọi model/tài khoản; nội dung thuộc diện cấm tuyệt đối vẫn bị chặn bất kể cài đặt.": "According to Google’s docs, some levels (BLOCK_NONE/OFF) may not be available for every model/account; content that is always prohibited is still blocked regardless of settings.", "Gợi ý:": "Hint:", "gốc": "native", "Lưu hồ sơ": "Save profile", "Quay lại": "Back", "Hồ sơ": "Profile", "Hãy nhập tên model.": "Please enter a model name.", "Base URL phải bắt đầu bằng https://": "Base URL must start with https://", "Đã lưu hồ sơ “{n}”.": "Saved profile “{n}”.", "Đang kiểm tra “{n}”…": "Testing “{n}”…", "Kết nối được nhưng phản hồi bị chặn.": "Connected, but the response was blocked.", "Kết nối thành công:": "Connected:", "Tệp không phải JSON hợp lệ.": "Not a valid JSON file.", "Đây không phải tệp sao lưu của Án Mực / Dịch Truyện.": "This is not an Án Mực / Dịch Truyện backup file.", "Dự án này đã có trong trình duyệt. Bấm OK để GHI ĐÈ bản hiện tại, hoặc Hủy để nhập thành một bản sao mới.": "This project already exists in this browser. Click OK to OVERWRITE it, or Cancel to import as a new copy.", " (bản nhập)": " (imported)", "Đã nhập dự án “{t}” ({n} chương).": "Imported project “{t}” ({n} chapters).", "Tệp zip: chữ gốc từng chương ở ngoài, bản dịch trong thư mục ban-dich/. Đưa lại tệp này sẽ khôi phục cả hai.": "Zip file: source text of each chapter at the top level, translations in the ban-dich/ folder. Adding this file again restores both.", "Chương chưa có bản dịch.": "This chapter has no translation.", "Có {n} đoạn chưa dịch — sẽ bỏ qua.": "{n} paragraphs not translated — they will be skipped.", "Dự án mẫu — Mưa dưới mái hiên": "Sample project — Rain under the eaves", "Tác giả mẫu": "Sample author", "Hãy nhập tên truyện.": "Please enter the novel title.", "Đã chép": "Copied", "Không chép được. Chọn chữ rồi sao chép tay.": "Could not copy. Select the text and copy it by hand.", "Xóa chương “{t}”? Không thể hoàn tác.": "Delete chapter “{t}”? This cannot be undone.", "Đã nhập: {a} mục mới, {u} mục cập nhật.": "Imported: {a} new entries, {u} updated.", "Thay văn phong hiện tại bằng bản mặc định?": "Replace the current style guide with the default?", "Xóa vĩnh viễn dự án và mọi chương? Hãy tải bản sao lưu trước.\nGõ XOA để xác nhận:": "Permanently delete the project and all chapters? Download a backup first.\nType XOA to confirm:", "Đã xóa dự án.": "Project deleted.", "Xóa hồ sơ “{n}” (kèm khóa API)?": "Delete profile “{n}” (including its API key)?", "Đã đổi văn phong mặc định theo ngôn ngữ đích mới.": "Switched the default style guide to the new target language.", "Đã lưu.": "Saved.", "Không mở được bộ nhớ trình duyệt (IndexedDB). Hãy dùng Chrome bản mới và không ở chế độ ẩn danh.": "Could not open browser storage (IndexedDB). Use a recent Chrome and not private/incognito mode.", "Google Gemini (gốc)": "Google Gemini (native)", "Google Gemini (tương thích OpenAI)": "Google Gemini (OpenAI-compatible)", "Tùy chỉnh": "Custom", "Về danh sách truyện": "Back to your novels", "Kết nối AI": "AI connection", "Nhà cung cấp AI": "AI provider", "Lấy khóa tại:": "Get a key at:", "🔒 Khóa chỉ lưu trong trình duyệt này (localStorage), không nằm trong bản sao lưu.": "🔒 The key is stored only in this browser (localStorage) and is not included in backups.", "Hãy dán khóa API.": "Please paste an API key.", "Đã kết nối {n}.": "Connected {n}.", "Kết nối AI (chỉ một lần)": "Connect AI (one time only)", "Chọn nhà cung cấp và dán khóa API của bạn. Các thiết lập khác đã có sẵn mặc định.": "Choose a provider and paste your API key. Everything else already has sensible defaults.", "Tên truyện, ví dụ: Mưa trên mái hiên": "Novel title, e.g. Rain on the Eaves", "Tạo": "Create", "Hoặc kéo thả file truyện (txt, epub, docx, zip) vào trang này để tạo truyện mới ngay.": "Or drag and drop a novel file (txt, epub, docx, zip) onto this page to create a new novel right away.", "Chưa quen?": "New here?", "Thử truyện mẫu": "Try a sample novel", "Truyện của bạn": "Your novels", "{d}/{n} chương đã dịch": "{d}/{n} chapters translated", "Nâng cao": "Advanced", "Mở file thành truyện mới": "Open a file as a new novel", "Mọi thứ nằm trong trình duyệt này trên máy của bạn. Hãy tải bản sao lưu (.json) thường xuyên trong Nâng cao của từng truyện.": "Everything stays in this browser on your device. Download a backup (.json) often from each novel's Advanced section.", "Dịch {n} chương đã chọn": "Translate {n} selected chapters", "Dịch {n} chương chưa dịch": "Translate {n} untranslated chapters", "Đã dịch hết": "All translated", "còn {b} phần lỗi": "{b} parts with errors", "không có gì để dịch": "nothing to translate", "Đang dịch {d}/{n} chương": "Translating {d}/{n} chapters", "Đã dừng: xong {d}/{n} chương": "Stopped: {d}/{n} chapters done", "Xong {d}/{n} chương — {b} chương còn phần bị chặn hoặc lỗi": "Done {d}/{n} chapters — {b} chapters still have blocked or failed parts", "Đã dịch xong {n} chương": "Finished translating {n} chapters", "Chọn": "Select", "{d}/{n} đoạn": "{d}/{n} paragraphs", "Chưa có chương. Dán chữ hoặc kéo thả file vào bên phải.": "No chapters yet. Paste text or drop files on the right.", "Đánh dấu ô vuông để chỉ dịch vài chương; không đánh dấu thì nút Dịch sẽ dịch mọi chương chưa xong.": "Tick boxes to translate only some chapters; with none ticked, Translate handles every unfinished chapter.", "Thêm chương đầu tiên": "Add the first chapter", "Dán chữ gốc vào đây — một hoặc nhiều chương. Có dòng tiêu đề như 第1章 / Chương 1 thì sẽ tự tách chương.": "Paste the source text here — one or more chapters. Heading lines like 第1章 / Chapter 1 split chapters automatically.", "Chọn file…": "Choose files…", "Nhập thư mục…": "Import a folder…", "Nhập từ link…": "Import from a link…", "File: txt, epub, docx, zip, html. Có thể kéo thả file vào đây.": "Files: txt, epub, docx, zip, html. You can also drag and drop files here.", "Tùy chọn": "Options", "Tự tách chương theo dòng tiêu đề": "Split chapters at heading lines", "Hãy dán chữ gốc vào ô trước.": "Please paste the source text first.", "Thuật ngữ & xưng hô": "Terms & forms of address", "Kết nối AI để dịch": "Connect AI to translate", "Nâng cao cho chương này": "Advanced for this chapter", "Theo truyện": "Follow the novel", "Dịch lại cả chương": "Retranslate the whole chapter", "Kiểm tra thuật ngữ": "Check terms", "Tải chương này:": "Download this chapter:", "Tóm tắt chương (làm bối cảnh khi dịch chương sau)": "Chapter summary (context for translating later chapters)", "AI:": "AI:", "chưa kết nối": "not connected", "Xưng hô cả truyện": "Forms of address for the whole novel", "Ví dụ: Lâm Vãn xưng chị, gọi Tô Đường là em": "E.g. Lin Wan calls herself chị and calls Su Tang em", "Riêng chương này": "This chapter only", "Chỉ điền khi chương này khác": "Fill in only if this chapter differs", "Trong chương này": "In this chapter", "Chưa có thuật ngữ nào xuất hiện.": "No glossary terms appear here yet.", "Thêm nhanh": "Quick add", "Dịch là": "Translate as", "Mẹo: bôi đen chữ ở cột Gốc để điền nhanh.": "Tip: select text in the Source column to fill this in quickly.", "Cả bảng thuật ngữ ({n}) →": "Full glossary ({n}) →", "Chưa kết nối AI.": "AI not connected.", "{n} chương còn phần bị chặn hoặc lỗi. Mở chương để thử lại.": "{n} chapters still have blocked or failed parts. Open a chapter to retry.", "Đã dịch xong!": "Translation finished!", "{n} chương đã chọn đã dịch xong. Dịch lại các chương đó (thay bản dịch cũ)?": "{n} selected chapters are already translated. Retranslate them (replacing the old translation)?", "Chưa kết nối AI (hoặc chưa có AI dự phòng). Bấm nút bánh răng.": "AI not connected (or no fallback AI). Click the gear button.", "Bỏ qua {s} chương đã có.": "Skipped {s} chapters already present.", "Thư mục không có file .txt hoặc .html nào.": "The folder has no .txt or .html files.", "Không đọc được: {f}": "Could not read: {f}", "Trang trả về lỗi {s}.": "The page returned error {s}.", "Trang có thể chặn đọc tự động hoặc bạn đọc quá nhanh.": "The site may block automated reading, or requests came too fast.", "Trang này không cho trình duyệt đọc trực tiếp (chặn CORS — thường gặp khi mở Án Mực từ file trên máy). Cách khác: chép chữ trên trang rồi dán vào ô “Thêm chương”; hoặc lưu trang (Ctrl+S) rồi dùng “Chọn file…”; hoặc tự đặt proxy CORS trong mục Nâng cao bên dưới.": "This page does not let the browser read it directly (CORS block — common when Án Mực is opened as a local file). Alternatives: copy the page text and paste it into “Add chapters”; or save the page (Ctrl+S) and use “Choose files…”; or set your own CORS proxy in the Advanced section below.", "Nhập từ link": "Import from a link", "Dán link một chương, hoặc link trang mục lục để chọn nhiều chương. Chỉ dùng với truyện thuộc phạm vi công cộng hoặc được tác giả cho phép.": "Paste a link to one chapter, or to a table-of-contents page to pick several chapters. Use only with novels in the public domain or that the author permits.", "Link": "Link", "Lấy chữ": "Fetch text", "Proxy CORS (nâng cao)": "CORS proxy (advanced)", "Tiền tố proxy (để trống nếu không dùng)": "Proxy prefix (leave empty if unused)", "Link sẽ được nối sau tiền tố, hoặc thay vào chỗ {url}. Dịch vụ proxy của bên thứ ba sẽ thấy mọi trang bạn mở qua nó — chỉ dùng proxy bạn tin cậy hoặc tự dựng.": "The link is appended after the prefix, or replaces {url}. A third-party proxy can see every page you open through it — use only a proxy you trust or run yourself.", "{n} chương tìm thấy": "{n} chapters found", "Không phải mục lục? Lấy chữ trang này": "Not a table of contents? Use this page's text", "Nhập các chương đã chọn": "Import selected chapters", "Nhập {n} chương đã chọn": "Import {n} selected chapters", "Đang lấy {k}/{n}: {t}": "Fetching {k}/{n}: {t}", "trang trống": "empty page", "Đã nhập {a} chương.": "Imported {a} chapters.", "Lỗi: {f}": "Error: {f}", "(đã dừng)": "(stopped)", "(không có tên)": "(untitled)", "Thêm chương này": "Add this chapter", "Xem danh sách chương ({n})": "View chapter list ({n})", "Không tìm thấy chữ chương trên trang này. Hãy chép tay rồi dán vào ô “Thêm chương”.": "No chapter text found on this page. Copy it manually and paste it into “Add chapters”.", "Link không hợp lệ.": "Invalid link.", "Đang đọc trang…": "Reading the page…", "Văn phong (lệnh dịch)": "Style (translation instructions)", "Truyện & AI": "Novel & AI", "Sao lưu & tải": "Backup & download", "Về bàn dịch": "Back to the desk", "Văn phong — lệnh dịch gửi cho AI": "Style — translation instructions sent to the AI", "Đây là “lệnh dịch”: được gửi cho AI ở đầu mỗi lần dịch, cùng bảng thuật ngữ, xưng hô và lưu ý theo ngôn ngữ nguồn. Bạn có thể sửa tự do; mỗi truyện giữ văn phong riêng.": "This is the “translation instruction”: sent to the AI at the start of every translation, along with the glossary, forms of address and source-language notes. Edit freely; each novel keeps its own style.", "Truyện này đang dùng văn phong mặc định mới.": "This novel uses the new default style.", "Văn phong của truyện này khác bản mặc định mới (có thể là bản cũ hoặc bạn đã sửa).": "This novel's style differs from the new default (it may be the old one, or you edited it).", "Dùng văn phong mặc định mới": "Use the new default style", "Ngôn ngữ đích:": "Target language:", "Lưu ý tự động theo ngôn ngữ nguồn": "Automatic notes for the source language", "Án Mực tự đoán khi bạn thêm chương đầu tiên. Từng chương có thể chọn hướng riêng trong “Nâng cao cho chương này”.": "Án Mực guesses this when you add the first chapter. Each chapter can choose its own direction under “Advanced for this chapter”.", "AI cho truyện này": "AI for this novel", "AI chính": "Main AI", "— Dùng AI mặc định —": "— Use the default AI —", "AI dự phòng (khi bị chặn)": "Fallback AI (when blocked)", "— Dùng AI dự phòng chung —": "— Use the shared fallback AI —", "Tự động thử lại bằng AI dự phòng khi một phần bị chặn": "Automatically retry with the fallback AI when a part is blocked", "Xóa truyện…": "Delete novel…", "Sẽ xuất {n} chương đã có bản dịch.": "{n} translated chapters will be exported.", "Tải EPUB": "Download EPUB", "EPUB đọc được trên Apple Books, Google Play Sách, Kobo, Calibre…; gửi tới Kindle qua “Send to Kindle”. PDF mở hộp thoại in — chọn “Lưu thành PDF”.": "EPUB works in Apple Books, Google Play Books, Kobo, Calibre…; send to Kindle with “Send to Kindle”. PDF opens the print dialog — choose “Save as PDF”.", "Tùy chọn: tác giả, người dịch, chọn chương": "Options: author, translator, chapter selection", "Chương đã dịch": "Translated chapters", "Đang dùng:": "Using:", "Nâng cao: nhiều AI, AI dự phòng, Gemini": "Advanced: multiple AIs, fallback AI, Gemini", "Thay văn phong hiện tại của truyện này bằng văn phong mặc định mới?": "Replace this novel's current style with the new default style?", "Đã dùng văn phong mặc định mới.": "Now using the new default style.", "Xóa vĩnh viễn truyện và mọi chương? Hãy tải bản sao lưu trước.\nGõ XOA để xác nhận:": "Permanently delete the novel and all chapters? Download a backup first.\nType XOA to confirm:", "Đã xóa truyện.": "Novel deleted.", "Hướng dịch riêng chương này": "Direction for this chapter only", "Riêng chương này. Cả truyện:": "This chapter only. Novel:", "Dùng cho cả truyện": "Use for the whole novel", "Tên chương": "Chapter title", "Ví dụ: 第一章 …": "e.g. 第一章 …", "Xưng hô, riêng chương này (tùy chọn)": "Forms of address, this chapter only (optional)", "Ví dụ: Lâm Vãn gọi Tô Ngữ là “chị”": "e.g. Lin Wan calls Su Yu “jiejie”", "Bản dịch tiếng Anh hiện ra ở đây.": "The English translation appears here.", "Bản dịch hiện ra ở đây.": "The translation appears here.", "Word (.docx)": "Word (.docx)", "Chương này": "This chapter", "In / PDF (chữ chọn được)": "Print / PDF (selectable text)", "Cả truyện": "Whole novel", "{n} chương đã dịch": "{n} translated chapters", "PDF tải về ngay, khổ A5, giữ đúng dấu tiếng Việt (trang dạng ảnh). Cần chọn hoặc tìm chữ trong PDF thì dùng “In / PDF”.": "The PDF downloads right away, A5 size, with correct Vietnamese diacritics (pages are images). To select or search the text, use “Print / PDF”.", "Chưa có chương nào được dịch.": "No chapter has been translated yet.", "Đang tạo PDF…": "Creating PDF…", "Đã tạo PDF ({n} trang).": "PDF created ({n} pages).", "Đã đặt hướng dịch cho cả truyện.": "Direction set for the whole novel."};
+Object.assign(window.AM_EN, {
+"đã giảm nhẹ": "softened",
+"Chỉ báo, để chị xử lý sau": "Just flag it, I'll handle it later",
+"Tự thử AI dự phòng": "Automatically try the fallback AI",
+"Tự dịch giảm nhẹ": "Automatically do a softened translation",
+"Tự thử AI dự phòng, nếu vẫn bị chặn thì dịch giảm nhẹ": "Try the fallback AI; if still blocked, do a softened translation",
+"Không tự tóm tắt được {n} chương (bị chặn hoặc rỗng) — bản dịch vẫn giữ nguyên; có thể bấm “Tóm tắt (AI)” sau.": "Couldn't auto-summarize {n} chapter(s) (blocked or empty) — the translation is unchanged; you can click “Summarize (AI)” later.",
+"AI gợi ý {n} thuật ngữ mới — xem ở bảng “Thuật ngữ & xưng hô”.": "AI suggested {n} new term(s) — see the “Terms & forms of address” panel.",
+"{n} đoạn giảm nhẹ": "{n} softened",
+"Dịch giảm nhẹ": "Softened translation",
+"Đoạn này được dịch theo cách giảm nhẹ. Có thể dịch lại bằng model khác.": "This paragraph was translated in a softened way. You can re-translate it with another model.",
+"Bỏ dấu": "Clear mark",
+"Gợi ý thuật ngữ mới ({n})": "New term suggestions ({n})",
+"Thêm tất cả": "Add all",
+"AI đề xuất sau mỗi chương. Sửa cách dịch nếu cần rồi bấm Thêm — chưa thêm thì chưa dùng khi dịch.": "Suggested by AI after each chapter. Edit the translation if needed, then click Add — nothing is used until you add it.",
+"Bỏ gợi ý này": "Dismiss this suggestion",
+"Bỏ": "Dismiss",
+"Đã thêm {n} thuật ngữ.": "Added {n} term(s).",
+"Phần này được dịch theo cách giảm nhẹ. Có thể dịch lại bằng model khác.": "This part was translated in a softened way. You can re-translate it with another model.",
+"Dịch lại phần này: giữ cốt truyện, cảm xúc, lời thoại; cảnh quá lộ liễu được viết tiết chế, gợi tả.": "Re-translate this part: keep the plot, emotions and dialogue; overly explicit scenes are written in a restrained, suggestive way.",
+"Phần bị chặn: thử “Dịch lại với model khác”, bấm “Dịch giảm nhẹ” (giữ cốt truyện, viết tiết chế cảnh nhạy cảm), hoặc “Lược phần này”. Có thể đặt tự động trong Kết nối AI → Nâng cao.": "Blocked parts: try “Re-translate with another model”, click “Softened translation” (keeps the plot, tones down sensitive scenes), or “Skip this part”. You can automate this in AI connection → Advanced.",
+"Bản dịch giảm nhẹ cũng bị chặn: ": "The softened translation was also blocked: ",
+"Có thể thử AI khác hoặc bấm “Lược phần này”.": "You can try another AI or click “Skip this part”.",
+"Bị chặn → đã dịch giảm nhẹ bằng {p}.": "Blocked → translated in softened form with {p}.",
+"đang tóm tắt…": "summarizing…",
+"đang tìm thuật ngữ mới…": "looking for new terms…",
+"{n} chương còn phần bị chặn hoặc lỗi. Mở chương để thử AI khác, “Dịch giảm nhẹ” hoặc “Lược phần này”.": "{n} chapter(s) still have blocked or failed parts. Open the chapter to try another AI, “Softened translation” or “Skip this part”.",
+"Đã dịch giảm nhẹ bằng {p}.": "Softened translation done with {p}.",
+"Nếu tắt, phần bị chặn sẽ được đánh dấu “bị chặn” và bạn tự bấm “Dịch lại với model khác”, “Dịch giảm nhẹ” hoặc “Lược phần này”. Cách xử lý tự động khác: Kết nối AI → Nâng cao.": "If off, blocked parts are marked “blocked” and you click “Re-translate with another model”, “Softened translation” or “Skip this part” yourself. Other automatic options: AI connection → Advanced.",
+"Lưu ý: Mỗi nhà cung cấp AI có chính sách riêng về tiểu thuyết dành cho người lớn. Hãy đọc điều khoản sử dụng của nhà cung cấp bạn chọn. Nếu một phần bị chặn, có thể dịch lại bằng model khác, hoặc chọn “Dịch giảm nhẹ” (giữ cốt truyện, viết tiết chế cảnh nhạy cảm).": "Note: Each AI provider has its own policy on adult fiction. Read the terms of use of the provider you choose. If a part is blocked, you can re-translate it with another model, or choose “Softened translation” (keeps the plot, tones down sensitive scenes).",
+"Khi gặp đoạn bị chặn trong lúc dịch hàng loạt": "When a part is blocked during batch translation",
+"“Dịch giảm nhẹ” giữ cốt truyện, cảm xúc, lời thoại; cảnh quá lộ liễu được viết tiết chế, gợi tả. Đoạn đó được đánh dấu “đã giảm nhẹ” để dịch lại bằng model khác sau. Chưa có AI dự phòng thì bỏ qua bước thử AI dự phòng. “Chỉ báo” vẫn theo ô “Tự động thử lại bằng AI dự phòng” của từng truyện.": "“Softened translation” keeps the plot, emotions and dialogue; overly explicit scenes are written in a restrained, suggestive way. Those paragraphs are marked “softened” so you can redo them with another model later. Without a fallback AI, the fallback step is skipped. “Just flag it” still follows each novel's “Automatically retry with the fallback AI” checkbox.",
+"Sau mỗi chương khi dịch hàng loạt": "After each chapter in batch translation",
+"(mỗi mục thêm 1 lần gọi API mỗi chương — tốn thêm chút phí)": "(each option adds 1 API call per chapter — costs a little extra)",
+"Tự tóm tắt mỗi chương khi dịch hàng loạt (giữ mạch truyện)": "Auto-summarize each chapter in batch translation (keeps story continuity)",
+"Ghi chú tóm tắt nội bộ giúp AI nhớ mạch truyện — không thay bản dịch, không có trong file xuất.": "Internal summary note that helps the AI remember the story — it does not replace the translation and is not included in exported files.",
+"Gợi ý thuật ngữ mới sau mỗi chương": "Suggest new terms after each chapter",
+"AI đề xuất tên riêng, thuật ngữ, xưng hô mới; bạn tự chọn Thêm hoặc Bỏ — không tự đưa vào bảng thuật ngữ.": "AI proposes new names, terms and forms of address; you choose Add or Dismiss — nothing is added to the glossary automatically."
+});
 </script>
 <script id="core">
 /* ===== LÕI XỬ LÝ (không phụ thuộc giao diện) ===== */
@@ -522,7 +575,7 @@ C.GUIDE = {
 C.guideFor = (id, sample) => { const d = C.dir(id); const src = C.effectiveSource(id, sample); const g = (C.GUIDE[d.target][src] || []).slice(); if (d.source === 'auto') g.unshift(AUTO_NOTE[d.target](SRC_NAME[d.target][src])); return g; };
 
 /* ---------- Lời nhắc (prompt) ---------- */
-C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, address, sample }) => {
+C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, address, sample, soften }) => {
   const d = C.dir(direction); const src = C.effectiveSource(direction, sample);
   const srcName = lang => d.source === 'auto' ? (lang === 'vi' ? 'ngôn ngữ tự nhận (chương này có vẻ là ' + SRC_NAME.vi[src] + ')' : 'an auto-detected language (this chapter appears to be ' + SRC_NAME.en[src] + ')') : SRC_NAME[lang][d.source];
   if (d.target === 'en') {
@@ -538,6 +591,7 @@ C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, ad
       s += '\n';
     }
     s += '## OUTPUT FORMAT\n- Each source paragraph is numbered [1], [2], ...\n- Return the English translation of EACH paragraph, starting with exactly that number, one paragraph per line.\n- Do not merge, split, drop or add paragraphs. No notes, no explanations, do not repeat the source.';
+    if (soften) s += '\n\n' + C.SOFTEN.en;
     return s;
   }
   let s = 'Bạn là một dịch giả văn học chuyên nghiệp, chuyên dịch tiểu thuyết bách hợp (GL) từ ' + srcName('vi') + ' sang tiếng Việt.\n\n';
@@ -553,6 +607,7 @@ C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, ad
     s += '\n';
   }
   s += '## ĐỊNH DẠNG TRẢ LỜI\n- Mỗi đoạn gốc được đánh số [1], [2], ...\n- Trả về bản dịch tiếng Việt của TỪNG đoạn, mở đầu bằng đúng số thứ tự đó, mỗi đoạn trên một dòng riêng.\n- Không gộp, tách, bỏ hay thêm đoạn. Không ghi chú, không giải thích, không nhắc lại bản gốc.';
+  if (soften) s += '\n\n' + C.SOFTEN.vi;
   return s;
 };
 C.buildTranslateUser = (zhList, tailVi, direction) => {
@@ -589,6 +644,59 @@ C.buildTitleMessages = (title, terms, direction) => {
 C.cleanTitle = t => C.stripThink(t).split('\n').map(x => x.trim()).filter(Boolean)[0]?.replace(/^["“«『「]+|["”»』」]+$/g, '').replace(/^\[\d+\]\s*/, '').slice(0, 120) || '';
 C.needsTitleTranslation = (title, direction) => { const d = C.dir(direction); if (!title || !title.trim()) return false; if (d.source === 'vi' || (d.source === 'en' && d.target === 'en')) return false; if (/[\u3400-\u9fff\uac00-\ud7af\u0e00-\u0e7f]/.test(title) || (d.source === 'en' && /[a-z]/i.test(title)) || d.source === 'hv') return true; if (d.source === 'auto') { const vi = VI_DIA.test(title) || /^(chương|hồi|quyển)\b/i.test(title.trim()); return d.target === 'vi' ? /[a-z]/i.test(title) && !vi : vi; } return false; };
 C.OMIT = { vi: '〔Đoạn này lược, không dịch chi tiết.〕', en: '[This passage is left out.]' };
+/* Dịch giảm nhẹ: chỉ dùng khi một phần bị nhà cung cấp chặn. Đây là yêu cầu làm nhẹ bản dịch thật sự (tiết chế, gợi tả),
+   không phải lời lách bộ lọc. Viết bằng tiếng đích của lời nhắc, nối vào cuối lời nhắc hệ thống. */
+C.SOFTEN = {
+  vi: '## YÊU CẦU RIÊNG CHO PHẦN NÀY: DỊCH GIẢM NHẸ\n' +
+    '- Dịch trung thành cốt truyện, cảm xúc, lời thoại và quan hệ giữa các nhân vật.\n' +
+    '- Riêng những đoạn mô tả tình dục lộ liễu hoặc chi tiết bạo lực ghê rợn: diễn đạt tiết chế, gợi tả theo lối văn chương — chỉ ngụ ý, không tả chi tiết cơ thể hay hành vi; khi cần thì lướt qua hoặc chuyển cảnh nhẹ nhàng.\n' +
+    '- Giữ câu văn tự nhiên, liền mạch để người đọc không thấy bị hụt.\n' +
+    '- Không thêm lời bình, ghi chú hay giải thích.\n' +
+    '- Vẫn theo đúng hướng dẫn văn phong, bảng thuật ngữ, cách xưng hô và định dạng đánh số ở trên.',
+  en: '## SPECIAL INSTRUCTION FOR THIS PART: SOFTENED TRANSLATION\n' +
+    '- Translate the plot, emotions, dialogue and the relationships between characters faithfully.\n' +
+    '- Render any explicit sexual content or graphic violence in a restrained, suggestive, literary way: imply rather than describe anatomy or acts in detail, and fade to black where needed.\n' +
+    '- Keep the prose natural and continuous so readers do not notice a gap.\n' +
+    '- Add no commentary, notes or explanations.\n' +
+    '- Still follow the style guide, glossary, forms of address and numbering format above.'
+};
+/* Gợi ý thuật ngữ mới sau mỗi chương: một lần gọi AI, trả về JSON {source, target, note} */
+C.buildTermSuggestMessages = (srcText, tgtText, glossary, direction) => {
+  const en = C.targetOf(direction) === 'en';
+  const known = (glossary || []).map(g => g.zh).filter(Boolean).slice(0, 400).join('; ');
+  const sys = en
+    ? 'You are a terminology assistant for a literary translator. From the source chapter and its English translation, list proper nouns (people, places, organisations, titles), recurring special terms and forms of address that appear in the source and are NOT in the existing glossary.\n' +
+      'Return ONLY a JSON array, no other text: [{"source": "term exactly as written in the source", "target": "rendering used in the translation", "note": "very short note: who/what it is"}]. At most 25 items. Return [] if there is nothing new.'
+    : 'Bạn là trợ lý thuật ngữ cho dịch giả văn học. Từ chương gốc và bản dịch tiếng Việt, hãy liệt kê tên riêng (người, địa danh, tổ chức, chức danh), thuật ngữ đặc biệt lặp lại và cách xưng hô xuất hiện trong bản gốc mà CHƯA có trong bảng thuật ngữ hiện có.\n' +
+      'Chỉ trả về một mảng JSON, không thêm chữ nào khác: [{"source": "từ đúng như trong bản gốc", "target": "cách dịch đã dùng trong bản dịch", "note": "ghi chú rất ngắn: là ai/cái gì"}]. Tối đa 25 mục. Không có gì mới thì trả về [].';
+  const user = (en ? 'Existing glossary (do not repeat): ' : 'Bảng thuật ngữ hiện có (không lặp lại): ') + (known || (en ? '(empty)' : '(trống)')) + '\n\n' +
+    (en ? 'SOURCE:\n' : 'BẢN GỐC:\n') + String(srcText || '').slice(0, 9000) + '\n\n' + (en ? 'TRANSLATION:\n' : 'BẢN DỊCH:\n') + String(tgtText || '').slice(0, 9000);
+  return [{ role: 'system', content: sys }, { role: 'user', content: user }];
+};
+/* Đọc JSON gợi ý một cách khoan dung: bỏ <think>, ```json, chữ thừa; hỏng cả mảng thì đọc từng {…}. Lọc và khử trùng. */
+C.parseTermSuggestions = (text, opts) => {
+  opts = opts || {};
+  const t = C.stripThink(text || '').replace(/```(?:json)?/gi, '');
+  let arr = null;
+  const a = t.indexOf('['), b = t.lastIndexOf(']');
+  if (a >= 0 && b > a) { try { const v = JSON.parse(t.slice(a, b + 1)); if (Array.isArray(v)) arr = v; } catch (e) {} }
+  if (!arr) { try { const v = JSON.parse(t.trim()); if (v && Array.isArray(v.terms)) arr = v.terms; else if (Array.isArray(v)) arr = v; } catch (e) {} }
+  if (!arr) { arr = []; (t.match(/\{[^{}]*\}/g) || []).forEach(o => { try { arr.push(JSON.parse(o)); } catch (e) {} }); }
+  const norm = x => String(x == null ? '' : x).replace(/\s+/g, ' ').trim();
+  const seen = new Set((opts.existing || []).map(x => norm(x).toLowerCase()).filter(Boolean));
+  const src = opts.source != null ? String(opts.source) : null;
+  const out = [];
+  for (const it of arr) {
+    if (!it || typeof it !== 'object') continue;
+    const zh = norm(it.source != null ? it.source : it.zh), vi = norm(it.target != null ? it.target : it.vi), note = norm(it.note).slice(0, 120);
+    if (!zh || !vi || zh.length > 40 || vi.length > 80) continue;
+    if (src != null && !C.termIn(src, zh)) continue; /* phải thật sự có trong bản gốc */
+    const k = zh.toLowerCase(); if (seen.has(k)) continue; seen.add(k);
+    out.push({ id: C.uid(), zh, vi, note });
+    if (out.length >= (opts.max || 25)) break;
+  }
+  return out;
+};
 
 /* ---------- Đọc kết quả ---------- */
 C.stripThink = t => String(t || '').replace(/<think>[\s\S]*?(<\/think>|$)/g, '');
@@ -1274,7 +1382,7 @@ function T(s, vars) {
 const fmtN = n => Number(n || 0).toLocaleString(UI === 'en' ? 'en-US' : 'vi-VN');
 const fmtD = t => t ? new Date(t).toLocaleString(UI === 'en' ? 'en-GB' : 'vi-VN', { dateStyle: 'short', timeStyle: 'short' }) : '';
 const STATUS = () => ({ todo: T('Chưa dịch'), draft: T('Đã dịch nháp'), approved: T('Đã duyệt') });
-const JOBST = () => ({ wait: T('chờ'), run: T('đang dịch…'), done: T('xong'), partial: T('thiếu đoạn'), blocked: T('bị chặn'), error: T('lỗi'), stopped: T('đã dừng'), omitted: T('đã lược') });
+const JOBST = () => ({ wait: T('chờ'), run: T('đang dịch…'), done: T('xong'), partial: T('thiếu đoạn'), blocked: T('bị chặn'), error: T('lỗi'), stopped: T('đã dừng'), omitted: T('đã lược'), softened: T('đã giảm nhẹ') });
 const dirLabel = id => { const d = C.dir(id); return UI === 'en' ? d.en : d.vi; };
 const tgtCol = t => t === 'en' ? T('Bản Anh') : T('Bản Việt');
 const tgtLang = t => t === 'en' ? T('Tiếng Anh') : T('Tiếng Việt');
@@ -1314,8 +1422,12 @@ const DB = {
 const SKEY = 'dichtruyen_settings_v1';
 function loadSettings() {
   let s = {}; try { s = JSON.parse(localStorage.getItem(SKEY) || '{}'); } catch (e) {}
-  return Object.assign({ profiles: [], defaultProfileId: '', fallbackProfileId: '', chunkSize: 1500, corsProxy: '' }, s);
+  return Object.assign({ profiles: [], defaultProfileId: '', fallbackProfileId: '', chunkSize: 1500, corsProxy: '', onBlocked: 'report', autoSummary: true, suggestTerms: true }, s);
 }
+/* Khi gặp đoạn bị chặn trong lúc dịch hàng loạt */
+const BLOCK_POLICIES = ['report', 'fallback', 'soften', 'fallback_soften'];
+function blockPolicy() { const v = S.settings.onBlocked; return BLOCK_POLICIES.includes(v) ? v : 'report'; }
+const BLOCK_POLICY_LABELS = () => ({ report: T('Chỉ báo, để chị xử lý sau'), fallback: T('Tự thử AI dự phòng'), soften: T('Tự dịch giảm nhẹ'), fallback_soften: T('Tự thử AI dự phòng, nếu vẫn bị chặn thì dịch giảm nhẹ') });
 function saveSettings() { localStorage.setItem(SKEY, JSON.stringify(S.settings)); }
 const getProfile = id => S.settings.profiles.find(p => p.id === id) || null;
 function primaryProfile() { const p = S.project; return (p && getProfile(p.profileId)) || getProfile(S.settings.defaultProfileId) || S.settings.profiles[0] || null; }
@@ -1527,7 +1639,9 @@ function renderQbar() {
   const head = q.running ? T('Đang dịch {d}/{n} chương', { d: Math.min(d + 1, n), n }) : q.stopped ? T('Đã dừng: xong {d}/{n} chương', { d, n }) : bad ? T('Xong {d}/{n} chương — {b} chương còn phần bị chặn hoặc lỗi', { d, n, b: bad }) : T('Đã dịch xong {n} chương', { n });
   el.innerHTML = `<div class="panel queue" id="queuePanel"><h4>${esc(head)}<span class="spacer"></span>${q.running ? '' : `<button class="small link" data-act="closeQueue">${esc(T('Ẩn'))}</button>`}</h4>
     <div class="progress"><div style="width:${n ? Math.round(d / n * 100) : 0}%"></div></div>
-    <div class="qlist">${q.items.map(x => { const c = S.chapters.find(y => y.id === x.id); return c ? `<button class="qchip ${x.st}" data-act="openChapter" data-id="${x.id}">${esc(c.titleVi || c.title)} · <span class="st ${x.st === 'warn' ? 'blocked' : x.st}">${esc(stLabel(x))}</span></button>` : ''; }).join('')}</div></div>`;
+    <div class="qlist">${q.items.map(x => { const c = S.chapters.find(y => y.id === x.id); return c ? `<button class="qchip ${x.st}" data-act="openChapter" data-id="${x.id}">${esc(c.titleVi || c.title)} · <span class="st ${x.st === 'warn' ? 'blocked' : x.st}">${esc(stLabel(x))}</span>${x.note ? ' <span class="muted">· ' + esc(x.note) + '</span>' : ''}</button>` : ''; }).join('')}</div>
+    ${!q.running && q.items.some(x => x.sumFail) ? `<div class="small muted" id="sumNote">${esc(T('Không tự tóm tắt được {n} chương (bị chặn hoặc rỗng) — bản dịch vẫn giữ nguyên; có thể bấm “Tóm tắt (AI)” sau.', { n: q.items.filter(x => x.sumFail).length }))}</div>` : ''}
+    ${!q.running && q.items.some(x => x.terms) ? `<div class="small muted" id="sgNote">${esc(T('AI gợi ý {n} thuật ngữ mới — xem ở bảng “Thuật ngữ & xưng hô”.', { n: q.items.reduce((a, x) => a + (x.terms || 0), 0) }))}</div>` : ''}</div>`;
 }
 function renderSide() {
   renderPbar(); renderQbar();
@@ -1542,7 +1656,7 @@ function renderSide() {
         <input type="checkbox" class="chk" data-id="${c.id}" ${S.sel.has(c.id) ? 'checked' : ''} aria-label="${esc(T('Chọn'))}">
         <span class="dot ${run ? 'run' : isDone(c) ? (c.status === 'approved' ? 'approved' : 'draft') : done ? 'part' : ''}"></span>
         <span class="cbody"><span class="t">${esc(c.titleVi || c.title || T('Chương') + ' ' + (k + 1))}</span>
-        <span class="meta">${run ? esc(T('đang dịch…')) : esc(T('{d}/{n} đoạn', { d: done, n: c.paras.length }))}${c.status === 'approved' ? ' · ' + esc(T('đã duyệt')) : ''}${c.direction || d.target === 'en' ? ' · ' + esc(d.target === 'en' ? '→ EN' : '→ VI') : ''}${isStale(c) ? ' · <span class="warnc">' + esc(T('đã đổi')) + '</span>' : ''}</span></span>
+        <span class="meta">${run ? esc(T('đang dịch…')) : esc(T('{d}/{n} đoạn', { d: done, n: c.paras.length }))}${c.status === 'approved' ? ' · ' + esc(T('đã duyệt')) : ''}${c.direction || d.target === 'en' ? ' · ' + esc(d.target === 'en' ? '→ EN' : '→ VI') : ''}${isStale(c) ? ' · <span class="warnc">' + esc(T('đã đổi')) + '</span>' : ''}${softCount(c) ? ' · <span class="softc">' + esc(T('{n} đoạn giảm nhẹ', { n: softCount(c) })) + '</span>' : ''}</span></span>
         <span class="mvs"><button class="mv" data-act="moveCh" data-id="${c.id}" data-d="-1" title="${esc(T('Lên'))}" aria-label="${esc(T('Lên'))}">${I('up')}</button><button class="mv" data-act="moveCh" data-id="${c.id}" data-d="1" title="${esc(T('Xuống'))}" aria-label="${esc(T('Xuống'))}">${I('down')}</button></span></div>`;
     }).join('') || `<div class="muted small dashed">${esc(T('Chưa có chương. Dán chữ hoặc kéo thả file vào bên phải.'))}</div>`}</div>
     ${chs.length ? `<div class="muted small hint">${esc(T('Đánh dấu ô vuông để chỉ dịch vài chương; không đánh dấu thì nút Dịch sẽ dịch mọi chương chưa xong.'))}</div>` : ''}`;
@@ -1555,6 +1669,7 @@ function renderMain() {
 }
 
 /* ---------- Bàn dịch ---------- */
+const softCount = ch => ch.paras.filter(p => p.softened).length;
 function chapterTerms(ch) { return C.findTerms(ch.title + '\n' + ch.paras.map(p => p.zh).join('\n'), S.project.glossary); }
 function addBoxHtml(inline) {
   return `<div class="addbox ${inline ? 'sheet' : ''}" id="addBox">
@@ -1628,17 +1743,36 @@ function renderEditor(m) {
   ${any ? '' : `<div class="vi-empty">${esc(tgt === 'en' ? T('Bản dịch tiếng Anh hiện ra ở đây.') : T('Bản dịch hiện ra ở đây.'))}</div>`}
   <div id="rows" class="${any ? '' : 'noviyet'}">${ch.paras.map((p, i) => {
     const iss = issuesBy[i]; const rm = S.rowMsg[i];
-    return `<div class="prow ${iss ? 'flag' : ''} ${p.omitted ? 'omit' : ''}" id="row-${i}"><div class="zh serif"><span class="num">${i + 1}</span>${hl(p.zh)}</div>
+    return `<div class="prow ${iss ? 'flag' : ''} ${p.omitted ? 'omit' : ''} ${p.softened ? 'soft' : ''}" id="row-${i}"><div class="zh serif"><span class="num">${i + 1}</span>${hl(p.zh)}</div>
       <div class="vi"><span class="num m">${i + 1}</span><textarea class="vi serif" data-i="${i}" rows="1" lang="${tgt}" placeholder="${esc(T('(chưa dịch)'))}">${esc(p.vi || '')}</textarea>
       <div class="ptools"><button class="small" data-act="retransPara" data-i="${i}" ${running ? 'disabled' : ''}>↻ ${esc(T('Dịch lại'))}</button>
       ${iss ? `<span class="flagtxt">⚠ ${esc(T('Thiếu thuật ngữ:'))} ${iss.map(x => esc(x.zh + ' → ' + x.vi)).join('; ')}</span>` : ''}
-      ${rm ? `<span class="errtxt">${esc(rm)}</span> ${fallbackProfile() ? `<button class="small" data-act="retransPara" data-i="${i}" data-other="1">${esc(T('Dịch lại với model khác'))} (${esc(fallbackProfile().name)})</button>` : ''}` : ''}</div></div></div>`;
+      ${rm ? `<span class="errtxt">${esc(rm)}</span> ${fallbackProfile() ? `<button class="small" data-act="retransPara" data-i="${i}" data-other="1">${esc(T('Dịch lại với model khác'))} (${esc(fallbackProfile().name)})</button>` : ''}${S.rowBlocked && S.rowBlocked[i] ? `<button class="small" data-act="softenPara" data-i="${i}" ${running ? 'disabled' : ''}>${esc(T('Dịch giảm nhẹ'))}</button>` : ''}` : ''}
+      ${p.softened ? `<span class="st softened sbadge" title="${esc(T('Đoạn này được dịch theo cách giảm nhẹ. Có thể dịch lại bằng model khác.'))}">${esc(T('đã giảm nhẹ'))}</span>${!rm && fallbackProfile() ? `<button class="small" data-act="retransPara" data-i="${i}" data-other="1" ${running ? 'disabled' : ''}>${esc(T('Dịch lại với model khác'))} (${esc(fallbackProfile().name)})</button>` : ''}<button class="small link" data-act="unsoften" data-i="${i}">${esc(T('Bỏ dấu'))}</button>` : ''}</div></div></div>`;
   }).join('')}</div>
   <div class="stats" id="stats"></div></div>
   <aside class="gpanel" id="gpanel"></aside></div>`;
   $$('textarea.vi', m).forEach(autosize);
   const d = $('#chAdv', m); if (d) d.addEventListener('toggle', () => { S.chAdvOpen = d.open; });
   renderGPanel(); renderJob(); renderIssues(); renderReview(); updateStats(); renderMTabs();
+}
+/* Gợi ý thuật ngữ mới (AI đề xuất sau mỗi chương khi dịch hàng loạt; chỉ thêm khi người dịch bấm Thêm) */
+function suggestHtml() {
+  const sg = (S.project && S.project.termSuggest) || []; if (!sg.length) return '';
+  return `<div class="sgbox" id="sgBox"><div class="small gph sghead"><b>${esc(T('Gợi ý thuật ngữ mới ({n})', { n: sg.length }))}</b><span class="spacer"></span><button class="small" data-act="sgAddAll">${esc(T('Thêm tất cả'))}</button></div>
+    <div class="muted small">${esc(T('AI đề xuất sau mỗi chương. Sửa cách dịch nếu cần rồi bấm Thêm — chưa thêm thì chưa dùng khi dịch.'))}</div>
+    <div class="sglist">${sg.map(x => `<div class="sgitem"><span class="zhfont" title="${esc(x.note || '')}">${esc(x.zh)}</span><input data-sg="${x.id}" value="${esc(x.vi)}" aria-label="${esc(x.zh)}"><button class="small" data-act="sgAdd" data-id="${x.id}">${esc(T('Thêm'))}</button><button class="small link" data-act="sgDismiss" data-id="${x.id}" title="${esc(T('Bỏ gợi ý này'))}">${esc(T('Bỏ'))}</button>${x.note ? `<div class="muted small sgnote">${esc(x.note)}</div>` : ''}</div>`).join('')}</div></div>`;
+}
+async function addSuggestions(ids) {
+  const P = S.project; let n = 0;
+  for (const id of ids) {
+    const x = (P.termSuggest || []).find(y => y.id === id); if (!x) continue;
+    const inp = $('input[data-sg="' + id + '"]'); const vi = ((inp ? inp.value : x.vi) || '').trim(); if (!vi) continue;
+    if (!P.glossary.some(g => g.zh === x.zh)) { P.glossary.push({ id: C.uid(), zh: x.zh, vi, note: x.note || '' }); n++; }
+    P.termSuggest = P.termSuggest.filter(y => y !== x);
+  }
+  await saveNow('projects', P); toast(T('Đã thêm {n} thuật ngữ.', { n }), 'ok');
+  const sc = $('#main').scrollTop; renderEditor($('#main')); $('#main').scrollTop = sc;
 }
 /* Bảng nhỏ cạnh bàn dịch: xưng hô + thuật ngữ trong chương */
 function renderGPanel() {
@@ -1649,6 +1783,7 @@ function renderGPanel() {
     <label class="small" for="gpChAddr">${esc(T('Riêng chương này'))}</label><input id="gpChAddr" data-cf="address" maxlength="400" value="${esc(ch.address || '')}" placeholder="${esc(T('Chỉ điền khi chương này khác'))}">
     <div class="small gph"><b>${esc(T('Trong chương này'))}</b> <span class="muted">(${terms.length})</span></div>
     <div class="gterms">${terms.map(g => `<div class="gterm"><span class="zhfont" title="${esc(g.note || '')}">${esc(g.zh)}</span><input data-g="vi" data-id="${g.id}" value="${esc(g.vi)}" aria-label="${esc(g.zh)}"></div>`).join('') || `<div class="muted small">${esc(T('Chưa có thuật ngữ nào xuất hiện.'))}</div>`}</div>
+    ${suggestHtml()}
     <div class="small gph"><b>${esc(T('Thêm nhanh'))}</b></div>
     <div class="qa"><input id="qaZh" class="zhfont" placeholder="${esc(T('Gốc'))}" aria-label="${esc(T('Gốc'))}"><input id="qaVi" placeholder="${esc(T('Dịch là'))}" aria-label="${esc(T('Dịch là'))}"><button class="small" data-act="qaAdd">${esc(T('Thêm'))}</button></div>
     <div class="muted small">${esc(T('Mẹo: bôi đen chữ ở cột Gốc để điền nhanh.'))}</div>
@@ -1679,13 +1814,14 @@ function renderJob() {
     <div class="joblist">${j.chunks.map((c, k) => {
       const fb = fallbackProfile(c.profileId); const canAct = !S.busy && !['run', 'wait'].includes(c.status);
       return `<div class="jobitem"><span>${esc(T('Phần {k} · đoạn {a}–{b}', { k: k + 1, a: c.idx[0] + 1, b: c.idx[c.idx.length - 1] + 1 }))}</span>
-      <span class="st ${c.status}">${J[c.status]}</span><span class="muted">${esc(c.profileName || '')}${c.chars ? ' · ' + c.chars + ' ' + esc(T('ký tự')) : ''}</span>
+      <span class="st ${c.status}">${J[c.status]}</span>${c.softened ? `<span class="st softened" title="${esc(T('Phần này được dịch theo cách giảm nhẹ. Có thể dịch lại bằng model khác.'))}">${esc(J.softened)}</span>` : ''}<span class="muted">${esc(c.profileName || '')}${c.chars ? ' · ' + c.chars + ' ' + esc(T('ký tự')) : ''}</span>
       ${c.msg ? `<span class="${c.status === 'blocked' || c.status === 'error' ? 'errtxt' : 'muted'}">${esc(c.msg)}</span>` : ''}
       ${canAct && c.status !== 'omitted' ? `<button class="small" data-act="retryChunk" data-k="${k}">↻ ${esc(T('Thử lại'))}</button>` : ''}
       ${canAct && others(c.profileId).length && ['blocked', 'error', 'partial', 'stopped'].includes(c.status) ? `<select data-k="${k}" class="otherSel">${others(c.profileId).map(p => `<option value="${p.id}" ${fb && fb.id === p.id ? 'selected' : ''}>${esc(p.name + ' · ' + p.model)}</option>`).join('')}</select><button class="small" data-act="retryOther" data-k="${k}">${esc(T('Dịch lại với model khác'))}</button>` : ''}
+      ${canAct && c.status === 'blocked' ? `<button class="small" data-act="softenChunk" data-k="${k}" title="${esc(T('Dịch lại phần này: giữ cốt truyện, cảm xúc, lời thoại; cảnh quá lộ liễu được viết tiết chế, gợi tả.'))}">${esc(T('Dịch giảm nhẹ'))}</button>` : ''}
       ${canAct && c.status === 'blocked' ? `<button class="small" data-act="omitChunk" data-k="${k}" title="${esc(T('Điền dòng ghi chú “đoạn này lược” vào các đoạn còn trống của phần này'))}">${esc(T('Lược phần này'))}</button>` : ''}
       </div>`;
-    }).join('')}</div></div>`;
+    }).join('')}</div>${j.chunks.some(c => c.status === 'blocked') && !runHere ? `<div class="small muted blockhint">${esc(T('Phần bị chặn: thử “Dịch lại với model khác”, bấm “Dịch giảm nhẹ” (giữ cốt truyện, viết tiết chế cảnh nhạy cảm), hoặc “Lược phần này”. Có thể đặt tự động trong Kết nối AI → Nâng cao.'))}</div>` : ''}</div>`;
 }
 function renderIssues() {
   const el = $('#issuePanel'); if (!el) return;
@@ -1708,20 +1844,20 @@ function prevContext(ch) {
   let tail = vis.slice(-3).join('\n'); if (tail.length > 900) tail = tail.slice(-900);
   return { prevSummary: pc.summary || '', prevTail: tail };
 }
-function buildMessages(ch, idx) {
+function buildMessages(ch, idx, soften) {
   const ctx = prevContext(ch); const dir = chDir(ch);
-  const sys = C.buildSystemPrompt({ sample: ch.paras.map(p => p.zh).join('\n').slice(0, 4000), styleGuide: styleFor(dir), terms: chapterTerms(ch), prevSummary: ctx.prevSummary, prevTail: ctx.prevTail, direction: dir, address: [S.project.address, ch.address].map(x => (x || '').trim()).filter(Boolean).join('\n') });
+  const sys = C.buildSystemPrompt({ sample: ch.paras.map(p => p.zh).join('\n').slice(0, 4000), styleGuide: styleFor(dir), terms: chapterTerms(ch), prevSummary: ctx.prevSummary, prevTail: ctx.prevTail, direction: dir, address: [S.project.address, ch.address].map(x => (x || '').trim()).filter(Boolean).join('\n'), soften: !!soften });
   const tail = []; for (let i = idx[0] - 1; i >= 0 && tail.length < 2; i--) if (ch.paras[i].vi && ch.paras[i].vi.trim() && !ch.paras[i].omitted && !idx.includes(i)) tail.unshift(ch.paras[i].vi);
   return [{ role: 'system', content: sys }, { role: 'user', content: C.buildTranslateUser(idx.map(i => ch.paras[i].zh), tail, dir) }];
 }
 /* Dịch một phần (chunk) và cập nhật giao diện */
-async function runChunkUI(ch, chunk, profile, signal, allowAuto) {
+async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
   chunk.status = 'run'; chunk.msg = ''; chunk.profileId = profile ? profile.id : ''; chunk.profileName = profile ? profile.name : ''; chunk.chars = 0; renderJob();
   const snapshot = chunk.idx.map(i => ch.paras[i].vi);
   const n = chunk.idx.length;
   let res;
   try {
-    res = await C.runChunk(profile, buildMessages(ch, chunk.idx), n, {
+    res = await C.runChunk(profile, buildMessages(ch, chunk.idx, soften), n, {
       signal,
       onRetry: (a, e) => { chunk.msg = T('Thử lại lần {a}…', { a }) + ' (' + e.message.slice(0, 80) + ')'; renderJob(); },
       onPartial: acc => {
@@ -1738,13 +1874,31 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto) {
   }
   if (res.status === 'blocked' || res.status === 'error') {
     chunk.idx.forEach((i, k) => setViLive(ch, i, snapshot[k]));
-    chunk.status = res.status; chunk.msg = res.message || '';
-    if (res.status === 'blocked' && allowAuto && S.project.autoFallback) {
-      const fb = fallbackProfile(profile && profile.id);
-      if (fb) { const prevMsg = chunk.msg; await runChunkUI(ch, chunk, fb, signal, false); if (chunk.status !== 'done') chunk.msg = '[' + profile.name + '] ' + prevMsg + ' | [' + fb.name + '] ' + chunk.msg; else chunk.msg = T('Hồ sơ chính bị chặn → đã dịch bằng hồ sơ dự phòng.'); return; }
+    chunk.status = res.status; chunk.msg = res.message || ''; chunk.softened = false;
+    if (soften && res.status === 'blocked') chunk.msg = T('Bản dịch giảm nhẹ cũng bị chặn: ') + chunk.msg + ' ' + T('Có thể thử AI khác hoặc bấm “Lược phần này”.');
+    if (res.status === 'blocked' && allowAuto) {
+      /* Chính sách khi bị chặn (Cài đặt → Kết nối AI → Nâng cao). “Chỉ báo” giữ cách cũ: ô “Tự động thử lại bằng AI dự phòng” của truyện vẫn có hiệu lực. */
+      const pol = allowAuto === 'manual' ? 'report' : blockPolicy(); /* bấm thử lại bằng tay: chỉ theo ô AI dự phòng của truyện như trước */
+      const tryFb = pol === 'fallback' || pol === 'fallback_soften' || (pol === 'report' && S.project.autoFallback);
+      const trySoft = pol === 'soften' || pol === 'fallback_soften';
+      const msgs = ['[' + (profile ? profile.name : '') + '] ' + chunk.msg]; let last = profile;
+      const fb = tryFb ? fallbackProfile(profile && profile.id) : null; /* không có AI dự phòng → bỏ qua bước này */
+      if (fb) {
+        await runChunkUI(ch, chunk, fb, signal, false); last = fb;
+        if (chunk.status === 'done') { chunk.msg = T('Hồ sơ chính bị chặn → đã dịch bằng hồ sơ dự phòng.'); return; }
+        msgs.push('[' + fb.name + '] ' + chunk.msg);
+        if (!(trySoft && chunk.status === 'blocked')) { chunk.msg = msgs.join(' | '); renderJob(); return; }
+      }
+      if (trySoft && last) {
+        await runChunkUI(ch, chunk, last, signal, false, true);
+        if (chunk.status === 'done' || chunk.status === 'partial') chunk.msg = T('Bị chặn → đã dịch giảm nhẹ bằng {p}.', { p: last.name }) + (chunk.status === 'partial' ? ' ' + chunk.msg : '');
+        else chunk.msg = msgs.join(' | ') + ' | ' + chunk.msg;
+        renderJob(); return;
+      }
     }
   } else {
-    Object.keys(res.map).forEach(k => { const i = chunk.idx[k - 1]; if (i != null) { setViLive(ch, i, res.map[k]); delete ch.paras[i].omitted; } });
+    Object.keys(res.map).forEach(k => { const i = chunk.idx[k - 1]; if (i != null) { setViLive(ch, i, res.map[k]); delete ch.paras[i].omitted; if (soften) ch.paras[i].softened = true; else delete ch.paras[i].softened; } });
+    chunk.softened = !!soften;
     chunk.idx.forEach((i, k) => { if (!res.map[k + 1]) setViLive(ch, i, snapshot[k]); });
     chunk.status = res.status; chunk.msg = res.message || '';
     ch.translatedDir = chDir(ch); ch.translatedSrc = srcHash(ch);
@@ -1781,6 +1935,44 @@ async function translateOne(ch, mode, signal, prof) {
   }
   return { bad: job.chunks.filter(c => c.status !== 'done' && c.status !== 'omitted').length };
 }
+/* Sau mỗi chương (hàng loạt): tóm tắt nội bộ cho chương sau + gợi ý thuật ngữ mới. Không đụng tới bản dịch. */
+const chapterTargetText = ch => ch.paras.filter(p => !p.omitted).map(p => p.vi).filter(v => v && v.trim()).join('\n');
+async function makeSummary(ch, prof, signal) {
+  const vi = chapterTargetText(ch); if (!vi.trim()) return false;
+  try {
+    const r = await C.chat(prof, C.buildSummaryMessages(ch.titleVi || ch.title, vi.slice(-12000), chDir(ch)), { signal });
+    const t = C.stripThink(r.text).trim();
+    if (r.finish === 'blocked' || !t || C.looksLikeRefusal(t)) return false;
+    ch.summary = t; await saveNow('chapters', ch); return true; /* chỉ ghi ch.summary, không bao giờ ghi vào bản dịch */
+  } catch (e) { if (e && e.name === 'AbortError') throw e; return false; }
+}
+async function suggestTermsFor(ch, prof, signal) {
+  const idx = ch.paras.map((p, i) => i).filter(i => ch.paras[i].vi && ch.paras[i].vi.trim() && !ch.paras[i].omitted);
+  if (!idx.length) return 0;
+  const src = (ch.title || '') + '\n' + idx.map(i => ch.paras[i].zh).join('\n');
+  const tgt = (ch.titleVi || '') + '\n' + idx.map(i => ch.paras[i].vi).join('\n');
+  try {
+    const r = await C.chat(prof, C.buildTermSuggestMessages(src, tgt, S.project.glossary, chDir(ch)), { signal });
+    if (r.finish === 'blocked') return 0;
+    const P = S.project; const pend = P.termSuggest || [];
+    const items = C.parseTermSuggestions(r.text, { source: src, existing: P.glossary.map(g => g.zh).concat(pend.map(x => x.zh), P.termDismissed || []) });
+    if (!items.length) return 0;
+    P.termSuggest = pend.concat(items.map(x => Object.assign(x, { chapterId: ch.id })));
+    await saveNow('projects', P); return items.length;
+  } catch (e) { if (e && e.name === 'AbortError') throw e; return 0; } /* bị chặn hoặc lỗi: bỏ qua, không báo */
+}
+async function chapterExtras(ch, it, prof, signal) {
+  if (!hasAny(ch)) return;
+  if (S.settings.autoSummary !== false && (!(ch.summary || '').trim() || it.mode === 'all')) {
+    it.note = T('đang tóm tắt…'); renderQbar();
+    if (!(await makeSummary(ch, prof, signal))) it.sumFail = true;
+  }
+  if (S.settings.suggestTerms !== false) {
+    it.note = T('đang tìm thuật ngữ mới…'); renderQbar();
+    it.terms = await suggestTermsFor(ch, prof, signal);
+  }
+  it.note = ''; renderQbar();
+}
 /* Hàng đợi: dịch lần lượt nhiều chương, có tiến độ và nút Dừng */
 async function runQueue(items) {
   if (S.busy) return;
@@ -1803,6 +1995,9 @@ async function runQueue(items) {
         if (e && e.name === 'AbortError') { it.st = 'stopped'; break; }
         it.st = 'warn'; it.bad = 1; toast(String(e.message || e), 'err');
       }
+      if (it.st !== 'skip' && !ctrl.signal.aborted) {
+        try { await chapterExtras(ch, it, prof, ctrl.signal); } catch (e) { it.note = ''; if (e && e.name === 'AbortError') break; }
+      }
       renderSide(); if (S.chapterId === ch.id && S.tab === 'editor') renderEditor($('#main'));
     }
   } finally {
@@ -1811,7 +2006,7 @@ async function runQueue(items) {
     S.queue.stopped = ctrl.signal.aborted;
     const bad = S.queue.items.filter(x => x.st === 'warn').length;
     if (ctrl.signal.aborted) toast(T('Đã dừng dịch.'));
-    else if (bad) toast(T('{n} chương còn phần bị chặn hoặc lỗi. Mở chương để thử lại.', { n: bad }), 'err');
+    else if (bad) toast(T('{n} chương còn phần bị chặn hoặc lỗi. Mở chương để thử AI khác, “Dịch giảm nhẹ” hoặc “Lược phần này”.', { n: bad }), 'err');
     else toast(T('Đã dịch xong!'), 'ok');
     renderSide(); renderMain();
   }
@@ -1832,7 +2027,7 @@ async function retryChunk(k, profileId) {
   const ch = curCh(); const j = ch && S.jobs[ch.id]; if (!ch || !j || S.busy) return;
   const prof = profileId ? getProfile(profileId) : (getProfile(j.chunks[k].profileId) || primaryProfile());
   const ctrl = new AbortController(); S.busy = ctrl; renderEditor($('#main'));
-  try { await runChunkUI(ch, j.chunks[k], prof, ctrl.signal, !profileId); } catch (e) {}
+  try { await runChunkUI(ch, j.chunks[k], prof, ctrl.signal, profileId ? false : 'manual'); } catch (e) {}
   finally { S.busy = null; afterTranslate(ch); }
 }
 async function omitChunk(k) {
@@ -1842,17 +2037,26 @@ async function omitChunk(k) {
   c.status = 'omitted'; c.msg = T('Đã điền ghi chú lược. Có thể dịch lại phần này bất cứ lúc nào.');
   await saveNow('chapters', ch); afterTranslate(ch);
 }
-async function retransPara(i, useOther) {
+async function softenChunk(k) {
+  const ch = curCh(); const j = ch && S.jobs[ch.id]; if (!ch || !j || S.busy) return;
+  const c = j.chunks[k]; const prof = getProfile(c.profileId) || primaryProfile();
+  if (!prof) { toast(T('Chưa kết nối AI.'), 'err'); return; }
+  const ctrl = new AbortController(); S.busy = ctrl; renderEditor($('#main'));
+  try { await runChunkUI(ch, c, prof, ctrl.signal, false, true); if (c.status === 'done' || c.status === 'partial') c.msg = T('Đã dịch giảm nhẹ bằng {p}.', { p: prof.name }) + (c.status === 'partial' ? ' ' + c.msg : ''); } catch (e) {}
+  finally { S.busy = null; afterTranslate(ch); }
+}
+async function retransPara(i, useOther, soften) {
   const ch = curCh(); if (!ch || S.busy) return;
   const prof = useOther ? fallbackProfile() : primaryProfile();
   if (!prof) { toast(T('Chưa kết nối AI (hoặc chưa có AI dự phòng). Bấm nút bánh răng.'), 'err'); return; }
-  const chunk = { idx: [i], status: 'wait' };
+  const chunk = { idx: [i], status: 'wait' }; S.rowBlocked = S.rowBlocked || {}; delete S.rowBlocked[i];
   const ctrl = new AbortController(); S.busy = ctrl; delete S.rowMsg[i]; renderEditor($('#main'));
   $('#row-' + i) && $('#row-' + i).scrollIntoView({ block: 'center' });
-  try { await runChunkUI(ch, chunk, prof, ctrl.signal, !useOther); } catch (e) {}
+  try { await runChunkUI(ch, chunk, prof, ctrl.signal, !useOther && !soften ? 'manual' : false, soften); } catch (e) {}
   finally {
     S.busy = null;
     if (chunk.status === 'blocked' || chunk.status === 'error') S.rowMsg[i] = (chunk.status === 'blocked' ? T('Bị chặn: ') : T('Lỗi: ')) + chunk.msg;
+    if (chunk.status === 'blocked') S.rowBlocked[i] = true;
     afterTranslate(ch);
     $('#row-' + i) && $('#row-' + i).scrollIntoView({ block: 'center' });
   }
@@ -2136,7 +2340,7 @@ function renderStory(m) {
     <div class="two"><div><label>${esc(T('AI chính'))}</label><select data-pf="profileId">${profileOptions(p.profileId, T('— Dùng AI mặc định —'))}</select></div>
     <div><label>${esc(T('AI dự phòng (khi bị chặn)'))}</label><select data-pf="fallbackProfileId">${profileOptions(p.fallbackProfileId, T('— Dùng AI dự phòng chung —'))}</select></div></div>
     <label class="inline"><input type="checkbox" data-pf="autoFallback" ${p.autoFallback ? 'checked' : ''}> ${esc(T('Tự động thử lại bằng AI dự phòng khi một phần bị chặn'))}</label>
-    <div class="muted small">${esc(T('Nếu tắt, phần bị chặn sẽ được đánh dấu “bị chặn” và bạn tự bấm “Dịch lại với model khác” (hoặc “Lược phần này”).'))}</div>
+    <div class="muted small">${esc(T('Nếu tắt, phần bị chặn sẽ được đánh dấu “bị chặn” và bạn tự bấm “Dịch lại với model khác”, “Dịch giảm nhẹ” hoặc “Lược phần này”. Cách xử lý tự động khác: Kết nối AI → Nâng cao.'))}</div>
     <div class="row-flex" style="margin-top:24px"><button data-act="settings">${I('gear')} ${esc(T('Kết nối AI'))}</button><span class="spacer"></span><button class="danger" data-act="delProject">${I('trash')} ${esc(T('Xóa truyện…'))}</button></div>`;
 }
 function renderBackup(m) {
@@ -2189,7 +2393,7 @@ function openSettings() {
   const s = S.settings; const prim = getProfile(s.defaultProfileId) || s.profiles[0];
   openModal(T('Kết nối AI'), `
     <div class="note">${esc(T('🔒 Khóa API chỉ được lưu trong trình duyệt này (localStorage) trên máy của bạn và chỉ được gửi thẳng tới địa chỉ API của hồ sơ tương ứng. Bản sao lưu dự án không chứa khóa. Không nên dùng trên máy tính công cộng.'))}</div>
-    <div class="note">${esc(T('Lưu ý: Mỗi nhà cung cấp AI có chính sách riêng về tiểu thuyết dành cho người lớn. Hãy đọc điều khoản sử dụng của nhà cung cấp bạn chọn. Nếu một phần bị chặn, hãy thử dịch lại bằng model khác.'))}</div>
+    <div class="note">${esc(T('Lưu ý: Mỗi nhà cung cấp AI có chính sách riêng về tiểu thuyết dành cho người lớn. Hãy đọc điều khoản sử dụng của nhà cung cấp bạn chọn. Nếu một phần bị chặn, có thể dịch lại bằng model khác, hoặc chọn “Dịch giảm nhẹ” (giữ cốt truyện, viết tiết chế cảnh nhạy cảm).'))}</div>
     ${prim ? `<div class="pitem cur"><span class="nm">${esc(T('Đang dùng:'))} ${esc(prim.name)}</span><span class="muted small">${esc(prim.model)}</span><span class="spacer"></span><button class="small" data-act="testProfile" data-id="${prim.id}">${esc(T('Kiểm tra kết nối'))}</button><button class="small" data-act="editProfile" data-id="${prim.id}">${esc(T('Sửa'))}</button></div>` : `<div id="setQuick">${quickSetupHtml()}</div>`}
     <details class="adv" id="setAdv"><summary>${esc(T('Nâng cao: nhiều AI, AI dự phòng, Gemini'))}</summary>
     <div class="plist">${s.profiles.map(p => `<div class="pitem"><span class="nm">${esc(p.name)}</span><span class="muted small">${p.type === 'gemini' ? esc(T('Gemini gốc')) : 'OpenAI-compatible'} · ${esc(p.model)}</span>
@@ -2198,6 +2402,13 @@ function openSettings() {
     <div class="row-flex" style="margin-top:8px"><select id="presetSel" style="width:auto" aria-label="${esc(T('Mẫu hồ sơ'))}">${Object.keys(C.PRESETS).map(k => `<option value="${k}">${esc(T(C.PRESETS[k].name))}</option>`).join('')}</select><button data-act="addProfile">${I('plus')} ${esc(T('Thêm hồ sơ'))}</button></div>
     <div class="two" style="margin-top:8px"><div><label>${esc(T('Hồ sơ mặc định'))}</label><select id="setDefault">${profileOptions(s.defaultProfileId, T('— chọn —'))}</select></div>
     <div><label>${esc(T('Hồ sơ dự phòng (dùng khi bị chặn)'))}</label><select id="setFallback">${profileOptions(s.fallbackProfileId, T('— không có —'))}</select></div></div>
+    <label for="setOnBlocked">${esc(T('Khi gặp đoạn bị chặn trong lúc dịch hàng loạt'))}</label><select id="setOnBlocked">${BLOCK_POLICIES.map(k => `<option value="${k}" ${blockPolicy() === k ? 'selected' : ''}>${esc(BLOCK_POLICY_LABELS()[k])}</option>`).join('')}</select>
+    <div class="muted small">${esc(T('“Dịch giảm nhẹ” giữ cốt truyện, cảm xúc, lời thoại; cảnh quá lộ liễu được viết tiết chế, gợi tả. Đoạn đó được đánh dấu “đã giảm nhẹ” để dịch lại bằng model khác sau. Chưa có AI dự phòng thì bỏ qua bước thử AI dự phòng. “Chỉ báo” vẫn theo ô “Tự động thử lại bằng AI dự phòng” của từng truyện.'))}</div>
+    <div class="small gph"><b>${esc(T('Sau mỗi chương khi dịch hàng loạt'))}</b> <span class="muted">${esc(T('(mỗi mục thêm 1 lần gọi API mỗi chương — tốn thêm chút phí)'))}</span></div>
+    <label class="inline"><input type="checkbox" id="setAutoSum" ${s.autoSummary !== false ? 'checked' : ''}> ${esc(T('Tự tóm tắt mỗi chương khi dịch hàng loạt (giữ mạch truyện)'))}</label>
+    <div class="muted small">${esc(T('Ghi chú tóm tắt nội bộ giúp AI nhớ mạch truyện — không thay bản dịch, không có trong file xuất.'))}</div>
+    <label class="inline"><input type="checkbox" id="setSuggest" ${s.suggestTerms !== false ? 'checked' : ''}> ${esc(T('Gợi ý thuật ngữ mới sau mỗi chương'))}</label>
+    <div class="muted small">${esc(T('AI đề xuất tên riêng, thuật ngữ, xưng hô mới; bạn tự chọn Thêm hoặc Bỏ — không tự đưa vào bảng thuật ngữ.'))}</div>
     <label>${esc(T('Kích thước mỗi phần khi dịch (số ký tự bản gốc, khuyên dùng 1000–2000)'))}</label><input type="number" id="setChunk" min="300" max="6000" step="100" value="${s.chunkSize}">
     </details>
     <div class="row-flex" style="margin-top:14px"><button ${prim ? 'class="primary"' : ''} data-act="closeModal">${esc(T('Xong'))}</button></div>`, b => {
@@ -2206,6 +2417,9 @@ function openSettings() {
     $('#setAdv', b).addEventListener('toggle', e => { setAdvOpen = e.target.open; });
     $('#setDefault', b).onchange = e => { s.defaultProfileId = e.target.value; saveSettings(); };
     $('#setFallback', b).onchange = e => { s.fallbackProfileId = e.target.value; saveSettings(); };
+    $('#setOnBlocked', b).onchange = e => { s.onBlocked = e.target.value; saveSettings(); };
+    $('#setAutoSum', b).onchange = e => { s.autoSummary = e.target.checked; saveSettings(); };
+    $('#setSuggest', b).onchange = e => { s.suggestTerms = e.target.checked; saveSettings(); };
     $('#setChunk', b).onchange = e => { s.chunkSize = Math.max(300, Number(e.target.value) || 1500); saveSettings(); };
   });
 }
@@ -2232,7 +2446,7 @@ function openPasteTranslation() {
     $('#ptText', b).oninput = () => { const a = C.alignPasted($('#ptText', b).value, ch.paras.length); $('#ptInfo', b).textContent = T('{l} dòng cho {n} đoạn.', { l: a.lines.length + a.extra, n: ch.paras.length }) + (a.extra ? ' ' + T('Dư {x} dòng — sẽ bỏ qua.', { x: a.extra }) : '') + (a.short ? ' ' + T('Thiếu {x} dòng.', { x: a.short }) : ''); };
     $('#ptSave', b).onclick = async () => {
       const a = C.alignPasted($('#ptText', b).value, ch.paras.length); const only = $('#ptEmpty', b).checked; let n = 0;
-      a.lines.forEach((l, i) => { if (!only || !(ch.paras[i].vi && ch.paras[i].vi.trim())) { ch.paras[i].vi = l; delete ch.paras[i].omitted; n++; } });
+      a.lines.forEach((l, i) => { if (!only || !(ch.paras[i].vi && ch.paras[i].vi.trim())) { ch.paras[i].vi = l; delete ch.paras[i].omitted; delete ch.paras[i].softened; n++; } });
       await saveNow('chapters', ch); closeModal(); toast(T('Đã ghép {n} đoạn.', { n }), 'ok'); afterTranslate(ch);
     };
   });
@@ -2451,6 +2665,12 @@ const A = {
   retryChunk: el => retryChunk(Number(el.dataset.k)),
   retryOther: el => { const sel = $('select.otherSel[data-k="' + el.dataset.k + '"]'); retryChunk(Number(el.dataset.k), sel && sel.value); },
   omitChunk: el => omitChunk(Number(el.dataset.k)),
+  softenChunk: el => softenChunk(Number(el.dataset.k)),
+  softenPara: el => retransPara(Number(el.dataset.i), false, true),
+  unsoften: async el => { const ch = curCh(); if (!ch) return; delete ch.paras[Number(el.dataset.i)].softened; await saveNow('chapters', ch); const sc = $('#main').scrollTop; renderEditor($('#main')); $('#main').scrollTop = sc; renderSide(); },
+  sgAdd: el => addSuggestions([el.dataset.id]),
+  sgAddAll: () => addSuggestions((S.project.termSuggest || []).map(x => x.id)),
+  sgDismiss: async el => { const P = S.project; const x = (P.termSuggest || []).find(y => y.id === el.dataset.id); if (!x) return; P.termSuggest = P.termSuggest.filter(y => y !== x); P.termDismissed = (P.termDismissed || []).concat(x.zh).slice(-500); await saveNow('projects', P); const sc = $('#main').scrollTop; renderEditor($('#main')); $('#main').scrollTop = sc; },
   retransPara: el => retransPara(Number(el.dataset.i), !!el.dataset.other),
   transTitle: async () => {
     const ch = curCh(); const prof = primaryProfile(); if (!ch || S.busy) return;
@@ -2543,6 +2763,7 @@ document.addEventListener('input', e => {
   const t = e.target; const ch = curCh();
   if (t.matches('textarea.vi') && ch) { const p = ch.paras[Number(t.dataset.i)]; p.vi = t.value; delete p.omitted; autosize(t); scheduleSave('chapters', ch); clearTimeout(timers._st); timers._st = setTimeout(updateStats, 300); }
   else if (t.dataset.cf && ch && t.tagName !== 'SELECT') { ch[t.dataset.cf] = t.value; scheduleSave('chapters', ch); if (t.dataset.cf === 'title' || t.dataset.cf === 'titleVi') { clearTimeout(timers._sd); timers._sd = setTimeout(renderSide, 500); } }
+  else if (t.dataset.sg && S.project) { const x = (S.project.termSuggest || []).find(y => y.id === t.dataset.sg); if (x) { x.vi = t.value; scheduleSave('projects', S.project); } }
   else if (t.dataset.g && S.project) { const g = S.project.glossary.find(x => x.id === t.dataset.id); if (g) { g[t.dataset.g] = t.value; scheduleSave('projects', S.project); } }
   else if (t.dataset.pf && S.project && t.type !== 'checkbox' && t.tagName !== 'SELECT') { S.project[t.dataset.pf] = t.value; scheduleSave('projects', S.project); if (t.dataset.pf === 'title') { const c = $('#crumb'); if (c) c.textContent = t.value; clearTimeout(timers._sd); timers._sd = setTimeout(renderPbar, 500); } }
 });
