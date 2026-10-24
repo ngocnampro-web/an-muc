@@ -2570,7 +2570,10 @@ async function summarizeChapter() {
 }
 
 /* ---------- Thêm chương: dán chữ, chọn file, thư mục, hoặc lấy từ link ---------- */
-const ACCEPT = '.epub,.pdf,.txt,.doc,.docx,.zip,.md,.html,.htm,.xhtml,text/plain,application/epub+zip,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/zip';
+const ACCEPT_ALL = '.epub,.pdf,.txt,.doc,.docx,.zip,.md,.html,.htm,.xhtml,text/plain,application/epub+zip,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/zip';
+/* iPhone/iPad làm mờ file .epub khi có accept, nên trên iOS không giới hạn loại file (app tự kiểm tra sau khi chọn) */
+const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const ACCEPT = IS_IOS ? '' : ACCEPT_ALL;
 const MAX_FILE = 20 * 1024 * 1024, MAX_BOOK = 80 * 1024 * 1024; /* epub/pdf có ảnh thường nặng hơn */
 function openAddChapters() {
   openModal(T('Thêm chương'), addBoxHtml(false), b => { bindAddBox(b); $('#acText', b).focus(); });
@@ -3375,7 +3378,7 @@ window.addEventListener('beforeunload', e => { if (pending.size || S.busy) { e.p
 
 
 /* ---------- Ứng dụng trên màn hình chính (PWA) ---------- */
-const APP_BUILD = 'fd940bf4ae3d';
+const APP_BUILD = '829014299605';
 const ONLINE_ORIGIN = /^https?:$/.test(location.protocol);
 function setThemeMeta(t) { document.querySelectorAll('meta[name=theme-color]').forEach(m => { m.content = t === 'dark' ? '#1a1714' : '#f3eee6'; m.removeAttribute('media'); }); }
 // Service worker chỉ chạy khi mở qua http(s); mở file:// thì bỏ qua (app vẫn chạy trọn trong một file)
