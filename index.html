@@ -346,6 +346,13 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area
 .iostip{display:flex;gap:8px;align-items:flex-start;margin:8px 0 2px;padding:8px 10px;border-radius:10px;background:var(--paper);border:1px dashed var(--line);color:var(--ink);line-height:1.4}
 .iostip .ic{width:16px;height:16px;flex:none;margin-top:2px;color:var(--cin)}
 .appver{margin-top:10px;text-align:right;font-variant-numeric:tabular-nums;opacity:.8}
+/* đoạn AI bỏ sót */
+.toast.warn{background:var(--warn-soft);color:var(--ink);border:1px solid var(--warn)}
+.gapnote b{color:var(--warn)}.gapnote .row-flex{margin-top:8px}
+.prow.gap .vi textarea{border:1.5px dashed var(--warn);background:var(--warn-soft)}
+.prow.gap .num{color:var(--warn);font-weight:700}
+.gapflag{font-size:.82rem}
+.jobitem .flagtxt{font-size:.84rem}
 </style>
 </head>
 <body>
@@ -458,6 +465,37 @@ Object.assign(window.AM_EN, {
   'Bản {v}': 'Version {v}',
   'Đã tạo {n} truyện từ file nén': 'Created {n} novels from the archive'
 });
+
+Object.assign(window.AM_EN, {
+  'AI bỏ sót đoạn {p}': 'The AI left out paragraph {p}',
+  'AI bỏ sót các đoạn {p}': 'The AI left out paragraphs {p}',
+  'đang tự dịch lại… (lần {r}/3)': 'retranslating automatically… (attempt {r}/3)',
+  'đã tự dịch bù.': 'filled in automatically.',
+  '(dịch giảm nhẹ)': '(softened)',
+  'bấm “Dịch lại đoạn thiếu”.': 'tap “Translate missing paragraphs”.',
+  'Đã tự dịch bù: {p}.': 'Filled in automatically: {p}.',
+  'Đoạn {p}: AI không trả lời hoặc bị chặn — thử “Dịch giảm nhẹ” hoặc model khác.': 'Paragraph {p}: the AI returned nothing or it was blocked — try “Softened translation” or another model.',
+  '(đã dừng)': '(stopped)',
+  'Chưa có hồ sơ AI.': 'No AI profile yet.',
+  'Không còn đoạn nào thiếu.': 'No missing paragraphs left.',
+  'Dịch lại đoạn thiếu': 'Translate missing paragraphs',
+  'Dịch lại tất cả đoạn thiếu': 'Translate all missing paragraphs',
+  'Chỉ dịch những đoạn AI bỏ sót trong phần này, không dịch lại cả phần': 'Translate only the paragraphs the AI left out in this part, not the whole part',
+  'AI bỏ sót {n} đoạn: {p}.': 'The AI left out {n} paragraph(s): {p}.',
+  'Chương chưa dịch xong.': 'This chapter isn’t fully translated.',
+  'Còn {n} đoạn cuối (từ đoạn {a}) chưa dịch tới — lần dịch trước bị dừng giữa chừng.': '{n} paragraph(s) at the end (from paragraph {a}) weren’t reached — the last run stopped partway.',
+  'Chỉ dịch các đoạn này, không dịch lại cả chương.': 'Only these paragraphs are translated, not the whole chapter.',
+  'Xem đoạn {a}': 'Go to paragraph {a}',
+  '(chưa dịch — AI bỏ sót đoạn này)': '(not translated — the AI left this paragraph out)',
+  'AI bỏ sót đoạn {a} — chưa dịch. Bấm “Dịch lại”.': 'The AI left out paragraph {a} — not translated. Tap “Retranslate”.',
+  'thiếu {n} đoạn': '{n} missing',
+  'Có {n} đoạn AI bỏ sót chưa dịch — trong file sẽ ghi rõ “〔Đoạn … chưa dịch〕” đúng chỗ. Nên bấm “Dịch lại tất cả đoạn thiếu” trước. Vẫn xuất?': '{n} paragraph(s) the AI left out are still untranslated — the file will mark each spot with “[Paragraph … not translated yet]”. Better to tap “Translate all missing paragraphs” first. Export anyway?',
+  'Có {n} đoạn chưa dịch — đã ghi rõ “〔Đoạn … chưa dịch〕” trong file.': '{n} paragraph(s) not translated — marked “[Paragraph … not translated yet]” in the file.',
+  '{n} chương còn đoạn AI bỏ sót ({t}). Chỉ dịch bù các đoạn đó, không dịch lại cả chương.': '{n} chapter(s) still have paragraphs the AI left out ({t}). Only those paragraphs will be translated, not the whole chapter.',
+  'Dịch bù ngay': 'Fill in now',
+  'Xong {d}/{n} chương — {b} chương còn đoạn AI bỏ sót': 'Done {d}/{n} chapters — {b} chapter(s) still have paragraphs the AI left out',
+  '{n} chương còn đoạn AI bỏ sót chưa dịch được. Mở chương, bấm “Dịch lại tất cả đoạn thiếu” (hoặc “Dịch giảm nhẹ” nếu bị chặn).': '{n} chapter(s) still have paragraphs the AI left out. Open the chapter and tap “Translate all missing paragraphs” (or “Softened translation” if blocked).'
+});
 </script>
 <script id="core">
 /* ===== LÕI XỬ LÝ (không phụ thuộc giao diện) ===== */
@@ -518,17 +556,24 @@ C.splitChapters = text => {
   return res;
 };
 /* Gom đoạn thành từng phần ~maxChars ký tự, chỉ cắt ở ranh giới đoạn */
-C.chunkParagraphs = (zhList, indices, maxChars) => {
-  maxChars = maxChars || 1500;
+C.chunkParagraphs = (zhList, indices, maxChars, maxParas) => {
+  maxChars = maxChars || 1500; maxParas = maxParas || Infinity;
   const chunks = []; let cur = [], len = 0;
   for (const i of indices) {
     const L = (zhList[i] || '').length;
-    if (cur.length && len + L > maxChars) { chunks.push(cur); cur = []; len = 0; }
+    if (cur.length && (len + L > maxChars || cur.length >= maxParas)) { chunks.push(cur); cur = []; len = 0; }
     cur.push(i); len += L;
   }
   if (cur.length) chunks.push(cur);
   return chunks;
 };
+/* Tách danh sách chỉ số thành các dãy liền nhau: [3,4,5,9,10] → [[3,4,5],[9,10]] */
+/* Dấu hiển thị cho đoạn chưa dịch khi xuất file/chép — không bao giờ để trống lặng lẽ */
+C.GAP = { vi: n => '〔Đoạn ' + n + ' chưa dịch〕', en: n => '[Paragraph ' + n + ' not translated yet]' };
+C.gapMark = (lang, n) => (lang === 'en' ? C.GAP.en : C.GAP.vi)(n);
+C.contiguousRuns = indices => { const out = []; for (const i of indices) { const last = out[out.length - 1]; if (last && last[last.length - 1] === i - 1) last.push(i); else out.push([i]); } return out; };
+/* Nhóm nhỏ để dịch bù: theo dãy liền nhau, mỗi nhóm tối đa `size` đoạn */
+C.smallGroups = (indices, size) => { const out = []; C.contiguousRuns(indices).forEach(r => { for (let k = 0; k < r.length; k += size) out.push(r.slice(k, k + size)); }); return out; };
 C.countCJK = s => (String(s || '').match(/[\u3400-\u9fff\uf900-\ufaff]/g) || []).length;
 C.countWords = s => (String(s || '').trim().match(/\S+/g) || []).length;
 
@@ -693,7 +738,7 @@ C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, ad
       if (prevTail) s += 'End of the previous chapter:\n' + prevTail.trim() + '\n';
       s += '\n';
     }
-    s += '## OUTPUT FORMAT\n- Each source paragraph is numbered [1], [2], ...\n- Return the English translation of EACH paragraph, starting with exactly that number, one paragraph per line.\n- Do not merge, split, drop or add paragraphs. No notes, no explanations, do not repeat the source.';
+    s += '## OUTPUT FORMAT (mandatory)\n- Each source paragraph is numbered [1], [2], ...\n- Return the English translation of EACH paragraph, starting with exactly that number, one paragraph per line.\n- N source paragraphs → exactly N numbered blocks, from [1] through [N], in order — including very short ones (a single line of dialogue, “……”, an exclamation).\n- Do not merge, split, drop or add paragraphs: block [n] contains the translation of paragraph [n] only.\n- Translate every sentence in full. Never summarize, shorten or skip a sentence.\n- No notes, no explanations, do not repeat the source.';
     if (humor) s += '\n\n' + C.HUMOR.en;
     if (soften) s += '\n\n' + C.SOFTEN.en;
     return s;
@@ -710,16 +755,19 @@ C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, ad
     if (prevTail) s += 'Đoạn cuối chương trước:\n' + prevTail.trim() + '\n';
     s += '\n';
   }
-  s += '## ĐỊNH DẠNG TRẢ LỜI\n- Mỗi đoạn gốc được đánh số [1], [2], ...\n- Trả về bản dịch tiếng Việt của TỪNG đoạn, mở đầu bằng đúng số thứ tự đó, mỗi đoạn trên một dòng riêng.\n- Không gộp, tách, bỏ hay thêm đoạn. Không ghi chú, không giải thích, không nhắc lại bản gốc.';
+  s += '## ĐỊNH DẠNG TRẢ LỜI (bắt buộc)\n- Mỗi đoạn gốc được đánh số [1], [2], ...\n- Trả về bản dịch tiếng Việt của TỪNG đoạn, mở đầu bằng đúng số thứ tự đó, mỗi đoạn trên một dòng riêng.\n- Có N đoạn gốc thì trả về đúng N khối, đủ từ [1] đến [N], theo thứ tự — kể cả đoạn rất ngắn (một câu thoại, “……”, tiếng kêu).\n- Không gộp, tách, bỏ hay thêm đoạn: khối [n] chỉ chứa bản dịch của đúng đoạn [n].\n- Dịch đầy đủ từng câu. Không tóm tắt, không rút gọn, không bỏ câu nào.\n- Không ghi chú, không giải thích, không nhắc lại bản gốc.';
   if (humor) s += '\n\n' + C.HUMOR.vi;
   if (soften) s += '\n\n' + C.SOFTEN.vi;
   return s;
 };
-C.buildTranslateUser = (zhList, tailVi, direction) => {
-  const en = C.targetOf(direction) === 'en';
+C.buildTranslateUser = (zhList, tailVi, direction, retry) => {
+  const en = C.targetOf(direction) === 'en'; const N = zhList.length;
   let u = '';
   if (tailVi && tailVi.length) u += (en ? 'Immediately preceding paragraphs (already translated, for continuity only — do NOT translate again):\n' : 'Đoạn ngay trước (đã dịch, chỉ để nối mạch — KHÔNG dịch lại):\n') + tailVi.join('\n') + '\n\n';
-  u += (en ? 'Translate the following ' + zhList.length + ' paragraphs:\n\n' : 'Hãy dịch ' + zhList.length + ' đoạn sau:\n\n') + zhList.map((z, i) => '[' + (i + 1) + '] ' + z).join('\n');
+  if (retry) u += en ? 'NOTE: the previous answer left ' + (N > 1 ? 'these paragraphs' : 'this paragraph') + ' out or merged ' + (N > 1 ? 'them' : 'it') + ' with another. Translate ' + (N > 1 ? 'each one' : 'it') + ' in full, sentence by sentence, as its own numbered block.\n\n'
+    : 'LƯU Ý: lần trước bạn đã bỏ sót hoặc gộp ' + (N > 1 ? 'các đoạn này' : 'đoạn này') + ' vào đoạn khác. Hãy dịch đầy đủ từng câu, mỗi đoạn một khối có số riêng.\n\n';
+  u += (en ? 'Translate the following ' + N + ' paragraphs' + (N > 1 ? ' (all of [1]–[' + N + '], one block each, never merge or skip)' : '') + ':\n\n'
+    : 'Hãy dịch ' + N + ' đoạn sau' + (N > 1 ? ' (đủ từ [1] đến [' + N + '], mỗi đoạn một khối riêng, không gộp, không bỏ)' : '') + ':\n\n') + zhList.map((z, i) => '[' + (i + 1) + '] ' + z).join('\n');
   return u;
 };
 C.buildReviewMessages = (styleGuide, items, direction) => {
@@ -817,7 +865,7 @@ C.parseTermSuggestions = (text, opts) => {
 /* ---------- Đọc kết quả ---------- */
 C.stripThink = t => String(t || '').replace(/<think>[\s\S]*?(<\/think>|$)/g, '');
 C.parseNumbered = text => {
-  const re = /(?:^|\n)[ \t>*_#]*\[(\d{1,4})\][ \t*_:：.]*/g;
+  const re = /(?:^|\n)[ \t>*_#]*[\[【［](\d{1,4})[\]】］][ \t*_:：.]*/g;
   const marks = []; let m;
   while ((m = re.exec(text))) marks.push({ n: +m[1], start: m.index, end: re.lastIndex });
   if (!marks.length) return null;
@@ -831,7 +879,7 @@ C.parseNumbered = text => {
 const REFUSAL_RE = /(I'?m sorry|I am sorry|I can(?:no|')t (?:help|assist|translate|provide|comply|continue|create)|I(?:'m| am) (?:not able|unable) to|As an AI|against (?:my|our|the) (?:guidelines|policy|policies)|content polic|Tôi không thể (?:dịch|hỗ trợ|giúp|cung cấp|tiếp tục|thực hiện)|không thể hỗ trợ|vi phạm (?:chính sách|nguyên tắc)|我无法|我不能(?:翻译|提供|协助|帮助)|抱歉，我|很抱歉，我)/i;
 C.looksLikeRefusal = text => REFUSAL_RE.test(String(text || '').slice(0, 400));
 C.blockReasonVi = r => (C.lang === 'en' ? { SAFETY: 'safety filter', PROHIBITED_CONTENT: 'prohibited by policy', BLOCKLIST: 'blocklist', SPII: 'sensitive personal data', RECITATION: 'recitation of copyrighted text', OTHER: 'other reason', content_filter: 'content filter' } : { SAFETY: 'bộ lọc an toàn', PROHIBITED_CONTENT: 'nội dung bị cấm theo chính sách', BLOCKLIST: 'danh sách từ cấm', SPII: 'thông tin cá nhân nhạy cảm', RECITATION: 'trùng văn bản có bản quyền', OTHER: 'lý do khác', content_filter: 'bộ lọc nội dung' })[r] || r;
-C.interpretResult = (r, n) => {
+C.interpretResult = (r, n, src) => {
   const text = C.stripThink(r.text || '').trim();
   if (r.finish === 'blocked') return { status: 'blocked', message: M('Nhà cung cấp đã chặn nội dung', 'The provider blocked this content') + (r.reason ? ' (' + C.blockReasonVi(r.reason) + ')' : '') + '.', text };
   if (!text) return { status: 'blocked', message: M('Model trả về kết quả rỗng — có thể đã bị bộ lọc nội dung chặn.', 'The model returned nothing — it may have been stopped by a content filter.'), text };
@@ -845,11 +893,51 @@ C.interpretResult = (r, n) => {
       else return { status: 'error', message: M('Không đọc được định dạng kết quả (thiếu số thứ tự [n]). Hãy thử lại.', 'Could not read the result format (missing [n] numbers). Please try again.'), text };
     }
   }
+  Object.keys(map).forEach(k => { if (+k < 1 || +k > n) delete map[k]; });
+  const fix = C.repairMap(map, n, src);
+  const truncated = r.finish === 'length';
+  if (truncated) { /* bị cắt vì giới hạn độ dài: khối cuối cùng có thể dở dang → coi như thiếu, sẽ dịch bù */
+    const last = Math.max(0, ...Object.keys(map).map(Number)); if (last) { delete map[last]; fix.split = fix.split.filter(k => k !== last); }
+  }
   const missing = []; for (let i = 1; i <= n; i++) if (!map[i]) missing.push(i);
-  const res = { status: missing.length ? 'partial' : 'done', map, missing, text };
-  if (r.finish === 'length') res.message = M('Kết quả bị cắt do giới hạn độ dài. Hãy giảm “kích thước mỗi phần” trong Cài đặt.', 'The result was cut off by the length limit. Lower the “part size” in Settings.');
-  else if (missing.length) res.message = M('Thiếu đoạn: ', 'Missing paragraphs: ') + missing.join(', ');
+  const suspect = C.mergeSuspects(map, missing, src);
+  const res = { status: missing.length ? 'partial' : 'done', map, missing, suspect, split: fix.split, truncated, text };
+  if (missing.length) res.message = (truncated ? M('Kết quả bị cắt do giới hạn độ dài. ', 'The result was cut off by the length limit. ') : '') + M('AI bỏ sót đoạn ', 'The AI left out paragraph ') + missing.join(', ');
   return res;
+};
+/* Sửa các lỗi định dạng hay gặp (DeepSeek…): hai đoạn trên cùng một dòng (“… [8] …”), hoặc khối [7] chứa luôn đoạn 8 trên dòng riêng mà không có số.
+   Chỉ tách khi chắc chắn: số dòng thừa khớp đúng số đoạn bị thiếu ngay sau. */
+C.repairMap = (map, n, src) => {
+  const split = [];
+  for (let k = 1; k <= n; k++) {
+    if (map[k]) continue;
+    let p = k - 1; while (p >= 1 && !map[p]) p--; if (p < 1) continue;
+    const re = new RegExp('(^|[\\s。.!?！？”"’』」…])[\\[【［]' + k + '[\\]】］][ \\t:：.]*');
+    const m = re.exec(map[p]); if (!m || m.index + m[1].length === 0) continue;
+    const head = map[p].slice(0, m.index + m[1].length).trim(), tail = map[p].slice(m.index + m[0].length).trim();
+    if (head && tail) { map[p] = head; map[k] = tail; split.push(k); }
+  }
+  for (let k = 1; k <= n; k++) {
+    if (!map[k] || map[k + 1] || k + 1 > n) continue;
+    let gap = 0; while (k + 1 + gap <= n && !map[k + 1 + gap]) gap++;
+    const lines = map[k].split(/\n+/).map(x => x.trim()).filter(Boolean);
+    if (gap && lines.length === gap + 1) { lines.forEach((l, j) => { map[k + j] = l; if (j) split.push(k + j); }); k += gap; }
+  }
+  return { map, split };
+};
+/* Đoạn nghi bị gộp: cạnh một đoạn thiếu và dài bất thường so với bản gốc (so với tỉ lệ trung vị của phần) */
+C.mergeSuspects = (map, missing, src) => {
+  if (!missing.length || !src || !src.length) return [];
+  const ratio = k => (map[k] || '').length / Math.max(1, (src[k - 1] || '').length);
+  const rs = Object.keys(map).map(Number).filter(k => (src[k - 1] || '').length >= 4).map(ratio).sort((a, b) => a - b);
+  if (rs.length < 2) return [];
+  const med = rs[Math.floor(rs.length / 2)]; const out = [];
+  missing.forEach(m => [m - 1, m + 1].forEach(k => {
+    if (!map[k] || out.includes(k)) return;
+    const extra = (src[m - 1] || '').length * med; /* độ dài dự kiến của đoạn bị thiếu */
+    if ((map[k] || '').length > 30 && ratio(k) > med * 1.6 && (map[k].length - (src[k - 1] || '').length * med) > extra * 0.5) out.push(k);
+  }));
+  return out.sort((a, b) => a - b);
 };
 
 /* ---------- Gọi API ---------- */
@@ -910,12 +998,22 @@ async function doFetch(url, init) {
 }
 C.GEMINI_CATEGORIES = ['HARM_CATEGORY_HARASSMENT', 'HARM_CATEGORY_HATE_SPEECH', 'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'HARM_CATEGORY_DANGEROUS_CONTENT'];
 C.GEMINI_BLOCK_REASONS = ['SAFETY', 'PROHIBITED_CONTENT', 'BLOCKLIST', 'SPII', 'RECITATION', 'IMAGE_SAFETY'];
-C.buildOpenAIRequest = (p, messages) => ({
-  url: C.joinUrl(p.baseUrl, '/chat/completions'),
-  init: { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + String(p.apiKey).trim() },
-    body: JSON.stringify({ model: p.model, messages, temperature: Number(p.temperature == null || p.temperature === '' ? 0.7 : p.temperature), stream: p.stream !== false }) }
-});
-C.buildGeminiRequest = (p, messages) => {
+/* Giới hạn độ dài trả lời. DeepSeek (deepseek-chat) mặc định chỉ 4096 token — dễ bị cắt cụt cuối phần; nâng lên mức tối đa 8192.
+   Hồ sơ có thể đặt maxTokens riêng. Các model khác: để nhà cung cấp tự quyết (đặt sai có thể bị lỗi 400). */
+C.maxTokensFor = p => {
+  if (!p) return 0; const v = Number(p.maxTokens); if (v > 0) return Math.round(v);
+  const m = String(p.model || '').toLowerCase();
+  if (/reasoner|r1\b/.test(m)) return 0;
+  if (/deepseek-(chat|v3)/.test(m) || (/deepseek/.test(String(p.baseUrl || '')) && /chat/.test(m))) return 8192;
+  return 0;
+};
+C.buildOpenAIRequest = (p, messages, o) => {
+  const body = { model: p.model, messages, temperature: Number(p.temperature == null || p.temperature === '' ? 0.7 : p.temperature), stream: p.stream !== false };
+  if (o && o.maxTokens) body.max_tokens = o.maxTokens;
+  return { url: C.joinUrl(p.baseUrl, '/chat/completions'),
+    init: { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + String(p.apiKey).trim() }, body: JSON.stringify(body) } };
+};
+C.buildGeminiRequest = (p, messages, o) => {
   const stream = p.stream !== false;
   const model = String(p.model).trim().replace(/^models\//, '');
   const url = C.joinUrl(p.baseUrl || 'https://generativelanguage.googleapis.com/v1beta', '/models/' + encodeURIComponent(model) + (stream ? ':streamGenerateContent?alt=sse' : ':generateContent'));
@@ -924,12 +1022,13 @@ C.buildGeminiRequest = (p, messages) => {
     contents: messages.filter(m => m.role !== 'system').map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),
     generationConfig: { temperature: Number(p.temperature == null || p.temperature === '' ? 0.7 : p.temperature) }
   };
+  if (o && o.maxTokens) body.generationConfig.maxOutputTokens = o.maxTokens;
   if (sys) body.systemInstruction = { parts: [{ text: sys }] };
   if (p.safety) body.safetySettings = C.GEMINI_CATEGORIES.map(category => ({ category, threshold: p.safety }));
   return { url, init: { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': String(p.apiKey).trim() }, body: JSON.stringify(body) } };
 };
 async function chatOpenAI(p, messages, o) {
-  const rq = C.buildOpenAIRequest(p, messages); rq.init.signal = o.signal;
+  const rq = C.buildOpenAIRequest(p, messages, o); rq.init.signal = o.signal;
   const res = await doFetch(rq.url, rq.init);
   if (!res.ok) throw C.httpError(res.status, await res.text().catch(() => ''));
   let text = '', finish = null;
@@ -948,7 +1047,7 @@ async function chatOpenAI(p, messages, o) {
   return { text, finish: finish === 'content_filter' ? 'blocked' : finish === 'length' ? 'length' : 'stop', reason: finish === 'content_filter' ? 'content_filter' : '' };
 }
 async function chatGemini(p, messages, o) {
-  const rq = C.buildGeminiRequest(p, messages); rq.init.signal = o.signal;
+  const rq = C.buildGeminiRequest(p, messages, o); rq.init.signal = o.signal;
   const res = await doFetch(rq.url, rq.init);
   if (!res.ok) throw C.httpError(res.status, await res.text().catch(() => ''));
   let text = '', finish = 'stop', reason = '';
@@ -979,13 +1078,15 @@ C.chat = async (p, messages, o) => {
 C.runChunk = async (profile, messages, n, o) => {
   o = o || {};
   const delays = o.retryDelays || [3000, 8000]; let attempt = 0;
+  let maxTokens = o.maxTokens != null ? o.maxTokens : C.maxTokensFor(profile);
   for (;;) {
     try {
-      const r = await C.chat(profile, messages, { signal: o.signal, onText: o.onPartial });
-      return C.interpretResult(r, n);
+      const r = await C.chat(profile, messages, { signal: o.signal, onText: o.onPartial, maxTokens });
+      return C.interpretResult(r, n, o.src);
     } catch (e) {
       if (e && e.name === 'AbortError') throw e;
       const kind = (e && e.kind) || 'error';
+      if (maxTokens && kind === 'bad' && /max_tokens|max_completion_tokens|maxOutputTokens|max tokens/i.test(e.message || '')) { maxTokens = 0; continue; } /* nhà cung cấp không nhận giới hạn này → gửi lại không kèm */
       if (kind === 'blocked') return { status: 'blocked', message: e.message };
       if (['rate', 'server', 'network'].includes(kind) && attempt < delays.length) {
         o.onRetry && o.onRetry(attempt + 1, e);
@@ -1934,7 +2035,7 @@ const DB = {
 const SKEY = 'dichtruyen_settings_v1';
 function loadSettings() {
   let s = {}; try { s = JSON.parse(localStorage.getItem(SKEY) || '{}'); } catch (e) {}
-  return Object.assign({ profiles: [], defaultProfileId: '', fallbackProfileId: '', chunkSize: 1500, corsProxy: '', onBlocked: 'report', autoSummary: true, suggestTerms: true, defaultTranslator: '' }, s);
+  return Object.assign({ profiles: [], defaultProfileId: '', fallbackProfileId: '', chunkSize: 1200, corsProxy: '', onBlocked: 'report', autoSummary: true, suggestTerms: true, defaultTranslator: '' }, s);
 }
 /* Khi gặp đoạn bị chặn trong lúc dịch hàng loạt */
 const BLOCK_POLICIES = ['report', 'fallback', 'soften', 'fallback_soften'];
@@ -2056,6 +2157,10 @@ async function openProject(id) {
   S.tab = 'editor'; S.mtab = chs.length ? 'list' : 'src'; S.jobs = {}; S.queue = null; S.issues = null; S.review = null; S.rowMsg = {}; S.sel = new Set();
   localStorage.setItem('dichtruyen_last', id);
   renderProject();
+  /* mở lại app sau khi cập nhật: nhắc chương còn đoạn AI bỏ sót (đã lưu) — chỉ dịch bù các đoạn đó */
+  const gapChs = chs.filter(c => gapInfo(c).holes.length);
+  if (gapChs.length) toast(T('{n} chương còn đoạn AI bỏ sót ({t}). Chỉ dịch bù các đoạn đó, không dịch lại cả chương.', { n: gapChs.length, t: gapChs.slice(0, 3).map(c => c.title).join(', ') + (gapChs.length > 3 ? ', …' : '') }), 'warn', 15000,
+    { label: T('Dịch bù ngay'), fn: () => { const c = gapChs[0]; S.chapterId = c.id; S.tab = 'editor'; S.mtab = 'tgt'; renderProject(); fixAll(); } });
 }
 function confirmLeaveJob() {
   if (S.busy) { if (!confirm(T('Đang dịch. Dừng lại và chuyển trang?'))) return false; S.busy.abort(); S.busy = null; }
@@ -2125,6 +2230,17 @@ function newProjectObj(title, author, direction) {
 /* ---------- Trang truyện: thanh truyện | Chương | Gốc | Bản dịch ---------- */
 const isDone = c => c.paras.length > 0 && c.paras.every(p => p.vi && p.vi.trim());
 const hasAny = c => c.paras.some(p => p.vi && p.vi.trim());
+const isEmptyPara = p => !(p.vi && p.vi.trim()) && !p.omitted;
+/* Đoạn còn thiếu trong một chương đã dịch dở: “holes” = AI bỏ sót (đánh dấu lúc dịch) hoặc ô trống nằm giữa các đoạn đã dịch;
+   “trailing” = các đoạn cuối chưa dịch tới (lần dịch trước dừng giữa chừng). Chỉ số tính từ 0. */
+function gapInfo(ch) {
+  let last = -1; ch.paras.forEach((p, i) => { if (p.vi && p.vi.trim()) last = i; });
+  const holes = [], trailing = [];
+  if (last >= 0) ch.paras.forEach((p, i) => { if (isEmptyPara(p)) (p.missing || i < last ? holes : trailing).push(i); });
+  return { holes, trailing, all: holes.concat(trailing).sort((a, b) => a - b) };
+}
+const paraList = idx => { const s = idx.map(i => i + 1); return s.length > 12 ? s.slice(0, 12).join(', ') + ', …' : s.join(', '); };
+const missMsg = idx => T(idx.length > 1 ? 'AI bỏ sót các đoạn {p}' : 'AI bỏ sót đoạn {p}', { p: paraList(idx) });
 function renderProject() {
   renderHeader();
   $('#app').innerHTML = '<div class="desk" id="desk" data-m="' + S.mtab + '"><div class="pbar" id="pbar"></div><div class="qbar" id="qbar"></div><aside class="pane side" id="side"></aside><section class="pane work" id="main"></section></div>';
@@ -2154,8 +2270,8 @@ function renderQbar() {
   el.hidden = false;
   const n = q.items.length; const d = q.items.filter(x => ['done', 'warn', 'skip'].includes(x.st)).length;
   const bad = q.items.filter(x => x.st === 'warn').length; const J = JOBST();
-  const stLabel = x => x.st === 'warn' ? T('còn {b} phần lỗi', { b: x.bad }) : x.st === 'skip' ? T('không có gì để dịch') : J[x.st] || x.st;
-  const head = q.running ? T('Đang dịch {d}/{n} chương', { d: Math.min(d + 1, n), n }) : q.stopped ? T('Đã dừng: xong {d}/{n} chương', { d, n }) : bad ? T('Xong {d}/{n} chương — {b} chương còn phần bị chặn hoặc lỗi', { d, n, b: bad }) : T('Đã dịch xong {n} chương', { n });
+  const stLabel = x => x.st === 'warn' && x.gapOnly ? T('thiếu {n} đoạn', { n: x.gaps }) : x.st === 'warn' ? T('còn {b} phần lỗi', { b: x.bad }) : x.st === 'skip' ? T('không có gì để dịch') : J[x.st] || x.st;
+  const head = q.running ? T('Đang dịch {d}/{n} chương', { d: Math.min(d + 1, n), n }) : q.stopped ? T('Đã dừng: xong {d}/{n} chương', { d, n }) : bad && q.items.filter(x => x.st === 'warn').every(x => x.gapOnly) ? T('Xong {d}/{n} chương — {b} chương còn đoạn AI bỏ sót', { d, n, b: bad }) : bad ? T('Xong {d}/{n} chương — {b} chương còn phần bị chặn hoặc lỗi', { d, n, b: bad }) : T('Đã dịch xong {n} chương', { n });
   el.innerHTML = `<div class="panel queue" id="queuePanel"><h4>${esc(head)}<span class="spacer"></span>${q.running ? '' : `<button class="small link" data-act="closeQueue">${esc(T('Ẩn'))}</button>`}</h4>
     <div class="progress"><div style="width:${n ? Math.round(d / n * 100) : 0}%"></div></div>
     <div class="qlist">${q.items.map(x => { const c = S.chapters.find(y => y.id === x.id); return c ? `<button class="qchip ${x.st}" data-act="openChapter" data-id="${x.id}">${esc(c.titleVi || c.title)} · <span class="st ${x.st === 'warn' ? 'blocked' : x.st}">${esc(stLabel(x))}</span>${x.note ? ' <span class="muted">· ' + esc(x.note) + '</span>' : ''}</button>` : ''; }).join('')}</div>
@@ -2170,12 +2286,12 @@ function renderSide() {
       <button class="small" data-act="addChapters">${I('plus')} ${esc(T('Thêm chương'))}</button></div>
     <div class="chlist">${chs.map((c, k) => {
       const done = c.paras.filter(x => x.vi && x.vi.trim()).length; const d = C.dir(chDir(c));
-      const qi = S.queue && S.queue.items.find(x => x.id === c.id); const run = qi && qi.st === 'run';
+      const qi = S.queue && S.queue.items.find(x => x.id === c.id); const run = qi && qi.st === 'run'; const holes = run ? 0 : gapInfo(c).holes.length;
       return `<div class="chitem ${c.id === S.chapterId && S.tab === 'editor' ? 'active' : ''}" data-act="openChapter" data-id="${c.id}" title="${esc(STATUS()[c.status])}" role="button" tabindex="0">
         <input type="checkbox" class="chk" data-id="${c.id}" ${S.sel.has(c.id) ? 'checked' : ''} aria-label="${esc(T('Chọn'))}">
         <span class="dot ${run ? 'run' : isDone(c) ? (c.status === 'approved' ? 'approved' : 'draft') : done ? 'part' : ''}"></span>
         <span class="cbody"><span class="t">${esc(c.titleVi || c.title || T('Chương') + ' ' + (k + 1))}</span>
-        <span class="meta">${run ? esc(T('đang dịch…')) : esc(T('{d}/{n} đoạn', { d: done, n: c.paras.length }))}${c.status === 'approved' ? ' · ' + esc(T('đã duyệt')) : ''}${c.direction || d.target === 'en' ? ' · ' + esc(d.target === 'en' ? '→ EN' : '→ VI') : ''}${isStale(c) ? ' · <span class="warnc">' + esc(T('đã đổi')) + '</span>' : ''}${softCount(c) ? ' · <span class="softc">' + esc(T('{n} đoạn giảm nhẹ', { n: softCount(c) })) + '</span>' : ''}</span></span>
+        <span class="meta">${run ? esc(T('đang dịch…')) : esc(T('{d}/{n} đoạn', { d: done, n: c.paras.length }))}${holes ? ' · <span class="warnc">' + esc(T('thiếu {n} đoạn', { n: holes })) + '</span>' : ''}${c.status === 'approved' ? ' · ' + esc(T('đã duyệt')) : ''}${c.direction || d.target === 'en' ? ' · ' + esc(d.target === 'en' ? '→ EN' : '→ VI') : ''}${isStale(c) ? ' · <span class="warnc">' + esc(T('đã đổi')) + '</span>' : ''}${softCount(c) ? ' · <span class="softc">' + esc(T('{n} đoạn giảm nhẹ', { n: softCount(c) })) + '</span>' : ''}</span></span>
         <span class="mvs"><button class="mv" data-act="moveCh" data-id="${c.id}" data-d="-1" title="${esc(T('Lên'))}" aria-label="${esc(T('Lên'))}">${I('up')}</button><button class="mv" data-act="moveCh" data-id="${c.id}" data-d="1" title="${esc(T('Xuống'))}" aria-label="${esc(T('Xuống'))}">${I('down')}</button></span></div>`;
     }).join('') || `<div class="muted small dashed">${esc(T('Chưa có chương. Dán chữ hoặc kéo thả file vào bên phải.'))}</div>`}</div>
     ${chs.length ? `<div class="muted small hint">${esc(T('Đánh dấu ô vuông để chỉ dịch vài chương; không đánh dấu thì nút Dịch sẽ dịch mọi chương chưa xong.'))}</div>` : ''}`;
@@ -2219,6 +2335,11 @@ function renderEditor(m) {
   const running = !!S.busy; const dir = chDir(ch); const tgt = C.targetOf(dir);
   const srcText = ch.paras.map(p => p.zh).join('\n'); const scr = C.detectScript(srcText);
   const prim = primaryProfile(); const fb = fallbackProfile(); const any = hasAny(ch);
+  const gi = gapInfo(ch); const holeSet = new Set(gi.holes); const runHereNow = running && S.queue && S.queue.items.some(x => x.id === ch.id && x.st === 'run');
+  const gapNote = gi.all.length && !runHereNow ? `<div class="note warn gapnote" id="gapNote"><b>⚠ ${esc(gi.holes.length ? T('AI bỏ sót {n} đoạn: {p}.', { n: gi.holes.length, p: paraList(gi.holes) }) : T('Chương chưa dịch xong.'))}</b>
+      ${gi.trailing.length ? ' ' + esc(T('Còn {n} đoạn cuối (từ đoạn {a}) chưa dịch tới — lần dịch trước bị dừng giữa chừng.', { n: gi.trailing.length, a: gi.trailing[0] + 1 })) : ''}
+      ${esc(T('Chỉ dịch các đoạn này, không dịch lại cả chương.'))}
+      <div class="row-flex"><button class="small primary" data-act="fixAll" ${running ? 'disabled' : ''}>${esc(T('Dịch lại tất cả đoạn thiếu'))}</button>${gi.holes.length ? `<button class="small link" data-act="gotoRow" data-i="${gi.holes[0]}">${esc(T('Xem đoạn {a}', { a: gi.holes[0] + 1 }))}</button>` : ''}</div></div>` : '';
   m.innerHTML = `<div class="edgrid ${S.gpOpen ? 'gp-open' : ''}"><div class="edcol">
   <div class="ed-head">
     <div class="toolbar">
@@ -2227,6 +2348,7 @@ function renderEditor(m) {
       ${!prim ? `<button class="primary" data-act="settings">${esc(T('Kết nối AI để dịch'))}</button>` : ''}
     </div>
     ${C.looksFontLocked(srcText) ? `<div class="note warn">${esc(T('Chữ trong chương này có vẻ bị vỡ — file gốc khóa chữ bằng font riêng. Bản dịch sẽ sai. Hãy tìm bản txt UTF-8.'))}</div>` : ''}
+    ${gapNote}
     ${isStale(ch) ? `<div class="note warn" id="staleNote">${esc(T('Nguồn hoặc ngôn ngữ đã đổi. Bản dưới là lần dịch trước.'))}</div>` : ''}
     <details class="adv chadv" id="chAdv" ${S.chAdvOpen ? 'open' : ''}><summary>${esc(T('Nâng cao cho chương này'))}</summary>
       <div class="ed-row">
@@ -2262,9 +2384,11 @@ function renderEditor(m) {
   ${any ? '' : `<div class="vi-empty">${esc(tgt === 'en' ? T('Bản dịch tiếng Anh hiện ra ở đây.') : T('Bản dịch hiện ra ở đây.'))}</div>`}
   <div id="rows" class="${any ? '' : 'noviyet'}">${ch.paras.map((p, i) => {
     const iss = issuesBy[i]; const rm = S.rowMsg[i];
-    return `<div class="prow ${iss ? 'flag' : ''} ${p.omitted ? 'omit' : ''} ${p.softened ? 'soft' : ''}" id="row-${i}"><div class="zh serif"><span class="num">${i + 1}</span>${hl(p.zh)}</div>
-      <div class="vi"><span class="num m">${i + 1}</span><textarea class="vi serif" data-i="${i}" rows="1" lang="${tgt}" placeholder="${esc(T('(chưa dịch)'))}">${esc(p.vi || '')}</textarea>
+    const gap = holeSet.has(i);
+    return `<div class="prow ${iss ? 'flag' : ''} ${p.omitted ? 'omit' : ''} ${p.softened ? 'soft' : ''} ${gap ? 'gap' : ''}" id="row-${i}"><div class="zh serif"><span class="num">${i + 1}</span>${hl(p.zh)}</div>
+      <div class="vi"><span class="num m">${i + 1}</span><textarea class="vi serif" data-i="${i}" rows="1" lang="${tgt}" placeholder="${esc(gap ? T('(chưa dịch — AI bỏ sót đoạn này)') : T('(chưa dịch)'))}">${esc(p.vi || '')}</textarea>
       <div class="ptools"><button class="small" data-act="retransPara" data-i="${i}" ${running ? 'disabled' : ''}>↻ ${esc(T('Dịch lại'))}</button>
+      ${gap ? `<span class="flagtxt gapflag">⚠ ${esc(T('AI bỏ sót đoạn {a} — chưa dịch. Bấm “Dịch lại”.', { a: i + 1 }))}</span>` : ''}
       ${iss ? `<span class="flagtxt">⚠ ${esc(T('Thiếu thuật ngữ:'))} ${iss.map(x => esc(x.zh + ' → ' + x.vi)).join('; ')}</span>` : ''}
       ${rm ? `<span class="errtxt">${esc(rm)}</span> ${fallbackProfile() ? `<button class="small" data-act="retransPara" data-i="${i}" data-other="1">${esc(T('Dịch lại với model khác'))} (${esc(fallbackProfile().name)})</button>` : ''}${S.rowBlocked && S.rowBlocked[i] ? `<button class="small" data-act="softenPara" data-i="${i}" ${running ? 'disabled' : ''}>${esc(T('Dịch giảm nhẹ'))}</button>` : ''}` : ''}
       ${p.softened ? `<span class="st softened sbadge" title="${esc(T('Đoạn này được dịch theo cách giảm nhẹ. Có thể dịch lại bằng model khác.'))}">${esc(T('đã giảm nhẹ'))}</span>${!rm && fallbackProfile() ? `<button class="small" data-act="retransPara" data-i="${i}" data-other="1" ${running ? 'disabled' : ''}>${esc(T('Dịch lại với model khác'))} (${esc(fallbackProfile().name)})</button>` : ''}<button class="small link" data-act="unsoften" data-i="${i}">${esc(T('Bỏ dấu'))}</button>` : ''}</div></div></div>`;
@@ -2320,6 +2444,10 @@ function setViLive(ch, i, val) {
   if (ch.id !== S.chapterId) return;
   const ta = $('textarea.vi[data-i="' + i + '"]');
   if (ta && document.activeElement !== ta) { ta.value = val; autosize(ta); }
+  if (val && val.trim()) { /* điện thoại, thẻ Bản dịch: lúc mở chương chưa có chữ nào nên khung bị ẩn — hiện ra ngay khi có chữ đầu tiên */
+    const rows = $('#rows.noviyet'); if (rows) { rows.classList.remove('noviyet'); const e = $('.vi-empty'); if (e) e.remove(); }
+    if (ta) { const row = ta.closest('.prow'); if (row && row.classList.contains('gap')) { row.classList.remove('gap'); const f = row.querySelector('.gapflag'); if (f) f.remove(); } }
+  }
 }
 function renderJob() {
   const el = $('#jobPanel'); if (!el) return;
@@ -2328,13 +2456,16 @@ function renderJob() {
   const n = j.chunks.length, d = j.chunks.filter(c => ['done', 'partial', 'omitted'].includes(c.status)).length;
   const others = id => S.settings.profiles.filter(p => p.id !== id);
   const J = JOBST();
-  el.innerHTML = `<div class="panel"><h4>${esc(T('Tiến độ dịch: {d}/{n} phần', { d, n }))} ${runHere ? '<span class="st run">— ' + esc(T('đang chạy')) + '</span>' : ''} <span class="spacer"></span><button class="small link" data-act="closeJob">${esc(T('Ẩn'))}</button></h4>
+  const nPart = j.chunks.filter(c => c.status === 'partial').length;
+  el.innerHTML = `<div class="panel"><h4>${esc(T('Tiến độ dịch: {d}/{n} phần', { d, n }))} ${runHere ? '<span class="st run">— ' + esc(T('đang chạy')) + '</span>' : ''} <span class="spacer"></span>${nPart && !S.busy ? `<button class="small primary" data-act="fixAll">${esc(T('Dịch lại tất cả đoạn thiếu'))}</button>` : ''}<button class="small link" data-act="closeJob">${esc(T('Ẩn'))}</button></h4>
     <div class="progress"><div style="width:${n ? Math.round(d / n * 100) : 0}%"></div></div>
     <div class="joblist">${j.chunks.map((c, k) => {
       const fb = fallbackProfile(c.profileId); const canAct = !S.busy && !['run', 'wait'].includes(c.status);
       return `<div class="jobitem"><span>${esc(T('Phần {k} · đoạn {a}–{b}', { k: k + 1, a: c.idx[0] + 1, b: c.idx[c.idx.length - 1] + 1 }))}</span>
       <span class="st ${c.status}">${J[c.status]}</span>${c.softened ? `<span class="st softened" title="${esc(T('Phần này được dịch theo cách giảm nhẹ. Có thể dịch lại bằng model khác.'))}">${esc(J.softened)}</span>` : ''}<span class="muted">${esc(c.profileName || '')}${c.chars ? ' · ' + c.chars + ' ' + esc(T('ký tự')) : ''}</span>
-      ${c.msg ? `<span class="${c.status === 'blocked' || c.status === 'error' ? 'errtxt' : 'muted'}">${esc(c.msg)}</span>` : ''}
+      ${c.msg ? `<span class="${c.status === 'blocked' || c.status === 'error' ? 'errtxt' : c.status === 'partial' || (c.status === 'run' && c.repairing) ? 'flagtxt' : 'muted'}">${esc(c.msg)}</span>` : ''}
+      ${canAct && c.status === 'partial' ? `<button class="small primary" data-act="fixChunk" data-k="${k}" title="${esc(T('Chỉ dịch những đoạn AI bỏ sót trong phần này, không dịch lại cả phần'))}">${esc(T('Dịch lại đoạn thiếu'))}</button>` : ''}
+      ${canAct && c.status === 'partial' && c.blockedMissing ? `<button class="small" data-act="fixChunkSoft" data-k="${k}" title="${esc(T('Dịch lại phần này: giữ cốt truyện, cảm xúc, lời thoại; cảnh quá lộ liễu được viết tiết chế, gợi tả.'))}">${esc(T('Dịch giảm nhẹ'))}</button>` : ''}
       ${canAct && c.status !== 'omitted' ? `<button class="small" data-act="retryChunk" data-k="${k}">↻ ${esc(T('Thử lại'))}</button>` : ''}
       ${canAct && others(c.profileId).length && ['blocked', 'error', 'partial', 'stopped'].includes(c.status) ? `<select data-k="${k}" class="otherSel">${others(c.profileId).map(p => `<option value="${p.id}" ${fb && fb.id === p.id ? 'selected' : ''}>${esc(p.name + ' · ' + p.model)}</option>`).join('')}</select><button class="small" data-act="retryOther" data-k="${k}">${esc(T('Dịch lại với model khác'))}</button>` : ''}
       ${canAct && c.status === 'blocked' ? `<button class="small" data-act="softenChunk" data-k="${k}" title="${esc(T('Dịch lại phần này: giữ cốt truyện, cảm xúc, lời thoại; cảnh quá lộ liễu được viết tiết chế, gợi tả.'))}">${esc(T('Dịch giảm nhẹ'))}</button>` : ''}
@@ -2363,21 +2494,21 @@ function prevContext(ch) {
   let tail = vis.slice(-3).join('\n'); if (tail.length > 900) tail = tail.slice(-900);
   return { prevSummary: pc.summary || '', prevTail: tail };
 }
-function buildMessages(ch, idx, soften) {
+function buildMessages(ch, idx, soften, retry) {
   const ctx = prevContext(ch); const dir = chDir(ch);
   const sys = C.buildSystemPrompt({ sample: ch.paras.map(p => p.zh).join('\n').slice(0, 4000), styleGuide: styleFor(dir), terms: chapterTerms(ch), prevSummary: ctx.prevSummary, prevTail: ctx.prevTail, direction: dir, address: [S.project.address, ch.address].map(x => (x || '').trim()).filter(Boolean).join('\n'), soften: !!soften, humor: !!S.project.humor });
   const tail = []; for (let i = idx[0] - 1; i >= 0 && tail.length < 2; i--) if (ch.paras[i].vi && ch.paras[i].vi.trim() && !ch.paras[i].omitted && !idx.includes(i)) tail.unshift(ch.paras[i].vi);
-  return [{ role: 'system', content: sys }, { role: 'user', content: C.buildTranslateUser(idx.map(i => ch.paras[i].zh), tail, dir) }];
+  return [{ role: 'system', content: sys }, { role: 'user', content: C.buildTranslateUser(idx.map(i => ch.paras[i].zh), tail, dir, !!retry) }];
 }
 /* Dịch một phần (chunk) và cập nhật giao diện */
 async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
-  chunk.status = 'run'; chunk.msg = ''; chunk.profileId = profile ? profile.id : ''; chunk.profileName = profile ? profile.name : ''; chunk.chars = 0; renderJob();
+  chunk.status = 'run'; chunk.msg = ''; chunk.repairing = false; chunk.blockedMissing = false; chunk.profileId = profile ? profile.id : ''; chunk.profileName = profile ? profile.name : ''; chunk.chars = 0; renderJob();
   const snapshot = chunk.idx.map(i => ch.paras[i].vi);
   const n = chunk.idx.length;
   let res;
   try {
     res = await C.runChunk(profile, buildMessages(ch, chunk.idx, soften), n, {
-      signal,
+      signal, src: chunk.idx.map(i => ch.paras[i].zh),
       onRetry: (a, e) => { chunk.msg = T('Thử lại lần {a}…', { a }) + ' (' + e.message.slice(0, 80) + ')'; renderJob(); },
       onPartial: acc => {
         chunk.chars = acc.length; const t = C.stripThink(acc); const map = C.parseNumbered(t);
@@ -2416,14 +2547,99 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
       }
     }
   } else {
-    Object.keys(res.map).forEach(k => { const i = chunk.idx[k - 1]; if (i != null) { setViLive(ch, i, res.map[k]); delete ch.paras[i].omitted; if (soften) ch.paras[i].softened = true; else delete ch.paras[i].softened; } });
+    Object.keys(res.map).forEach(k => { const i = chunk.idx[k - 1]; if (i != null) { setViLive(ch, i, res.map[k]); delete ch.paras[i].omitted; delete ch.paras[i].missing; if (soften) ch.paras[i].softened = true; else delete ch.paras[i].softened; } });
     chunk.softened = !!soften;
     chunk.idx.forEach((i, k) => { if (!res.map[k + 1]) setViLive(ch, i, snapshot[k]); });
     chunk.status = res.status; chunk.msg = res.message || '';
     ch.translatedDir = chDir(ch); ch.translatedSrc = srcHash(ch);
+    if (res.status === 'partial') { /* AI bỏ sót / gộp đoạn → tự hỏi lại riêng những đoạn đó */
+      const abs = ks => (ks || []).map(k => chunk.idx[k - 1]).filter(i => i != null);
+      await repairChunk(ch, chunk, abs(res.missing), abs(res.suspect), profile, signal, soften);
+    }
   }
   await saveNow('chapters', ch);
   renderJob(); if (ch.id === S.chapterId) updateStats();
+}
+/* Dịch bù các đoạn AI bỏ sót: cùng ngữ cảnh, thuật ngữ, văn phong; lượt 1 theo nhóm nhỏ (≤3 đoạn liền nhau, kèm đoạn nghi bị gộp),
+   lượt 2–3 từng đoạn một. Bị chặn → tự dịch giảm nhẹ nếu chính sách cho phép. Trả về các đoạn vẫn còn thiếu. */
+async function repairParas(ch, need, suspects, profile, signal, soften, onMsg) {
+  let todo = need.slice(); const blocked = new Set(), done = new Set(), softDone = new Set();
+  const pol = blockPolicy(); const autoSoft = !!soften || pol === 'soften' || pol === 'fallback_soften';
+  const ask = (g, soft) => C.runChunk(profile, buildMessages(ch, g, soft, true), g.length, { signal, src: g.map(i => ch.paras[i].zh) });
+  try {
+    for (let round = 1; round <= 3 && todo.length; round++) {
+      onMsg(missMsg(todo) + ' — ' + T('đang tự dịch lại… (lần {r}/3)', { r: round }));
+      const extra = round === 1 ? (suspects || []).filter(i => !todo.includes(i)) : [];
+      for (const g of C.smallGroups(todo.concat(extra).sort((a, b) => a - b), round === 1 ? 3 : 1)) {
+        if (!g.some(i => todo.includes(i) && !done.has(i))) continue;
+        let soft = !!soften;
+        let r = await ask(g, soft);
+        /* nhóm nhiều đoạn bị chặn → để lượt sau hỏi từng đoạn (chỉ đoạn thật sự bị chặn mới phải giảm nhẹ) */
+        if (r.status === 'blocked' && !soft && autoSoft && g.length === 1) { soft = true; r = await ask(g, true); }
+        if (r.status === 'blocked') { g.forEach(i => { if (todo.includes(i)) blocked.add(i); }); continue; }
+        if (!r.map) continue;
+        const whole = r.status === 'done';
+        g.forEach((i, k) => {
+          const v = r.map[k + 1]; const isNeed = todo.includes(i);
+          if (!v || (!isNeed && !whole)) return; /* đoạn nghi bị gộp chỉ được thay khi cả nhóm trả về đủ */
+          setViLive(ch, i, v); const p = ch.paras[i]; delete p.omitted; delete p.missing;
+          if (soft) p.softened = true; else delete p.softened;
+          if (isNeed) { done.add(i); blocked.delete(i); if (soft) softDone.add(i); }
+        });
+      }
+      todo = todo.filter(i => !done.has(i));
+      await saveNow('chapters', ch);
+    }
+  } finally {
+    todo.forEach(i => { if (!(ch.paras[i].vi && ch.paras[i].vi.trim())) ch.paras[i].missing = true; });
+  }
+  return { left: todo, blocked: [...blocked].filter(i => todo.includes(i)), soft: softDone.size > 0 };
+}
+function finishRepair(chunk, need, r) {
+  chunk.repairing = false; chunk.blockedMissing = r.blocked.length > 0;
+  if (r.soft) chunk.softened = true;
+  const fixed = need.filter(i => !r.left.includes(i));
+  if (!r.left.length) { chunk.status = 'done'; chunk.msg = missMsg(need) + ' — ' + T('đã tự dịch bù.') + (r.soft ? ' ' + T('(dịch giảm nhẹ)') : ''); return; }
+  chunk.status = 'partial';
+  chunk.msg = missMsg(r.left) + ' — ' + T('bấm “Dịch lại đoạn thiếu”.') + (fixed.length ? ' ' + T('Đã tự dịch bù: {p}.', { p: paraList(fixed) }) : '')
+    + (r.blocked.length ? ' ' + T('Đoạn {p}: AI không trả lời hoặc bị chặn — thử “Dịch giảm nhẹ” hoặc model khác.', { p: paraList(r.blocked) }) : '');
+}
+async function repairChunk(ch, chunk, need, suspects, profile, signal, soften) {
+  if (!need.length) return;
+  chunk.status = 'run'; chunk.repairing = true;
+  try {
+    const r = await repairParas(ch, need, suspects, profile, signal, soften, t => { chunk.msg = t; renderJob(); });
+    finishRepair(chunk, need, r);
+  } catch (e) {
+    chunk.repairing = false; chunk.status = 'partial';
+    const left = need.filter(i => isEmptyPara(ch.paras[i]));
+    chunk.msg = (left.length ? missMsg(left) + ' — ' + T('bấm “Dịch lại đoạn thiếu”.') : '') + (e && e.name === 'AbortError' ? ' ' + T('(đã dừng)') : '');
+    await saveNow('chapters', ch); renderJob();
+    if (e && e.name === 'AbortError') throw e;
+  }
+}
+/* Nút “Dịch lại đoạn thiếu” của một phần */
+async function fixChunk(k, soften) {
+  const ch = curCh(); const j = ch && S.jobs[ch.id]; const c = j && j.chunks[k]; if (!c || S.busy) return;
+  const need = c.idx.filter(i => isEmptyPara(ch.paras[i]) || ch.paras[i].missing);
+  if (!need.length) { c.status = 'done'; c.msg = ''; renderJob(); return; }
+  const prof = getProfile(c.profileId) || primaryProfile(); if (!prof) return toast(T('Chưa có hồ sơ AI.'), 'err');
+  const ctrl = new AbortController(); S.busy = ctrl; c.profileId = prof.id; c.profileName = prof.name;
+  renderJob();
+  try { await repairChunk(ch, c, need, [], prof, ctrl.signal, !!soften); }
+  catch (e) { /* đã ghi vào thông báo của phần */ }
+  finally {
+    S.busy = null; await saveNow('chapters', ch);
+    const qi = S.queue && S.queue.items.find(x => x.id === ch.id);
+    if (qi && qi.st === 'warn' && j.chunks.every(x => x.status === 'done' || x.status === 'omitted')) { qi.st = 'done'; qi.bad = 0; }
+    afterTranslate(ch); renderQbar(); renderJob();
+  }
+}
+/* Nút “Dịch lại tất cả đoạn thiếu”: chỉ dịch các đoạn còn trống (AI bỏ sót + đoạn cuối chưa dịch tới), không dịch lại cả chương */
+async function fixAll() {
+  const ch = curCh(); if (!ch || S.busy) return;
+  if (!gapInfo(ch).all.length) { const j = S.jobs[ch.id]; if (j) j.chunks.forEach(c => { if (c.status === 'partial') { c.status = 'done'; c.msg = ''; } }); renderJob(); return toast(T('Không còn đoạn nào thiếu.')); }
+  await runQueue([{ id: ch.id, mode: 'empty' }]);
 }
 function afterTranslate(ch) {
   if (ch.status === 'todo' && ch.paras.some(p => p.vi && p.vi.trim())) { ch.status = 'draft'; saveNow('chapters', ch); }
@@ -2442,8 +2658,10 @@ async function translateOne(ch, mode, signal, prof) {
   let idx = ch.paras.map((p, i) => i);
   if (mode === 'empty') idx = idx.filter(i => !(ch.paras[i].vi && ch.paras[i].vi.trim()));
   if (!idx.length) return { bad: 0, skip: true };
-  const size = Math.max(300, Number(S.settings.chunkSize) || 1500);
-  const job = S.jobs[ch.id] = { chunks: C.chunkParagraphs(ch.paras.map(p => p.zh), idx, size).map(a => ({ idx: a, status: 'wait', msg: '' })) };
+  const size = Math.max(300, Number(S.settings.chunkSize) || 1200); const zh = ch.paras.map(p => p.zh);
+  /* tối đa 24 đoạn mỗi phần (chương nhiều câu thoại ngắn dễ bị AI gộp/bỏ); chế độ “còn trống” dịch từng dãy liền nhau riêng — không ghép đoạn 28 với đoạn 37 */
+  const runs = mode === 'empty' ? C.contiguousRuns(idx) : [idx];
+  const job = S.jobs[ch.id] = { chunks: [].concat(...runs.map(r => C.chunkParagraphs(zh, r, size, 24))).map(a => ({ idx: a, status: 'wait', msg: '' })) };
   if (ch.id === S.chapterId) renderJob();
   try {
     for (const c of job.chunks) { if (signal.aborted) break; await runChunkUI(ch, c, prof, signal, true); }
@@ -2452,7 +2670,8 @@ async function translateOne(ch, mode, signal, prof) {
     job.chunks.forEach(c => { if (c.status === 'wait') c.status = 'stopped'; });
     if (ch.status === 'todo' && hasAny(ch)) { ch.status = 'draft'; await saveNow('chapters', ch); }
   }
-  return { bad: job.chunks.filter(c => c.status !== 'done' && c.status !== 'omitted').length };
+  const bads = job.chunks.filter(c => c.status !== 'done' && c.status !== 'omitted');
+  return { bad: bads.length, gapOnly: bads.length > 0 && bads.every(c => c.status === 'partial'), gaps: job.chunks.reduce((a, c) => a + c.idx.filter(i => isEmptyPara(ch.paras[i])).length, 0) };
 }
 /* Sau mỗi chương (hàng loạt): tóm tắt nội bộ cho chương sau + gợi ý thuật ngữ mới. Không đụng tới bản dịch. */
 const chapterTargetText = ch => ch.paras.filter(p => !p.omitted).map(p => p.vi).filter(v => v && v.trim()).join('\n');
@@ -2509,7 +2728,7 @@ async function runQueue(items) {
       renderSide(); renderMain();
       try {
         const r = await translateOne(ch, it.mode, ctrl.signal, prof);
-        it.st = r.skip ? 'skip' : r.bad ? 'warn' : 'done'; it.bad = r.bad || 0;
+        it.st = r.skip ? 'skip' : r.bad ? 'warn' : 'done'; it.bad = r.bad || 0; it.gapOnly = !!r.gapOnly; it.gaps = r.gaps || 0;
       } catch (e) {
         if (e && e.name === 'AbortError') { it.st = 'stopped'; break; }
         it.st = 'warn'; it.bad = 1; toast(String(e.message || e), 'err');
@@ -2525,6 +2744,7 @@ async function runQueue(items) {
     S.queue.stopped = ctrl.signal.aborted;
     const bad = S.queue.items.filter(x => x.st === 'warn').length;
     if (ctrl.signal.aborted) toast(T('Đã dừng dịch.'));
+    else if (bad && S.queue.items.filter(x => x.st === 'warn').every(x => x.gapOnly)) toast(T('{n} chương còn đoạn AI bỏ sót chưa dịch được. Mở chương, bấm “Dịch lại tất cả đoạn thiếu” (hoặc “Dịch giảm nhẹ” nếu bị chặn).', { n: bad }), 'err');
     else if (bad) toast(T('{n} chương còn phần bị chặn hoặc lỗi. Mở chương để thử AI khác, “Dịch giảm nhẹ” hoặc “Lược phần này”.', { n: bad }), 'err');
     else toast(T('Đã dịch xong!'), 'ok');
     renderSide(); renderMain();
@@ -2975,18 +3195,23 @@ function renderBackup(m) {
 }
 
 /* ---------- Xuất sách (hộp thoại) ---------- */
+/* Bản dịch của một chương để xuất/chép: chương đã dịch dở thì đoạn còn trống được thay bằng dấu “〔Đoạn n chưa dịch〕” đúng chỗ */
+function viParas(c, lang) {
+  if (!hasAny(c)) return [];
+  return c.paras.map((p, i) => (p.vi || '').trim() || (p.omitted ? '' : C.gapMark(lang, i + 1))).filter(Boolean);
+}
 function chapterBook(chs, meta, lang) {
-  let untrans = 0;
+  let untrans = 0, gaps = 0;
   const L = C.BOOK_L[lang === 'en' ? 'en' : 'vi'];
-  const book = Object.assign({ lang }, meta, { chapters: chs.map((c, k) => { untrans += c.paras.filter(p => !(p.vi && p.vi.trim())).length; return { title: c.titleVi || c.title || (L.chapter + ' ' + (k + 1)), paras: c.paras.map(p => (p.vi || '').trim()).filter(Boolean) }; }) });
-  return { book, untrans };
+  const book = Object.assign({ lang }, meta, { chapters: chs.map((c, k) => { const e = c.paras.filter(isEmptyPara).length; if (hasAny(c)) gaps += e; else untrans += e; return { title: c.titleVi || c.title || (L.chapter + ' ' + (k + 1)), paras: viParas(c, lang) }; }) });
+  return { book, untrans, gaps };
 }
 function exportBook() {
   const sel = $$('input.exSel:checked').map(i => i.value);
   const chs = sortedChapters().filter(c => sel.includes(c.id));
   if (!chs.length) { toast(T('Chưa chọn chương nào.'), 'err'); return null; }
-  const { book, untrans } = chapterBook(chs, Object.assign(creditMeta(S.project), { title: $('#exTitle').value.trim() || S.project.title }), $('#exLang').value);
-  if (untrans && !confirm(T('Có {n} đoạn chưa dịch trong các chương đã chọn — các đoạn này sẽ bị bỏ qua. Tiếp tục xuất?', { n: untrans }))) return null;
+  const { book, untrans, gaps } = chapterBook(chs, Object.assign(creditMeta(S.project), { title: $('#exTitle').value.trim() || S.project.title }), $('#exLang').value);
+  if ((untrans || gaps) && !confirm((untrans ? T('Có {n} đoạn chưa dịch trong các chương đã chọn — các đoạn này sẽ bị bỏ qua. Tiếp tục xuất?', { n: untrans }) : '') + (gaps ? (untrans ? '\n' : '') + T('Có {n} đoạn AI bỏ sót chưa dịch — trong file sẽ ghi rõ “〔Đoạn … chưa dịch〕” đúng chỗ. Nên bấm “Dịch lại tất cả đoạn thiếu” trước. Vẫn xuất?', { n: gaps }) : ''))) return null;
   return book;
 }
 function printBook(book) {
@@ -3050,7 +3275,7 @@ function openSettings() {
     $('#setOnBlocked', b).onchange = e => { s.onBlocked = e.target.value; saveSettings(); };
     $('#setAutoSum', b).onchange = e => { s.autoSummary = e.target.checked; saveSettings(); };
     $('#setSuggest', b).onchange = e => { s.suggestTerms = e.target.checked; saveSettings(); };
-    $('#setChunk', b).onchange = e => { s.chunkSize = Math.max(300, Number(e.target.value) || 1500); saveSettings(); };
+    $('#setChunk', b).onchange = e => { s.chunkSize = Math.max(300, Number(e.target.value) || 1200); saveSettings(); };
     $('#setDefTr', b).onchange = e => { s.defaultTranslator = e.target.value.trim(); saveSettings(); };
   });
 }
@@ -3187,10 +3412,11 @@ async function deliverBook(book, base, fmt) {
 async function chapterDownload(fmt) {
   const ch = curCh(); if (!ch) return;
   const k = sortedChapters().findIndex(c => c.id === ch.id); const lang = C.targetOf(chDir(ch));
-  const { book, untrans } = chapterBook([ch], Object.assign(creditMeta(S.project), { title: ch.titleVi || ch.title }), lang);
+  const { book, untrans, gaps } = chapterBook([ch], Object.assign(creditMeta(S.project), { title: ch.titleVi || ch.title }), lang);
   $$('details.menu').forEach(d => { d.open = false; }); closeDlMenu();
   if (!book.chapters[0].paras.length) return toast(T('Chương chưa có bản dịch.'), 'err');
   if (untrans) toast(T('Có {n} đoạn chưa dịch — sẽ bỏ qua.', { n: untrans }));
+  if (gaps) toast(T('Có {n} đoạn chưa dịch — đã ghi rõ “〔Đoạn … chưa dịch〕” trong file.', { n: gaps }), 'err');
   const base = C.chapterFileName(ch.titleVi || ch.title, k);
   if (fmt === 'epub') return deliverBook(book, base, fmt);
   await deliverBook(Object.assign({}, book, { author: '', translator: '', originalTitle: '', editor: '', source: '', creditNote: '', single: true }), base, fmt);
@@ -3198,10 +3424,11 @@ async function chapterDownload(fmt) {
 async function novelDownload(fmt) {
   closeDlMenu();
   const chs = bookChapters();
-  const { book, untrans } = chapterBook(chs, Object.assign(creditMeta(S.project), { title: S.project.title }), projTarget());
+  const { book, untrans, gaps } = chapterBook(chs, Object.assign(creditMeta(S.project), { title: S.project.title }), projTarget());
   book.chapters = book.chapters.filter(c => c.paras.length);
   if (!book.chapters.length) return toast(T('Chưa có chương nào được dịch.'), 'err');
   if (untrans) toast(T('Có {n} đoạn chưa dịch — sẽ bỏ qua.', { n: untrans }));
+  if (gaps) toast(T('Có {n} đoạn chưa dịch — đã ghi rõ “〔Đoạn … chưa dịch〕” trong file.', { n: gaps }), 'err');
   await deliverBook(book, safeName(book.title), fmt);
 }
 /* PDF thật: vẽ từng trang lên canvas bằng font chữ có chân của trình duyệt (đúng dấu tiếng Việt), rồi gói JPEG thành .pdf */
@@ -3297,6 +3524,9 @@ const A = {
   retryOther: el => { const sel = $('select.otherSel[data-k="' + el.dataset.k + '"]'); retryChunk(Number(el.dataset.k), sel && sel.value); },
   omitChunk: el => omitChunk(Number(el.dataset.k)),
   softenChunk: el => softenChunk(Number(el.dataset.k)),
+  fixChunk: el => fixChunk(Number(el.dataset.k)),
+  fixChunkSoft: el => fixChunk(Number(el.dataset.k), true),
+  fixAll: () => fixAll(),
   softenPara: el => retransPara(Number(el.dataset.i), false, true),
   unsoften: async el => { const ch = curCh(); if (!ch) return; delete ch.paras[Number(el.dataset.i)].softened; await saveNow('chapters', ch); const sc = $('#main').scrollTop; renderEditor($('#main')); $('#main').scrollTop = sc; renderSide(); },
   sgAdd: el => addSuggestions([el.dataset.id]),
@@ -3318,7 +3548,7 @@ const A = {
   copyCh: async () => {
     const ch = curCh(); if (!ch) return;
     if (!hasAny(ch)) return toast(T('Chương chưa có bản dịch.'), 'err');
-    const t = [ch.titleVi || ch.title].concat(ch.paras.map(p => (p.vi || '').trim()).filter(Boolean)).join('\n\n');
+    const t = [ch.titleVi || ch.title].concat(viParas(ch, C.targetOf(chDir(ch)))).join('\n\n');
     const ok = await copyText(t); const l = $('#copyLbl');
     if (ok) { toast(T('Đã chép'), 'ok'); if (l) l.textContent = T('Đã chép'); setTimeout(() => { const l2 = $('#copyLbl'); if (l2) l2.textContent = T('Chép'); }, 1800); }
     else toast(T('Không chép được. Chọn chữ rồi sao chép tay.'), 'err');
@@ -3392,7 +3622,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('input', e => {
   const t = e.target; const ch = curCh();
-  if (t.matches('textarea.vi') && ch) { const p = ch.paras[Number(t.dataset.i)]; p.vi = t.value; delete p.omitted; autosize(t); scheduleSave('chapters', ch); clearTimeout(timers._st); timers._st = setTimeout(updateStats, 300); }
+  if (t.matches('textarea.vi') && ch) { const p = ch.paras[Number(t.dataset.i)]; p.vi = t.value; delete p.omitted; if (t.value.trim()) delete p.missing; autosize(t); scheduleSave('chapters', ch); clearTimeout(timers._st); timers._st = setTimeout(updateStats, 300); }
   else if (t.dataset.cf && ch && t.tagName !== 'SELECT') { ch[t.dataset.cf] = t.value; scheduleSave('chapters', ch); if (t.dataset.cf === 'title' || t.dataset.cf === 'titleVi') { clearTimeout(timers._sd); timers._sd = setTimeout(renderSide, 500); } }
   else if (t.dataset.sg && S.project) { const x = (S.project.termSuggest || []).find(y => y.id === t.dataset.sg); if (x) { x.vi = t.value; scheduleSave('projects', S.project); } }
   else if (t.dataset.g && S.project) { const g = S.project.glossary.find(x => x.id === t.dataset.id); if (g) { g[t.dataset.g] = t.value; scheduleSave('projects', S.project); } }
@@ -3443,7 +3673,7 @@ window.addEventListener('beforeunload', e => { if (pending.size || S.busy) { e.p
 
 
 /* ---------- Ứng dụng trên màn hình chính (PWA) ---------- */
-const APP_BUILD = '157f25a0b5b7';
+const APP_BUILD = '147953a54137';
 const ONLINE_ORIGIN = /^https?:$/.test(location.protocol);
 function setThemeMeta(t) { document.querySelectorAll('meta[name=theme-color]').forEach(m => { m.content = t === 'dark' ? '#1a1714' : '#f3eee6'; m.removeAttribute('media'); }); }
 // Service worker chỉ chạy khi mở qua http(s); mở file:// thì bỏ qua (app vẫn chạy trọn trong một file)
@@ -3498,7 +3728,7 @@ function renderA2hs() {
   const ps = await DB.all('projects');
   if (last && ps.some(p => p.id === last)) openProject(last); else goHome();
 })();
-window.__app = { S, DB, A, T };
+window.__app = { S, DB, A, T, gapInfo, viParas };
 })();
 </script>
 </body>
