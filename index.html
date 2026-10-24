@@ -363,6 +363,8 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area
 .cfitem{display:flex;flex-direction:column;gap:4px;padding:6px 0;border-top:1px dashed var(--line,#ddd)}
 .cfitem:first-of-type{border-top:0}
 .cfuse{white-space:nowrap}
+
+.errdetail{font-size:11px;opacity:.6;word-break:break-word}.netwait{margin:6px 0;padding:6px 10px;border-radius:8px;background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn);font-size:13px}.wakenote{margin:2px 0 4px}
 </style>
 </head>
 <body>
@@ -578,6 +580,17 @@ Object.assign(window.AM_EN,{
 'tên chưa thống nhất':'inconsistent names',
 'câu bị cắt cụt':'sentence cut short',
 'còn chữ chưa dịch':'untranslated text left'
+});
+Object.assign(window.AM_EN,{
+'Đang chờ mạng / app được mở lại để dịch tiếp…':'Waiting for the network / for the app to be reopened to keep translating…',
+'Giữ màn hình mở trong lúc dịch':'Keep the screen on while translating',
+'Mất kết nối — tự thử lại lần {a} sau {s} giây (gửi lại cả phần)…':'Connection lost — retrying (attempt {a}) in {s} s, resending the whole part…',
+'Đã dịch xong sau {n} lần gửi (mất kết nối giữa chừng, đã gửi lại cả phần).':'Translated after {n} attempts (the connection dropped; the whole part was resent).',
+'Đang thử lại phần mất kết nối…':'Retrying the part that lost its connection…',
+'Đã dịch lại được sau khi mất kết nối.':'Translated again after the connection was lost.',
+'Thử lại các phần lỗi':'Retry failed parts',
+'Còn {n} phần lỗi — kiểm tra mạng rồi bấm “Thử lại các phần lỗi”.':'{n} parts still failed — check the network, then tap “Retry failed parts”.',
+'Đã dịch lại xong các phần lỗi.':'The failed parts have been translated.'
 });
 </script>
 <script id="core">
@@ -1357,20 +1370,33 @@ C.createSSEParser = onData => {
     end() { if (buf) { line(buf); buf = ''; } dispatch(); }
   };
 };
-async function readSSE(res, onData) {
+async function readSSE(res, onData, tick) {
   const reader = res.body.getReader(); const dec = new TextDecoder(); const p = C.createSSEParser(onData);
   try {
-    for (;;) { const { done, value } = await reader.read(); if (done) break; p.feed(dec.decode(value, { stream: true })); }
+    for (;;) { const { done, value } = await reader.read(); if (done) break; tick && tick(); p.feed(dec.decode(value, { stream: true })); }
     p.feed(dec.decode()); p.end();
-  } catch (e) { try { reader.cancel(); } catch (_) {} throw e; }
+  } catch (e) { try { Promise.resolve(reader.cancel()).catch(() => {}); } catch (_) {} throw e; }
 }
 async function doFetch(url, init) {
   try { return await fetch(url, init); }
   catch (e) {
     if (e && e.name === 'AbortError') throw e;
-    throw new ApiError('network', M('Không kết nối được tới máy chủ AI. Kiểm tra mạng Internet và Base URL. (Nếu mọi thứ đúng, có thể máy chủ không cho phép gọi trực tiếp từ trình duyệt — lỗi CORS; hãy thử nhà cung cấp khác.)', 'Could not reach the AI server. Check your Internet connection and Base URL. (If all is correct, the server may not allow direct browser calls — a CORS error; try another provider.)'), 0);
+    const err = new ApiError('network', M('Không kết nối được tới máy chủ AI. Kiểm tra mạng Internet và Base URL. (Nếu mọi thứ đúng, có thể máy chủ không cho phép gọi trực tiếp từ trình duyệt — lỗi CORS; hãy thử nhà cung cấp khác.)', 'Could not reach the AI server. Check your Internet connection and Base URL. (If all is correct, the server may not allow direct browser calls — a CORS error; try another provider.)'), 0);
+    err.detail = String((e && e.message) || e || ''); throw err;
   }
 }
+/* ---------- Lỗi mạng tạm thời (Safari “Load failed”, Chrome “Failed to fetch”, Firefox “NetworkError”, luồng bị cắt giữa chừng, hết giờ chờ) ---------- */
+C.NET_FRIENDLY = () => M('Mất kết nối khi đang dịch — app sẽ thử lại; hoặc bấm Thử lại.', 'Connection lost while translating — the app will retry; or tap Retry.');
+const NET_RAW = /load failed|failed to fetch|networkerror|network ?error|network connection was lost|internet connection appears|connection (was )?(reset|refused|closed|aborted)|err_network|err_internet|err_connection|econnreset|etimedout|timed? ?out|terminated|cancell?ed|interrupted|socket|stream|body/i;
+const TRANSIENT_KINDS = ['rate', 'server', 'network', 'timeout'];
+C.TRANSIENT_DELAYS = [2000, 5000, 15000, 30000]; /* tối đa 5 lần gửi */
+C.isTransientError = e => !!e && (TRANSIENT_KINDS.includes(e.kind) || (!(e instanceof ApiError) && (e.name === 'TypeError' || NET_RAW.test(String(e.message || e)))));
+/* Luồng trả lời bị cắt giữa chừng → lỗi mạng (bản dịch dở dang phải bỏ đi, gửi lại cả phần) */
+C.netError = (raw, how) => {
+  const e = new ApiError(how === 'timeout' ? 'timeout' : 'network', how === 'timeout' ? M('AI không phản hồi quá lâu (hết giờ chờ).', 'The AI took too long to respond (timed out).') : M('Mất kết nối khi đang nhận bản dịch (luồng trả lời bị cắt giữa chừng).', 'The connection dropped while receiving the translation (the stream was cut).'), 0);
+  e.detail = String((raw && raw.message) || raw || ''); e.interrupted = how !== 'timeout'; return e;
+};
+C.IDLE_TIMEOUT = 120000; /* không nhận được dữ liệu nào trong 2 phút → coi là mất kết nối */
 C.GEMINI_CATEGORIES = ['HARM_CATEGORY_HARASSMENT', 'HARM_CATEGORY_HATE_SPEECH', 'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'HARM_CATEGORY_DANGEROUS_CONTENT'];
 C.GEMINI_BLOCK_REASONS = ['SAFETY', 'PROHIBITED_CONTENT', 'BLOCKLIST', 'SPII', 'RECITATION', 'IMAGE_SAFETY'];
 /* Giới hạn độ dài trả lời. DeepSeek (deepseek-chat) mặc định chỉ 4096 token — dễ bị cắt cụt cuối phần; nâng lên mức tối đa 8192.
@@ -1416,8 +1442,10 @@ async function chatOpenAI(p, messages, o) {
   };
   const ct = (res.headers.get('content-type') || '').toLowerCase();
   if (p.stream !== false && res.body && !ct.includes('application/json')) {
-    await readSSE(res, d => { if (d.trim() === '[DONE]') return; let j; try { j = JSON.parse(d); } catch (e) { return; } handle(j); });
-  } else handle(await res.json());
+    let sawDone = false;
+    await readSSE(res, d => { if (d.trim() === '[DONE]') { sawDone = true; return; } let j; try { j = JSON.parse(d); } catch (e) { return; } handle(j); }, o.tick);
+    if (!sawDone && !finish && text) throw C.netError('stream ended without [DONE]'); /* luồng đứt giữa chừng: không nhận nửa bản dịch */
+  } else { const j = await res.json(); o.tick && o.tick(); handle(j); }
   if (finish === 'error') throw new ApiError('server', M('Máy chủ AI báo lỗi giữa chừng. Hãy thử lại.', 'The AI server reported an error mid-way. Please try again.'), 0);
   return { text, finish: finish === 'content_filter' ? 'blocked' : finish === 'length' ? 'length' : 'stop', reason: finish === 'content_filter' ? 'content_filter' : '' };
 }
@@ -1437,8 +1465,8 @@ async function chatGemini(p, messages, o) {
   };
   const ct = (res.headers.get('content-type') || '').toLowerCase();
   if (p.stream !== false && res.body && !ct.includes('application/json')) {
-    await readSSE(res, d => { let j; try { j = JSON.parse(d); } catch (e) { return; } handle(j); });
-  } else handle(await res.json());
+    await readSSE(res, d => { let j; try { j = JSON.parse(d); } catch (e) { return; } handle(j); }, o.tick);
+  } else { const j = await res.json(); o.tick && o.tick(); handle(j); }
   return { text, finish, reason };
 }
 C.chat = async (p, messages, o) => {
@@ -1447,27 +1475,57 @@ C.chat = async (p, messages, o) => {
   if (!p.apiKey || !String(p.apiKey).trim()) throw new ApiError('config', M('Hồ sơ “', 'Profile “') + (p.name || '') + M('” chưa có khóa API.', '” has no API key.'), 0);
   if (!p.model) throw new ApiError('config', M('Hồ sơ “', 'Profile “') + (p.name || '') + M('” chưa có tên model.', '” has no model name.'), 0);
   if (p.type !== 'gemini' && !p.baseUrl) throw new ApiError('config', M('Hồ sơ “', 'Profile “') + (p.name || '') + M('” chưa có Base URL.', '” has no Base URL.'), 0);
-  return p.type === 'gemini' ? chatGemini(p, messages, o) : chatOpenAI(p, messages, o);
+  /* hết giờ chờ (không có dữ liệu mới trong IDLE_TIMEOUT) + chuẩn hóa lỗi mạng giữa chừng */
+  const outer = o.signal; const inner = new AbortController(); let timedOut = false, nudged = false, timer = null;
+  const idle = o.idleTimeout != null ? o.idleTimeout : (p.stream === false ? 2.5 * C.IDLE_TIMEOUT : C.IDLE_TIMEOUT);
+  const tick = () => { if (!idle) return; clearTimeout(timer); timer = setTimeout(() => { timedOut = true; inner.abort(); }, idle); };
+  const onAbort = () => inner.abort();
+  /* app vừa được mở lại: yêu cầu đang chờ mà không có dữ liệu mới trong ms → coi như đã đứt (iPhone hay treo kết nối khi khóa màn hình) */
+  const nudge = ms => { clearTimeout(timer); timer = setTimeout(() => { nudged = true; inner.abort(); }, ms); };
+  INFLIGHT.add(nudge);
+  if (outer) { if (outer.aborted) inner.abort(); else outer.addEventListener('abort', onAbort); }
+  const oo = Object.assign({}, o, { signal: inner.signal, tick });
+  tick();
+  try { return await (p.type === 'gemini' ? chatGemini(p, messages, oo) : chatOpenAI(p, messages, oo)); }
+  catch (e) {
+    if (outer && outer.aborted) { if (e && e.name === 'AbortError') throw e; const a = new Error('Aborted'); a.name = 'AbortError'; throw a; }
+    if (nudged) throw C.netError(e && e.name === 'AbortError' ? 'connection stalled while the app was in the background' : e);
+    if (timedOut) throw C.netError(e, 'timeout');
+    if (e instanceof ApiError) throw e;
+    /* TypeError “Load failed” khi đang đọc luồng, AbortError do trình duyệt tự hủy (màn hình khóa, chuyển app)… */
+    throw C.netError(e);
+  } finally { clearTimeout(timer); INFLIGHT.delete(nudge); if (outer) outer.removeEventListener('abort', onAbort); }
 };
-/* Dịch một phần: tự thử lại khi lỗi mạng/429/5xx; nhận diện bị chặn/từ chối/rỗng */
+const INFLIGHT = new Set();
+C.netNudge = ms => { INFLIGHT.forEach(f => f(ms)); return INFLIGHT.size; };
+/* Dịch một phần: tự thử lại khi lỗi mạng/429/5xx/hết giờ (chờ 2s, 5s, 15s, 30s — tối đa 5 lần gửi); luồng đứt giữa chừng thì bỏ phần dở, gửi lại cả phần.
+   o.gate(signal): chờ tới khi app được mở lại / có mạng (mặc định C.netGate do giao diện gắn).
+   o.wasInterrupted(t0): lỗi xảy ra vì app bị ẩn (khóa màn hình, chuyển app) từ lúc t0 → không tính vào số lần thử. */
 C.runChunk = async (profile, messages, n, o) => {
   o = o || {};
-  const delays = o.retryDelays || [3000, 8000]; let attempt = 0;
+  const delays = o.retryDelays || C.TRANSIENT_DELAYS; let attempt = 0, free = 0;
+  const gate = o.gate || C.netGate, intr = o.wasInterrupted || C.netInterrupted;
   let maxTokens = o.maxTokens != null ? o.maxTokens : C.maxTokensFor(profile);
   for (;;) {
+    if (gate) await gate(o.signal);
+    const t0 = Date.now();
     try {
-      const r = await C.chat(profile, messages, { signal: o.signal, onText: o.onPartial, maxTokens });
-      return C.interpretResult(r, n, o.src);
+      const r = await C.chat(profile, messages, { signal: o.signal, onText: o.onPartial, maxTokens, idleTimeout: o.idleTimeout });
+      const out = C.interpretResult(r, n, o.src); if (attempt || free) out.attempts = attempt + free + 1; return out;
     } catch (e) {
-      if (e && e.name === 'AbortError') throw e;
-      const kind = (e && e.kind) || 'error';
+      if (e && e.name === 'AbortError' && (!o.signal || o.signal.aborted)) throw e;
+      const kind = (e && e.kind) || (C.isTransientError(e) ? 'network' : 'error');
       if (maxTokens && kind === 'bad' && /max_tokens|max_completion_tokens|maxOutputTokens|max tokens/i.test(e.message || '')) { maxTokens = 0; continue; } /* nhà cung cấp không nhận giới hạn này → gửi lại không kèm */
       if (kind === 'blocked') return { status: 'blocked', message: e.message };
-      if (['rate', 'server', 'network'].includes(kind) && attempt < delays.length) {
-        o.onRetry && o.onRetry(attempt + 1, e);
+      const transient = TRANSIENT_KINDS.includes(kind) || C.isTransientError(e);
+      if (transient && intr && free < 20 && intr(t0)) { free++; o.onRetry && o.onRetry(attempt + free, e, 0, true); continue; } /* app bị ẩn giữa chừng: chờ mở lại rồi gửi lại, không tính lần thử */
+      if (transient && attempt < delays.length) {
+        o.onRetry && o.onRetry(attempt + free + 1, e, delays[attempt]);
         await C.sleep(delays[attempt++], o.signal); continue;
       }
-      return { status: 'error', message: (e && e.message) || String(e), kind };
+      const raw = (e && (e.detail || e.message)) || String(e);
+      if (transient && (kind === 'network' || kind === 'timeout')) return { status: 'error', kind, transient: true, attempts: attempt + free + 1, message: C.NET_FRIENDLY(), detail: [e.detail, e.message].filter(Boolean).join(' · ') || raw };
+      return { status: 'error', message: (e && e.message) || String(e), kind, transient, attempts: attempt + free + 1, detail: e && e.detail };
     }
   }
 };
@@ -2453,6 +2511,8 @@ function fallbackProfile(excludeId) {
 
 /* ---------- Trạng thái ---------- */
 const S = { settings: loadSettings(), projects: [], project: null, chapters: [], chapterId: null, tab: 'editor', advTab: 'glossary', mtab: 'list', jobs: {}, queue: null, busy: null, issues: null, review: null, rowMsg: {}, glFilter: '', sel: new Set(), chAdvOpen: false, gpOpen: false };
+/* S.busy (AbortController của việc đang chạy) bật/tắt khóa màn hình: giữ màn hình sáng trong lúc dịch */
+{ let busy = null; Object.defineProperty(S, 'busy', { get: () => busy, set: v => { busy = v; if (v) wakeOn(); else wakeOff(); }, enumerable: true }); }
 const curCh = () => S.chapters.find(c => c.id === S.chapterId) || null;
 const sortedChapters = () => S.chapters.slice().sort((a, b) => a.order - b.order);
 const projDir = () => (S.project && S.project.direction) || C.DEFAULT_DIRECTION;
@@ -3035,15 +3095,17 @@ function renderJob() {
   const n = j.chunks.length, d = j.chunks.filter(c => ['done', 'partial', 'omitted'].includes(c.status)).length;
   const others = id => S.settings.profiles.filter(p => p.id !== id);
   const J = JOBST();
-  const nPart = j.chunks.filter(c => c.status === 'partial').length;
+  const nPart = j.chunks.filter(c => c.status === 'partial').length, nErr = j.chunks.filter(c => c.status === 'error').length;
   const jch = S.chapters.find(c => c.id === S.chapterId);
-  el.innerHTML = `<div class="panel"><h4>${esc(T('Tiến độ dịch: {d}/{n} phần', { d, n }))} ${runHere ? '<span class="st run">— ' + esc(T('đang chạy')) + '</span>' : ''} <span class="spacer"></span>${nPart && !S.busy ? `<button class="small primary" data-act="fixAll">${esc(T('Dịch lại tất cả đoạn thiếu'))}</button>` : ''}<button class="small link" data-act="closeJob">${esc(T('Ẩn'))}</button></h4>
+  el.innerHTML = `<div class="panel"><h4>${esc(T('Tiến độ dịch: {d}/{n} phần', { d, n }))} ${runHere ? '<span class="st run">— ' + esc(T('đang chạy')) + '</span>' : ''} <span class="spacer"></span>${nErr && !S.busy ? `<button class="small primary" data-act="retryFailed">↻ ${esc(T('Thử lại các phần lỗi'))} (${nErr})</button>` : ''}${nPart && !S.busy ? `<button class="small primary" data-act="fixAll">${esc(T('Dịch lại tất cả đoạn thiếu'))}</button>` : ''}<button class="small link" data-act="closeJob">${esc(T('Ẩn'))}</button></h4>
+    ${S.busy && (NET.waiting || netDown()) ? `<div class="netwait" role="status">${esc(T('Đang chờ mạng / app được mở lại để dịch tiếp…'))}</div>` : ''}
+    ${runHere && NET.noWake ? `<div class="small muted wakenote">${esc(T('Giữ màn hình mở trong lúc dịch'))}</div>` : ''}
     <div class="progress"><div style="width:${n ? Math.round(d / n * 100) : 0}%"></div></div>
     <div class="joblist">${j.chunks.map((c, k) => {
       const fb = fallbackProfile(c.profileId); const canAct = !S.busy && !['run', 'wait'].includes(c.status);
       return `<div class="jobitem"><span>${esc(T('Phần {k} · đoạn {a}–{b}', { k: k + 1, a: c.idx[0] + 1, b: c.idx[c.idx.length - 1] + 1 }))}</span>
       <span class="st ${c.status}">${J[c.status]}</span>${c.softened ? `<span class="st softened" title="${esc(T('Phần này được dịch theo cách giảm nhẹ. Có thể dịch lại bằng model khác.'))}">${esc(J.softened)}</span>` : ''}<span class="muted">${esc(c.local ? T('không cần AI') : c.profileName || '')} · ${esc(T('gốc {a} ký tự', { a: c.idx.reduce((a, i) => a + [...String(((jch && jch.paras[i]) || {}).zh || '').trim()].length, 0) }))}${c.chars ? ' · ' + esc(T('AI trả về {b} ký tự', { b: c.chars })) : ''}</span>
-      ${c.msg ? `<span class="${c.status === 'blocked' || c.status === 'error' ? 'errtxt' : c.status === 'partial' || (c.status === 'run' && c.repairing) ? 'flagtxt' : 'muted'}">${esc(c.msg)}</span>` : ''}
+      ${c.msg ? `<span class="${c.status === 'blocked' || c.status === 'error' ? 'errtxt' : c.status === 'partial' || (c.status === 'run' && c.repairing) ? 'flagtxt' : 'muted'}">${esc(c.msg)}</span>` : ''}${c.detail && (c.status === 'error' || c.status === 'run') ? `<span class="errdetail">${esc(c.detail)}</span>` : ''}
       ${canAct && c.status === 'partial' ? `<button class="small primary" data-act="fixChunk" data-k="${k}" title="${esc(T('Chỉ dịch những đoạn AI bỏ sót trong phần này, không dịch lại cả phần'))}">${esc(T('Dịch lại đoạn thiếu'))}</button>` : ''}
       ${canAct && c.status === 'partial' && c.blockedMissing ? `<button class="small" data-act="fixChunkSoft" data-k="${k}" title="${esc(T('Dịch lại phần này: giữ cốt truyện, cảm xúc, lời thoại; cảnh quá lộ liễu được viết tiết chế, gợi tả.'))}">${esc(T('Dịch giảm nhẹ'))}</button>` : ''}
       ${canAct && c.status !== 'omitted' ? `<button class="small" data-act="retryChunk" data-k="${k}">↻ ${esc(T('Thử lại'))}</button>` : ''}
@@ -3131,20 +3193,71 @@ async function qualityPass(ch, idxs, profile, signal, soften, onMsg, force) {
   return res;
 }
 const qualityOn = () => S.settings.qualityGuard !== false;
+/* ---------- Mạng chập chờn / app bị ẩn (iPhone khóa màn hình, chuyển app) ----------
+   Ẩn app → hàng đợi tạm dừng trước phần kế tiếp; phần bị đứt lúc ẩn được gửi lại cả phần khi mở lại (không tính vào số lần thử). */
+const NET = { hiddenAt: 0, offAt: 0, waiting: 0, waiters: [], wake: null, wantWake: false, noWake: false };
+const appHidden = () => document.visibilityState === 'hidden';
+const netDown = () => navigator.onLine === false;
+function netWake() { const w = NET.waiters.splice(0); w.forEach(f => f()); }
+function netGate(signal) {
+  if (!appHidden() && !netDown()) return Promise.resolve();
+  NET.waiting++; renderJob();
+  return new Promise((res, rej) => {
+    let over = false;
+    const fin = () => { if (over) return false; over = true; NET.waiting = Math.max(0, NET.waiting - 1); if (signal) signal.removeEventListener('abort', onAb); return true; };
+    const check = () => { if (over) return; if (!appHidden() && !netDown()) { fin(); res(); renderJob(); } else NET.waiters.push(check); };
+    const onAb = () => { if (!fin()) return; const e = new Error('aborted'); e.name = 'AbortError'; rej(e); renderJob(); };
+    if (signal) { if (signal.aborted) return onAb(); signal.addEventListener('abort', onAb); }
+    NET.waiters.push(check);
+  });
+}
+const netInterrupted = t0 => appHidden() || netDown() || NET.hiddenAt >= t0 || NET.offAt >= t0;
+C.netGate = netGate; C.netInterrupted = netInterrupted;
+async function wakeOn() {
+  NET.wantWake = true;
+  if (!('wakeLock' in navigator) || !navigator.wakeLock) { NET.noWake = true; return; }
+  if (NET.wake || appHidden()) return;
+  try {
+    const l = await navigator.wakeLock.request('screen');
+    if (!NET.wantWake) { l.release().catch(() => {}); return; }
+    NET.wake = l; NET.noWake = false;
+    l.addEventListener && l.addEventListener('release', () => { if (NET.wake === l) NET.wake = null; });
+  } catch (e) { NET.noWake = true; }
+  renderJob();
+}
+function wakeOff() { NET.wantWake = false; const l = NET.wake; NET.wake = null; if (l) Promise.resolve().then(() => l.release()).catch(() => {}); }
+document.addEventListener('visibilitychange', () => {
+  if (appHidden()) { NET.hiddenAt = Date.now(); return; }
+  NET.hiddenAt = Date.now(); /* lỗi xảy ra ngay lúc mở lại cũng do bị ẩn */
+  if (NET.wantWake) wakeOn();
+  C.netNudge(8000); /* kết nối treo sau khi khóa màn hình → 8 giây không có dữ liệu thì gửi lại */
+  netWake(); renderJob();
+});
+window.addEventListener('offline', () => { NET.offAt = Date.now(); renderJob(); });
+window.addEventListener('online', () => { NET.offAt = Date.now(); C.netNudge(8000); netWake(); renderJob(); });
 /* Dịch một phần (chunk) và cập nhật giao diện */
 async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
   if (chunk.idx.every(i => C.noLetters(ch.paras[i].zh))) { /* chỉ toàn dòng ký hiệu/phân cách → không cần AI */
     chunk.idx.forEach(i => { const p = ch.paras[i]; setViLive(ch, i, String(p.zh).trim()); delete p.missing; delete p.omitted; delete p.softened; p.keptSrc = 'sym'; }); chunk.status = 'done'; chunk.chars = 0; chunk.local = true; chunk.msg = T('Dòng ký hiệu/phân cách — giữ nguyên bản gốc, không cần AI.');
     ch.translatedDir = chDir(ch); ch.translatedSrc = srcHash(ch); await saveNow('chapters', ch); renderJob(); return;
   }
-  chunk.status = 'run'; chunk.msg = ''; chunk.local = false; chunk.repairing = false; chunk.blockedMissing = false; chunk.profileId = profile ? profile.id : ''; chunk.profileName = profile ? profile.name : ''; chunk.chars = 0; renderJob();
+  chunk.status = 'run'; chunk.msg = ''; chunk.local = false; chunk.repairing = false; chunk.blockedMissing = false; chunk.profileId = profile ? profile.id : ''; chunk.profileName = profile ? profile.name : ''; chunk.chars = 0; chunk.detail = ''; chunk.transient = false; renderJob();
   const snapshot = chunk.idx.map(i => ch.paras[i].vi);
   const n = chunk.idx.length;
   let res;
   try {
     res = await C.runChunk(profile, buildMessages(ch, chunk.idx, soften), n, {
       signal, src: chunk.idx.map(i => ch.paras[i].zh),
-      onRetry: (a, e) => { chunk.msg = T('Thử lại lần {a}…', { a }) + ' (' + e.message.slice(0, 80) + ')'; renderJob(); },
+      onRetry: (a, e, wait, free) => {
+        /* bỏ phần dở của lượt bị đứt, gửi lại cả phần */
+        chunk.idx.forEach((i, k) => setViLive(ch, i, snapshot[k])); chunk.chars = 0;
+        const net = e && (e.kind === 'network' || e.kind === 'timeout' || (!e.kind && C.isTransientError(e)));
+        chunk.detail = net ? String((e && (e.detail || e.message)) || '').slice(0, 160) : '';
+        chunk.msg = free ? T('Đang chờ mạng / app được mở lại để dịch tiếp…')
+          : net ? T('Mất kết nối — tự thử lại lần {a} sau {s} giây (gửi lại cả phần)…', { a, s: Math.round((wait || 0) / 1000) })
+          : T('Thử lại lần {a}…', { a }) + ' (' + String((e && e.message) || '').slice(0, 80) + ')';
+        renderJob();
+      },
       onPartial: acc => {
         chunk.chars = acc.length; const t = C.stripThink(acc); const map = C.parseNumbered(t);
         if (map) Object.keys(map).forEach(k => { const i = chunk.idx[k - 1]; if (i != null) setViLive(ch, i, map[k]); });
@@ -3155,7 +3268,7 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
   } catch (e) {
     chunk.idx.forEach((i, k) => setViLive(ch, i, snapshot[k]));
     if (e && e.name === 'AbortError') { chunk.status = 'stopped'; chunk.msg = T('Đã dừng — bản dịch cũ được giữ nguyên.'); renderJob(); throw e; }
-    res = { status: 'error', message: String(e && e.message || e) };
+    res = C.isTransientError(e) ? { status: 'error', kind: 'network', transient: true, message: C.NET_FRIENDLY(), detail: String(e && e.message || e) } : { status: 'error', message: String(e && e.message || e) };
   }
   if (n === 1 && res.status === 'blocked' && res.empty && C.isShortLine(ch.paras[chunk.idx[0]].zh)) {
     /* dòng ngắn (“嗯。”, “「……」”…) mà AI trả rỗng: không phải bị chặn — hỏi riêng bằng lời nhắc tối giản, vẫn rỗng thì giữ nguyên bản gốc */
@@ -3167,7 +3280,8 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
   }
   if (res.status === 'blocked' || res.status === 'error') {
     chunk.idx.forEach((i, k) => setViLive(ch, i, snapshot[k]));
-    chunk.status = res.status; chunk.msg = res.message || ''; chunk.softened = false;
+    chunk.status = res.status; chunk.msg = res.message || ''; chunk.softened = false; chunk.chars = 0;
+    chunk.detail = res.detail ? String(res.detail).slice(0, 200) : ''; chunk.transient = !!res.transient;
     if (soften && res.status === 'blocked') chunk.msg = T('Bản dịch giảm nhẹ cũng bị chặn: ') + chunk.msg + ' ' + T('Có thể thử AI khác hoặc bấm “Lược phần này”.');
     if (res.status === 'blocked' && allowAuto) {
       /* Chính sách khi bị chặn (Cài đặt → Kết nối AI → Nâng cao). “Chỉ báo” giữ cách cũ: ô “Tự động thử lại bằng AI dự phòng” của truyện vẫn có hiệu lực. */
@@ -3194,6 +3308,7 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
     chunk.softened = !!soften;
     chunk.idx.forEach((i, k) => { if (!res.map[k + 1]) setViLive(ch, i, snapshot[k]); });
     chunk.status = res.status; chunk.msg = res.message || '';
+    if (res.attempts > 1) chunk.msg = (T('Đã dịch xong sau {n} lần gửi (mất kết nối giữa chừng, đã gửi lại cả phần).', { n: res.attempts }) + ' ' + chunk.msg).trim();
     ch.translatedDir = chDir(ch); ch.translatedSrc = srcHash(ch);
     if (res.status === 'partial') { /* AI bỏ sót / gộp đoạn → tự hỏi lại riêng những đoạn đó */
       const abs = ks => (ks || []).map(k => chunk.idx[k - 1]).filter(i => i != null);
@@ -3352,7 +3467,14 @@ async function translateOne(ch, mode, signal, prof) {
   const job = S.jobs[ch.id] = { chunks: [].concat(...runs.map(r => C.chunkParagraphs(zh, r, size, 24))).map(a => ({ idx: a, status: 'wait', msg: '' })) };
   if (ch.id === S.chapterId) renderJob();
   try {
-    for (const c of job.chunks) { if (signal.aborted) break; await runChunkUI(ch, c, prof, signal, true); }
+    for (const c of job.chunks) { if (signal.aborted) break; await netGate(signal); await runChunkUI(ch, c, prof, signal, true); }
+    /* các phần mất kết nối: dịch tiếp phần khác trước, cuối chương tự thử lại thêm một lượt */
+    for (const c of job.chunks.filter(x => x.status === 'error' && x.transient)) {
+      if (signal.aborted) break;
+      c.msg = T('Đang thử lại phần mất kết nối…'); renderJob();
+      await netGate(signal); await runChunkUI(ch, c, prof, signal, true);
+      if (c.status === 'done' || c.status === 'partial') c.msg = (T('Đã dịch lại được sau khi mất kết nối.') + ' ' + (c.msg || '')).trim();
+    }
     if (!signal.aborted && !(ch.titleVi || '').trim() && C.needsTitleTranslation(ch.title, chDir(ch)) && job.chunks.some(c => c.status === 'done' || c.status === 'partial')) await translateTitle(ch, prof, signal, true);
   } finally {
     job.chunks.forEach(c => { if (c.status === 'wait') c.status = 'stopped'; });
@@ -3455,7 +3577,28 @@ async function retryChunk(k, profileId) {
   const prof = profileId ? getProfile(profileId) : (getProfile(j.chunks[k].profileId) || primaryProfile());
   const ctrl = new AbortController(); S.busy = ctrl; renderEditor($('#main'));
   try { await runChunkUI(ch, j.chunks[k], prof, ctrl.signal, profileId ? false : 'manual'); } catch (e) {}
-  finally { S.busy = null; afterTranslate(ch); }
+  finally { S.busy = null; queueRecheck(ch, j); afterTranslate(ch); }
+}
+/* sau khi thử lại bằng tay: chương hết phần lỗi → đánh dấu xong trong hàng đợi */
+function queueRecheck(ch, j) {
+  const qi = S.queue && S.queue.items.find(x => x.id === ch.id);
+  if (qi && qi.st === 'warn' && j.chunks.every(x => x.status === 'done' || x.status === 'omitted')) { qi.st = 'done'; qi.bad = 0; renderQbar(); }
+}
+/* Nút “Thử lại các phần lỗi”: gửi lại lần lượt mọi phần đang báo lỗi của chương */
+async function retryFailed() {
+  const ch = curCh(); const j = ch && S.jobs[ch.id]; if (!ch || !j || S.busy) return;
+  const list = j.chunks.filter(c => c.status === 'error'); if (!list.length) return;
+  if (!primaryProfile()) { toast(T('Chưa kết nối AI.'), 'err'); return; }
+  const ctrl = new AbortController(); S.busy = ctrl;
+  list.forEach(c => { c.status = 'wait'; c.msg = ''; c.detail = ''; }); renderEditor($('#main'));
+  try { for (const c of list) { if (ctrl.signal.aborted) break; await netGate(ctrl.signal); await runChunkUI(ch, c, getProfile(c.profileId) || primaryProfile(), ctrl.signal, 'manual'); } }
+  catch (e) {}
+  finally {
+    list.forEach(c => { if (c.status === 'wait') c.status = 'stopped'; });
+    S.busy = null; queueRecheck(ch, j); afterTranslate(ch);
+    const left = j.chunks.filter(c => c.status === 'error').length;
+    if (!ctrl.signal.aborted) toast(left ? T('Còn {n} phần lỗi — kiểm tra mạng rồi bấm “Thử lại các phần lỗi”.', { n: left }) : T('Đã dịch lại xong các phần lỗi.'), left ? 'err' : 'ok');
+  }
 }
 async function omitChunk(k) {
   const ch = curCh(); const j = ch && S.jobs[ch.id]; if (!ch || !j || S.busy) return;
@@ -4215,6 +4358,7 @@ const A = {
   fixChunk: el => fixChunk(Number(el.dataset.k)),
   fixChunkSoft: el => fixChunk(Number(el.dataset.k), true),
   fixAll: () => fixAll(),
+  retryFailed: () => retryFailed(),
   softenPara: el => retransPara(Number(el.dataset.i), false, true),
   unsoften: async el => { const ch = curCh(); if (!ch) return; delete ch.paras[Number(el.dataset.i)].softened; await saveNow('chapters', ch); const sc = $('#main').scrollTop; renderEditor($('#main')); $('#main').scrollTop = sc; renderSide(); },
   sgAdd: el => addSuggestions([el.dataset.id]),
@@ -4369,7 +4513,7 @@ window.addEventListener('beforeunload', e => { if (pending.size || S.busy) { e.p
 
 
 /* ---------- Ứng dụng trên màn hình chính (PWA) ---------- */
-const APP_BUILD = '0792ecd2cc53';
+const APP_BUILD = '399f761d7ec3';
 const ONLINE_ORIGIN = /^https?:$/.test(location.protocol);
 function setThemeMeta(t) { document.querySelectorAll('meta[name=theme-color]').forEach(m => { m.content = t === 'dark' ? '#1a1714' : '#f3eee6'; m.removeAttribute('media'); }); }
 // Service worker chỉ chạy khi mở qua http(s); mở file:// thì bỏ qua (app vẫn chạy trọn trong một file)
