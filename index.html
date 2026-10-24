@@ -341,6 +341,11 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area
 #a2hs .a2ic{color:var(--cin);display:flex;flex:none}#a2hs .a2ic .ic{width:22px;height:22px}
 #a2hs .a2tx{flex:1;min-width:0}#a2hs .iconbtn{flex:none}
 @media print{#a2hs,body::before{display:none!important}}
+
+/* Gợi ý iPhone: EPUB bị mờ trong ứng dụng Tệp → nén rồi tải .zip; số bản trong Nâng cao */
+.iostip{display:flex;gap:8px;align-items:flex-start;margin:8px 0 2px;padding:8px 10px;border-radius:10px;background:var(--paper);border:1px dashed var(--line);color:var(--ink);line-height:1.4}
+.iostip .ic{width:16px;height:16px;flex:none;margin-top:2px;color:var(--cin)}
+.appver{margin-top:10px;text-align:right;font-variant-numeric:tabular-nums;opacity:.8}
 </style>
 </head>
 <body>
@@ -446,6 +451,12 @@ Object.assign(window.AM_EN, {
   'Đã có bản mới — tải lại': 'A new version is available — reload',
   'Tải lại': 'Reload',
   'Thêm vào màn hình chính: bấm nút Chia sẻ rồi chọn “Thêm vào MH chính”': 'Add to Home Screen: tap the Share button, then choose “Add to Home Screen”'
+});
+
+Object.assign(window.AM_EN, {
+  'File EPUB bị mờ, không chọn được? Trong ứng dụng Tệp, nhấn giữ file (hoặc cả thư mục) → Nén, rồi tải file .zip lên.': 'EPUB files greyed out and can’t be selected? In the Files app, long-press the file (or the whole folder) → Compress, then upload the .zip.',
+  'Bản {v}': 'Version {v}',
+  'Đã tạo {n} truyện từ file nén': 'Created {n} novels from the archive'
 });
 </script>
 <script id="core">
@@ -1226,11 +1237,20 @@ const resolvePath = (base, href) => { const parts = (base + href).split('/'); co
 const decodeXmlBytes = d => { const head = new TextDecoder('latin1').decode(d.subarray(0, 200)); const m = head.match(/encoding=["']([\w-]+)["']/i); let enc = m ? m[1].toLowerCase() : 'utf-8'; if (/^(gbk|gb2312|gb_2312)/.test(enc)) enc = 'gb18030'; try { return new TextDecoder(enc).decode(d).replace(/^\ufeff/, ''); } catch (e) { return utf8(d); } };
 
 /* EPUB → [{title, text}] theo thứ tự spine; bỏ mục lục, bìa */
-C.readEpub = async buf => {
-  const files = await C.unzip(buf); const byName = new Map(files.map(f => [f.name, f]));
-  const cont = byName.get('META-INF/container.xml'); if (!cont) throw new Error(M('Tệp epub không đọc được.', 'The epub could not be read.'));
-  const opfPath = (utf8(cont.data).match(/full-path=["']([^"']+)["']/) || [])[1]; const opfF = opfPath && byName.get(opfPath);
-  if (!opfF) throw new Error(M('Tệp epub không đọc được.', 'The epub could not be read.'));
+C.readEpub = async buf => C.readEpubFiles(await C.unzip(buf), '');
+/* Đọc một gói EPUB nằm trong danh sách file đã giải nén, gốc gói = root (vd. '' hoặc 'X.epub/' — EPUB “dạng thư mục” iPhone nén lại).
+   Không cần file mimetype; tên file trong gói so khớp cả không phân biệt hoa thường. */
+C.readEpubFiles = (all, root) => {
+  root = root || ''; const byName = new Map(), lower = new Map();
+  for (const f of all) { if (!f.name.startsWith(root)) continue; const n = f.name.slice(root.length); byName.set(n, f); lower.set(n.toLowerCase(), f); }
+  const get = n => byName.get(n) || lower.get(String(n).toLowerCase());
+  const bad = () => new Error(M('Tệp epub không đọc được.', 'The epub could not be read.'));
+  const cont = get('META-INF/container.xml');
+  let opfPath = cont ? (utf8(cont.data).match(/full-path=["']([^"']+)["']/) || [])[1] : '';
+  if (opfPath) opfPath = resolvePath('', decodeURIComponent(opfPath));
+  let opfF = opfPath && get(opfPath);
+  if (!opfF) { const alt = [...byName.keys()].filter(n => /\.opf$/i.test(n)).sort((a, b) => a.length - b.length)[0]; if (alt) { opfPath = alt; opfF = byName.get(alt); } }
+  if (!opfF) throw bad();
   const opf = decodeXmlBytes(opfF.data); const base = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/') + 1) : '';
   const items = {}; for (const m of opf.matchAll(/<item\b[^>]*>/gi)) { const t = m[0]; const id = (t.match(/\bid=["']([^"']+)/) || [])[1]; const href = (t.match(/\bhref=["']([^"']+)/) || [])[1]; const props = (t.match(/\bproperties=["']([^"']+)/) || [])[1] || ''; const mt = (t.match(/media-type=["']([^"']+)/) || [])[1] || ''; if (id && href) items[id] = { href: decodeURIComponent(href), props, mt }; }
   const title = ((opf.match(/<dc:title[^>]*>([\s\S]*?)<\/dc:title>/i) || [])[1] || '').trim();
@@ -1238,7 +1258,7 @@ C.readEpub = async buf => {
   for (const m of opf.matchAll(/<itemref\b[^>]*idref=["']([^"']+)["'][^>]*>/gi)) {
     const it = items[m[1]]; if (!it || /nav/.test(it.props) || !/html/.test(it.mt || 'html')) continue;
     if (/(^|\/)(toc|nav|cover|copyright)[^/]*\.x?html?$/i.test(it.href)) continue;
-    const f = byName.get(resolvePath(base, it.href)); if (!f) continue;
+    const f = get(resolvePath(base, it.href)); if (!f) continue;
     const html = decodeXmlBytes(f.data); if (/epub:type=["'][^"']*\b(titlepage|toc|cover|copyright-page)\b/i.test(html)) continue; const text = C.htmlToText(html); if (!text.trim()) continue;
     let t = headingOf(html); const lines = text.split('\n'); if (t && lines[0] === t) lines.shift();
     if (!lines.join('').trim()) continue;
@@ -1567,9 +1587,20 @@ C.ACCEPT_EXT = ['epub', 'pdf', 'txt', 'doc', 'docx', 'zip', 'md', 'html', 'htm',
 /* opts.pdfjs: async () => pdfjsLib (trình duyệt nạp bộ đọc PDF nhúng); opts.pdfOpts: tham số thêm cho getDocument */
 C.importFile = async (name, buf, opts) => {
   const r = await importRaw(name, buf, opts || {});
-  const emb = r.embedded; delete r.embedded;
-  return C.finishImport(r, name, emb);
+  const fin = (x, n) => { const emb = x.embedded; delete x.embedded; const nm = x.srcName || n; delete x.srcName; return C.finishImport(x, nm, emb); };
+  if (r.books) { r.books = r.books.map(b => fin(b, b.srcName)); return r; } /* zip có nhiều EPUB → mỗi EPUB một truyện */
+  return fin(r, name);
 };
+/* Tìm EPUB trong zip: gói “thư mục” (có META-INF/container.xml ở gốc gói, gốc zip hay lồng trong thư mục) + file .epub thật */
+const epubsInZip = files => {
+  const roots = [...new Set(files.map(f => (f.name.match(/^(.*\/)?META-INF\/container\.xml$/i) || [])).filter(m => m[0]).map(m => m[1] || ''))]
+    .filter((r, i, a) => !a.some(o => o !== r && r.startsWith(o))); /* gói lồng trong gói: lấy gói ngoài */
+  const inPkg = n => roots.some(r => n.startsWith(r));
+  const real = files.filter(f => /\.epub$/i.test(f.name) && !inPkg(f.name));
+  return { roots, inPkg, real };
+};
+const pkgName = (root, zipName) => { const seg = root.replace(/\/$/, '').split('/').pop(); return seg || String(zipName).split(/[\\/]/).pop().replace(/\.zip$/i, ''); };
+const epubResult = (e, name) => { if (!e.chapters.length) throw new Error(M('Không thấy chương trong epub.', 'No chapters found in the epub.')); const base = String(name).split(/[\\/]/).pop().replace(/\.epub$/i, '').replace(/\.[^.]+$/, ''); return { title: e.title || base, chapters: e.chapters, embedded: e.meta, srcName: /\.epub$/i.test(name) ? name : name + '.epub' }; };
 const sniff = u8 => { const h = new TextDecoder('latin1').decode(u8.subarray(0, 1024)); if (h.startsWith('PK\x03\x04')) return 'zip'; if (h.startsWith('\xD0\xCF\x11\xE0')) return 'cfb'; if (h.startsWith('{\\rtf')) return 'rtf'; if (h.includes('%PDF-')) return 'pdf'; if (/^\s*(<\?xml|<!doctype html|<html)/i.test(h.replace(/^(\ufeff|\xef\xbb\xbf)/, ''))) return 'html'; return ''; };
 const importRaw = async (name, buf, opts) => {
   let ext = (String(name).match(/\.([a-z0-9]+)$/i) || [])[1]?.toLowerCase() || '';
@@ -1595,10 +1626,24 @@ const importRaw = async (name, buf, opts) => {
   if (ext === 'epub') { const e = await C.readEpub(u8); if (!e.chapters.length) throw new Error(M('Không thấy chương trong epub.', 'No chapters found in the epub.')); return { title: e.title || base, chapters: e.chapters, embedded: e.meta }; }
   if (ext === 'zip') {
     const files = (await C.unzip(u8)).filter(f => !/(^|\/)(\.|__MACOSX)/.test(f.name)).sort((a, b) => numKey(a.name).localeCompare(numKey(b.name)));
+    const ep = epubsInZip(files);
+    const others = files.filter(f => !ep.inPkg(f.name) && /\.(txt|md|html?|xhtml|docx)$/i.test(f.name));
+    const nBooks = ep.roots.length + ep.real.length;
+    if (nBooks >= 2 || (nBooks === 1 && !others.length)) {
+      const books = [], failed = [];
+      const items = ep.roots.map(r => ({ name: pkgName(r, name), key: r || name, read: async () => C.readEpubFiles(files, r) }))
+        .concat(ep.real.map(f => ({ name: f.name.split('/').pop(), key: f.name, read: () => C.readEpub(f.data) })))
+        .sort((a, b) => numKey(a.key).localeCompare(numKey(b.key)));
+      for (const it of items) { try { books.push(epubResult(await it.read(), it.name)); } catch (e) { failed.push(it.name); } }
+      if (nBooks === 1) { if (!books.length) throw new Error(M('Tệp epub không đọc được.', 'The epub could not be read.')); return books[0]; }
+      if (!books.length) throw new Error(M('Không đọc được EPUB nào trong file nén.', 'None of the EPUBs in the archive could be read.'));
+      return { title: base, chapters: [], books, failed };
+    }
     const chapters = []; const trans = {};
     files.forEach(f => { const m = f.name.match(/^(?:.*\/)?(?:ban-dich|translation)\/([^/]+)\.(txt|md)$/i); if (m) trans[m[1]] = C.decodeText(f.data); });
     for (const f of files) {
       if (/(^|\/)(ban-dich|translation)\//i.test(f.name)) continue;
+      if (ep.inPkg(f.name)) { if (/META-INF\/container\.xml$/i.test(f.name)) { const root = f.name.replace(/META-INF\/container\.xml$/i, ''); C.readEpubFiles(files, root).chapters.forEach(c => chapters.push(c)); } continue; }
       const fe = (f.name.match(/\.([a-z0-9]+)$/i) || [])[1]?.toLowerCase(); const fb = f.name.split('/').pop().replace(/\.[^.]+$/, '').replace(/^\d+[-_. ]+/, '');
       if (fe === 'txt' || fe === 'md') { const key = f.name.split('/').pop().replace(/\.[^.]+$/, ''); chapters.push({ title: fb, text: C.decodeText(f.data), vi: trans[key] || '' }); }
       else if (fe === 'html' || fe === 'htm' || fe === 'xhtml') { const h = decodeXmlBytes(f.data); chapters.push({ title: headingOf(h) || fb, text: C.htmlToText(h) }); }
@@ -1855,7 +1900,7 @@ const tgtLang = t => t === 'en' ? T('Tiếng Anh') : T('Tiếng Việt');
 
 /* ---------- Biểu tượng (SVG nội tuyến, không tải ngoài) ---------- */
 const P = {
-  plus: '<path d="M12 5v14M5 12h14"/>', upload: '<path d="M12 16V4M7 9l5-5 5 5M5 20h14"/>', download: '<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>', plus: '<path d="M12 5v14M5 12h14"/>', upload: '<path d="M12 16V4M7 9l5-5 5 5M5 20h14"/>', download: '<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>',
   copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/>', trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
   gear: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
   moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>', play: '<path d="M7 4.5l12 7.5-12 7.5z" fill="currentColor"/>', stop: '<rect x="6" y="6" width="12" height="12" rx="1.5" fill="currentColor"/>',
@@ -1934,7 +1979,7 @@ function openModal(title, html, onMount, onClose) {
 }
 function closeModal() { if (modalOnClose) { const f = modalOnClose; modalOnClose = null; f(); } $('#modal').classList.add('hidden'); $('#modalBody').innerHTML = ''; }
 function pickFiles(accept, multiple) {
-  return new Promise(res => { const i = document.createElement('input'); i.type = 'file'; i.accept = accept; i.multiple = !!multiple; i.onchange = () => res(Array.from(i.files || [])); i.click(); });
+  return new Promise(res => { const i = document.createElement('input'); i.type = 'file'; if (accept) i.accept = accept; i.multiple = !!multiple; i.onchange = () => res(Array.from(i.files || [])); i.click(); });
 }
 function download(name, data, mime) {
   const blob = data instanceof Blob ? data : new Blob([data], { type: mime });
@@ -2049,8 +2094,9 @@ function renderHome(allCh) {
       <p class="muted small">${esc(T('Chọn nhà cung cấp và dán khóa API của bạn. Các thiết lập khác đã có sẵn mặc định.'))}</p>${quickSetupHtml()}</section>` : ''}
     <section class="sheet intro newp">
       <h2 class="serif">${esc(T('Truyện mới'))}</h2>
-      <label class="upbtn primary big" id="upLabel">${I('upload')} <span>${esc(T('Tải file truyện lên'))}</span><input type="file" id="upFile" accept="${ACCEPT}" aria-label="${esc(T('Tải file truyện lên'))}"></label>
+      <label class="upbtn primary big" id="upLabel">${I('upload')} <span>${esc(T('Tải file truyện lên'))}</span><input type="file" id="upFile" ${ACCEPT ? `accept="${ACCEPT}"` : ''} aria-label="${esc(T('Tải file truyện lên'))}"></label>
       <div class="muted small uphint">${esc(T('epub · pdf · txt · doc · docx · zip — tự điền tên truyện, tác giả, người dịch'))}</div>
+      ${IS_IOS ? `<div class="small iostip" id="iosTip">${I('info')}<span>${esc(T('File EPUB bị mờ, không chọn được? Trong ứng dụng Tệp, nhấn giữ file (hoặc cả thư mục) → Nén, rồi tải file .zip lên.'))}</span></div>` : ''}
       <div class="orline small muted"><span>${esc(T('hoặc tạo truyện trống'))}</span></div>
       <div class="row-flex" style="flex-wrap:nowrap"><input id="npTitle" placeholder="${esc(T('Tên truyện, ví dụ: Mưa trên mái hiên'))}" aria-label="${esc(T('Tên truyện'))}"><button data-act="createProject">${I('plus')} ${esc(T('Tạo'))}</button></div>
       <div class="muted small droph" style="margin-top:6px">${esc(T('Trên máy tính: kéo thả file truyện vào trang này cũng được.'))}</div>
@@ -2064,7 +2110,8 @@ function renderHome(allCh) {
       <span class="muted small">${esc(T('Sửa lần cuối:'))} ${fmtD(p.updatedAt)}</span></button>`; }).join('')}</div>
     <details class="adv sheet" id="homeAdv"><summary>${esc(T('Nâng cao'))}</summary>
       <div class="row-flex" style="margin-top:10px"><button data-act="importBackup">${esc(T('Nhập bản sao lưu (.json)'))}</button>${S.projects.length ? `<button data-act="sampleProject">${esc(T('Thử truyện mẫu'))}</button>` : ''}</div>
-      <div class="muted small" style="margin-top:6px">${esc(T('Mọi thứ nằm trong trình duyệt này trên máy của bạn. Hãy tải bản sao lưu (.json) thường xuyên trong Nâng cao của từng truyện.'))}</div></details>
+      <div class="muted small" style="margin-top:6px">${esc(T('Mọi thứ nằm trong trình duyệt này trên máy của bạn. Hãy tải bản sao lưu (.json) thường xuyên trong Nâng cao của từng truyện.'))}</div>
+      <div class="muted small appver" id="appVer" title="${esc(APP_BUILD)}">${esc(T('Bản {v}', { v: APP_BUILD.slice(0, 7) }))}</div></details>
   </div>`;
   if (noAI) bindQuickSetup($('#setupCard'), () => goHome().then(() => { const i = $('#npTitle'); i && i.focus(); }));
   const np = $('#npTitle'); if (np) np.onkeydown = e => { if (e.key === 'Enter') A.createProject(); };
@@ -2703,6 +2750,7 @@ async function importFilesToProject(files, split) {
   for (const f of files) {
     try {
       const imp = await readImport(f);
+      if (imp.books) { await importBooks(imp, f); return; }
       if (S.project && imp.meta) { const got = applyCredits(S.project, imp.meta); if (got.length) { got.forEach(k => filled.includes(k) || filled.push(k)); srcName = f.name; } }
       const parts = split === false && imp.whole ? [{ title: imp.title, paras: C.splitParagraphs(imp.chapters[0].text) }] : C.chaptersFromImport(imp);
       if (parts.length === 1 && !parts[0].title) parts[0].title = imp.title;
@@ -2751,21 +2799,38 @@ function guessDirection(sample) {
   if (s === 'viet') return 'vi-en';
   return /^[\x00-\x7f\s]+$/.test(sample.slice(0, 2000)) ? 'en-vi' : 'auto-vi';
 }
+/* Tạo một truyện mới từ kết quả đọc file: tên + ghi công tự điền (tên trong file ưu tiên, rồi tới người dịch mặc định) */
+async function projectFromImport(imp, fname, quiet) {
+  const parts = C.chaptersFromImport(imp); if (!parts.length) throw new Error(T('Không tìm thấy đoạn văn nào.'));
+  const meta = imp.meta || {};
+  const p = newProjectObj(meta.title || imp.title || String(fname).replace(/\.[^.]+$/, ''), '', C.DEFAULT_DIRECTION); /* “Tự nhận”: ngôn ngữ được dò lại theo từng chương khi dịch */
+  const defTr = p.translator; p.translator = '';
+  const auto = applyCredits(p, meta); if (!p.translator) p.translator = defTr;
+  if (meta.title) auto.unshift('title');
+  await DB.put('projects', p); S.project = p; S.chapters = [];
+  importWarnings({ name: fname }, parts);
+  if (parts.length === 1 && !parts[0].title) parts[0].title = imp.title;
+  await addChapterList(parts, true, quiet ? { quiet: true, stay: true } : undefined);
+  return { p, auto };
+}
 async function importNewProject(given) {
   const f = given || (await pickFiles(ACCEPT, false))[0]; if (!f) return;
   let imp; try { imp = await readImport(f); } catch (e) { return toast(e.message || String(e), 'err', 9000); }
-  const parts = C.chaptersFromImport(imp); if (!parts.length) return toast(T('Không tìm thấy đoạn văn nào.'), 'err');
-  const meta = imp.meta || {};
-  const p = newProjectObj(meta.title || imp.title || f.name.replace(/\.[^.]+$/, ''), '', C.DEFAULT_DIRECTION); /* “Tự nhận”: ngôn ngữ được dò lại theo từng chương khi dịch */
-  const defTr = p.translator; p.translator = '';
-  const auto = applyCredits(p, meta); if (!p.translator) p.translator = defTr; /* tên trong file được ưu tiên, sau đó mới tới tên mặc định */
-  if (meta.title) auto.unshift('title');
-  await DB.put('projects', p); S.project = p; S.chapters = [];
-  importWarnings(f, parts);
-  if (parts.length === 1 && !parts[0].title) parts[0].title = imp.title;
-  await addChapterList(parts, true);
-  await openProject(p.id);
-  openCreditsPanel(auto, f.name, true);
+  if (imp.books) return importBooks(imp, f);
+  let r; try { r = await projectFromImport(imp, f.name); } catch (e) { return toast(e.message || String(e), 'err'); }
+  await openProject(r.p.id);
+  openCreditsPanel(r.auto, f.name, true);
+}
+/* File nén chứa nhiều EPUB (vd. iPhone “Nén” cả thư mục): mỗi EPUB thành một truyện riêng, tự điền tên + ghi công */
+async function importBooks(imp, f) {
+  const made = [], bad = (imp.failed || []).slice();
+  for (const b of imp.books) {
+    try { const r = await projectFromImport(b, b.meta && b.meta.title || b.title, true); made.push(r.p.title); }
+    catch (e) { bad.push(b.title); }
+  }
+  closeModal(); S.project = null; await goHome();
+  if (made.length) toast(T('Đã tạo {n} truyện từ file nén', { n: made.length }) + ': ' + made.slice(0, 6).join(', ') + (made.length > 6 ? '…' : ''), 'ok', 12000);
+  if (bad.length) toast(T('Không đọc được: {f}', { f: bad.join(', ') }), 'err', 12000);
 }
 
 /* ---------- Nhập từ link (trang chương hoặc trang mục lục) ---------- */
@@ -3378,7 +3443,7 @@ window.addEventListener('beforeunload', e => { if (pending.size || S.busy) { e.p
 
 
 /* ---------- Ứng dụng trên màn hình chính (PWA) ---------- */
-const APP_BUILD = '829014299605';
+const APP_BUILD = '157f25a0b5b7';
 const ONLINE_ORIGIN = /^https?:$/.test(location.protocol);
 function setThemeMeta(t) { document.querySelectorAll('meta[name=theme-color]').forEach(m => { m.content = t === 'dark' ? '#1a1714' : '#f3eee6'; m.removeAttribute('media'); }); }
 // Service worker chỉ chạy khi mở qua http(s); mở file:// thì bỏ qua (app vẫn chạy trọn trong một file)

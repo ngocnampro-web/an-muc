@@ -1,7 +1,7 @@
 /* Án Mực — service worker: chạy offline sau lần mở đầu.
    index.html: mạng trước (có bản mới là thấy), mất mạng thì dùng bản đã lưu.
    Chỉ xử lý GET cùng nguồn; không bao giờ chặn hay lưu yêu cầu tới API AI (khác nguồn). */
-const VERSION = '829014299605';
+const VERSION = '157f25a0b5b7';
 const CACHE = 'anmuc-' + VERSION;
 const PRECACHE = ['./', './index.html', './manifest.webmanifest', './apple-touch-icon.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './favicon.ico', './favicon-32.png'];
 const SCOPE = new URL('./', self.location).pathname;
