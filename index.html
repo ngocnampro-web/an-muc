@@ -387,6 +387,20 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area
 .linkbtn{background:none;border:0;padding:0;min-height:0;color:var(--cin);text-decoration:underline;font:inherit;cursor:pointer}
 .audpill{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:60;border-radius:999px;padding:8px 14px;background:var(--cin);color:#fff;border:0;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .audbox [hidden]{display:none!important}
+/* Kiểm tra dịch đủ */
+.prow.incomplete .vi textarea{border-left:3px solid var(--warn);background:var(--warn-soft)}
+.incflag{font-size:.82rem}
+.ptools .redo{min-height:30px;padding:3px 10px}
+.cstatus{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0 0 12px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-size:.88rem}
+.cstatus.ok{border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}
+.cstatus.warn{border-color:color-mix(in srgb,var(--warn) 55%,var(--line))}
+.cstatus .spacer{flex:1}
+.gapsum{margin-top:8px;padding:8px 10px;border:1px solid color-mix(in srgb,var(--warn) 50%,var(--line));border-radius:10px}
+.gapsum ul{margin:6px 0 0;padding-left:18px;font-size:.85rem}.gapsum li{margin:2px 0}
+.gapsum button.link{padding:0;min-height:0}
+table.pairs input{min-width:76px}
+.genretext{white-space:pre-wrap;margin-top:6px}
+.incc{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -780,6 +794,77 @@ Object.assign(window.AM_EN, {
   'Xóa giọng đọc đã tải? Lần sau phải tải lại.': 'Delete the downloaded voices? They will need to be downloaded again.',
   'Đã xóa.': 'Deleted.'
 });
+/* Kiểm tra dịch đủ, thể loại, xưng hô theo cặp, trau chuốt */
+Object.assign(window.AM_EN, {
+"Đã tự trích {n} tên/thuật ngữ & cặp xưng hô trước khi dịch — xem ở “Thuật ngữ”.": "Auto-extracted {n} names/terms & address pairs before translating — see “Glossary”.",
+"Kiểm tra đầy đủ: mọi đoạn của các chương đã dịch đều có bản dịch, không phát hiện đoạn thiếu ý.": "Completeness check: every paragraph of the translated chapters has a translation; no missing meaning detected.",
+"Còn {n} chương chưa đủ — không đoạn nào bị bỏ qua âm thầm:": "{n} chapters are not complete — nothing was skipped silently:",
+"chưa dịch đoạn {p}": "untranslated paragraphs {p}",
+"nghi thiếu ý đoạn {p}": "possibly incomplete paragraphs {p}",
+"{n} đoạn nghi thiếu": "{n} possibly incomplete",
+"Độ đầy đủ:": "Completeness:",
+"{d}/{n} đoạn có bản dịch": "{d}/{n} paragraphs translated",
+"{n} đoạn lược": "{n} left out",
+"{n} đoạn chưa dịch": "{n} untranslated",
+"{n} đoạn nghi thiếu ý: {p}": "{n} possibly incomplete: {p}",
+"không phát hiện đoạn thiếu ý": "no missing meaning detected",
+"Dịch lại các đoạn nghi thiếu": "Retranslate incomplete paragraphs",
+"So từng đoạn với bản gốc: số câu, độ dài, câu cụt, dấu hiệu tóm tắt, chữ gốc chưa dịch": "Compare each paragraph with the source: sentence count, length, cut-off endings, summarising, leftover source text",
+"Kiểm tra lại": "Re-check",
+"Dịch lại đoạn này": "Retranslate this paragraph",
+"Bộ kiểm tra đầy đủ so đoạn này với bản gốc và thấy có thể thiếu ý. Bấm “Dịch lại đoạn này” hoặc sửa tay (sửa tay sẽ bỏ dấu).": "The completeness check compared this paragraph with the source and it may be missing content. Click “Retranslate this paragraph” or edit it by hand (editing clears the flag).",
+"Có thể dịch chưa đủ:": "May be incomplete:",
+"Đã đủ, bỏ dấu": "It's complete, clear flag",
+"Thể loại": "Genre",
+"AI đọc chương này, trích tên riêng (kèm giới tính, Hán Việt cho tên Trung), thuật ngữ và cách xưng hô theo cặp. Chỉ thêm mục mới, không ghi đè.": "The AI reads this chapter and extracts names (with gender, Sino-Vietnamese for Chinese names), terms and pairwise forms of address. Only new entries are added; nothing is overwritten.",
+"Trích tên & thuật ngữ (AI)": "Extract names & terms (AI)",
+"{n} cặp xưng hô": "{n} address pairs",
+"Đoạn {a} có thể dịch chưa đủ ({w}) — đang dịch lại cho trọn vẹn… ({k}/{n}, lần {t}/2)": "Paragraph {a} may be incomplete ({w}) — retranslating in full… ({k}/{n}, try {t}/2)",
+"Cả phần bị chặn — đang chia nhỏ để dịch như thường phần không có vấn đề, chỉ xử lý riêng đoạn bị chặn…": "Whole part blocked — splitting it so the unproblematic paragraphs translate normally and only the blocked ones are handled separately…",
+"Cả phần bị chặn → đã chia nhỏ và dịch đủ từng đoạn.": "Whole part blocked → split and every paragraph translated.",
+"vẫn bị chặn sau khi chia nhỏ; các đoạn khác đã dịch xong. Thử “Dịch giảm nhẹ” hoặc model khác.": "still blocked after splitting; the other paragraphs are done. Try “Softened translation” or another model.",
+"Đã tự dịch lại cho đủ ý: đoạn {p}.": "Automatically retranslated in full: paragraphs {p}.",
+"Đoạn {p} có thể còn thiếu ý — kiểm tra hoặc bấm “Dịch lại đoạn này”.": "Paragraphs {p} may still be incomplete — check them or click “Retranslate this paragraph”.",
+"Đang trau chuốt…": "Polishing…",
+"Đã trau chuốt {n} đoạn (đã kiểm lại đủ ý).": "Polished {n} paragraphs (re-checked for completeness).",
+"đang trích tên & thuật ngữ…": "extracting names & terms…",
+"Không còn đoạn nghi thiếu ý.": "No possibly incomplete paragraphs left.",
+"Đã dịch lại {a} đoạn; còn {n} đoạn nghi thiếu ({p}) — kiểm tra hoặc sửa tay.": "Retranslated {a} paragraphs; {n} still possibly incomplete ({p}) — check or edit by hand.",
+"Đã dịch lại cho đủ {a} đoạn.": "Retranslated {a} paragraphs in full.",
+"Chưa có chương nào.": "No chapters yet.",
+"Đang đọc chương “{t}” để trích tên & thuật ngữ…": "Reading chapter “{t}” to extract names & terms…",
+"Không trích được (AI bị chặn hoặc trả lời sai định dạng). Thử lại hoặc dùng AI khác.": "Extraction failed (AI blocked or wrong format). Try again or use another AI.",
+"Đã thêm {t} tên/thuật ngữ và {p} cặp xưng hô — kiểm tra, sửa trong bảng Thuật ngữ.": "Added {t} names/terms and {p} address pairs — review them in the Glossary.",
+"Xưng hô theo cặp nhân vật": "Forms of address per character pair",
+"Mỗi cặp: A tự xưng gì, gọi B là gì và ngược lại. Gửi kèm mọi lần dịch để xưng hô không bị đổi giữa chừng. Đánh dấu “Cố định” để AI không tự đổi; bỏ dấu khi quan hệ thay đổi (ví dụ thành người yêu).": "Per pair: how A refers to self and addresses B, and vice versa. Sent with every request so forms of address don't drift. Tick “Locked” so the AI keeps them; untick when the relationship changes (e.g. they become lovers).",
+"Thêm cặp": "Add pair",
+"{n} cặp": "{n} pairs",
+"Nhân vật A": "Character A",
+"Nhân vật B": "Character B",
+"A tự xưng": "A calls self",
+"A gọi B": "A calls B",
+"B tự xưng": "B calls self",
+"B gọi A": "B calls A",
+"Cố định": "Locked",
+"Chưa có cặp nào. Bấm “Trích tên & thuật ngữ (AI)” để AI tự đề xuất, hoặc “Thêm cặp”.": "No pairs yet. Click “Extract names & terms (AI)” for suggestions, or “Add pair”.",
+"Thể loại (bộ quy tắc văn phong gửi kèm mỗi lần dịch)": "Genre (style rules sent with every request)",
+"Xem quy tắc của thể loại này": "View this genre's rules",
+"Mặc định: chỉ dùng văn phong chung, không thêm quy tắc riêng.": "Default: general style only, no extra rules.",
+"Trau chuốt sau khi dịch (thêm 1 lượt AI mỗi phần)": "Polish after translating (one extra AI pass per part)",
+"AI đọc lại bản nháp cạnh bản gốc và viết mượt hơn. Bản trau chuốt chỉ được nhận khi vẫn đủ câu, đủ ý (kiểm lại tự động); đoạn bạn đã sửa tay không bị đụng tới.": "The AI rereads the draft next to the source and smooths it. A polished version is only accepted if it is still complete (auto re-checked); paragraphs you edited are never touched.",
+"Tự trích tên, thuật ngữ & xưng hô trước khi dịch chương mới": "Auto-extract names, terms & forms of address before translating a new chapter",
+"Kiểm tra dịch đủ từng đoạn (số câu, độ dài, câu cụt, tóm tắt) và tự dịch lại đoạn thiếu": "Check every paragraph is fully translated (sentences, length, cut-offs, summarising) and auto-retranslate incomplete ones",
+"Nhiệt độ (0–2; 0.6–0.9 cho văn chương; DeepSeek khuyên 1.3 cho dịch thuật)": "Temperature (0–2; 0.6–0.9 for fiction; DeepSeek suggests 1.3 for translation)",
+"{n} đoạn nghi dịch thiếu ý: {p}.": "{n} paragraphs possibly incomplete: {p}.",
+"Không phát hiện đoạn thiếu ý.": "No missing meaning detected.",
+"Còn {n} đoạn chưa dịch.": "{n} paragraphs still untranslated.",
+"Thể loại: {g} — áp dụng từ lần dịch tiếp theo.": "Genre: {g} — applies from the next translation.",
+"ngắn hơn hẳn bản gốc — có thể bỏ ý": "far shorter than the source — meaning may be missing",
+"thiếu câu so với bản gốc": "fewer sentences than the source",
+"bị cắt cụt ở cuối": "cut off at the end",
+"có dấu hiệu tóm tắt / lược bớt": "looks summarised / abridged",
+"còn chữ gốc chưa dịch": "source text left untranslated"
+});
 </script>
 <script id="core">
 /* ===== LÕI XỬ LÝ (không phụ thuộc giao diện) ===== */
@@ -1058,14 +1143,17 @@ C.GUIDE = {
 C.guideFor = (id, sample) => { const d = C.dir(id); const src = C.effectiveSource(id, sample); const g = (C.GUIDE[d.target][src] || []).slice(); if (d.source === 'auto') g.unshift(AUTO_NOTE[d.target](SRC_NAME[d.target][src])); return g; };
 
 /* ---------- Lời nhắc (prompt) ---------- */
-C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, address, sample, soften, humor, format }) => {
+C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, address, sample, soften, humor, format, genre, pairs }) => {
+  const gtext = C.genreText(genre, C.targetOf(direction)); const ptext = C.pairsBlock(pairs, C.targetOf(direction));
   const d = C.dir(direction); const src = C.effectiveSource(direction, sample);
   const srcName = lang => d.source === 'auto' ? (lang === 'vi' ? 'ngôn ngữ tự nhận (chương này có vẻ là ' + SRC_NAME.vi[src] + ')' : 'an auto-detected language (this chapter appears to be ' + SRC_NAME.en[src] + ')') : SRC_NAME[lang][d.source];
   if (d.target === 'en') {
     let s = 'You are a professional literary translator specializing in GL (girls\' love / baihe) fiction, translating from ' + srcName('en') + ' into English.\n\n';
     s += '## SOURCE NOTES\n' + C.guideFor(d.id, sample).map(x => '- ' + x).join('\n') + '\n\n';
     s += '## STYLE GUIDE\n' + String(styleGuide || '').trim() + '\n\n';
+    if (gtext) s += gtext + '\n\n';
     if (address && String(address).trim()) s += '## FORMS OF ADDRESS (set by the translator for this chapter)\n' + String(address).trim() + '\n\n';
+    if (ptext) s += ptext + '\n\n';
     if (terms && terms.length) s += '## GLOSSARY (always use these renderings)\n' + terms.map(t => '- ' + t.zh + ' → ' + (t.vi || '(keep as is)') + (t.note ? ' (' + t.note + ')' : '')).join('\n') + '\n\n';
     if (prevSummary || prevTail) {
       s += '## PREVIOUS CHAPTER CONTEXT (for continuity only, do not translate again)\n';
@@ -1082,7 +1170,9 @@ C.buildSystemPrompt = ({ styleGuide, terms, prevSummary, prevTail, direction, ad
   const g = C.guideFor(d.id, sample);
   if (g.length) s += '## LƯU Ý THEO NGUỒN\n' + g.map(x => '- ' + x).join('\n') + '\n\n';
   s += '## HƯỚNG DẪN VĂN PHONG\n' + String(styleGuide || '').trim() + '\n\n';
+  if (gtext) s += gtext + '\n\n';
   if (address && String(address).trim()) s += '## XƯNG HÔ (người dịch đặt cho chương này)\n' + String(address).trim() + '\n\n';
+  if (ptext) s += ptext + '\n\n';
   if (terms && terms.length) s += '## BẢNG THUẬT NGỮ (bắt buộc dùng đúng cách dịch dưới đây)\n' + terms.map(t => '- ' + t.zh + ' → ' + (t.vi || '(giữ nguyên)') + (t.note ? ' (' + t.note + ')' : '')).join('\n') + '\n\n';
   if (prevSummary || prevTail) {
     s += '## BỐI CẢNH CHƯƠNG TRƯỚC (chỉ để nối mạch, không dịch lại)\n';
@@ -1115,7 +1205,14 @@ C.QUALITY_REASON = {
 C.buildTranslateUser = (zhList, ctx, direction, retry) => {
   const en = C.targetOf(direction) === 'en'; const N = zhList.length;
   let u = C.contextBlock(ctx, en);
-  if (retry && retry.kind === 'quality') {
+  if (retry && retry.kind === 'complete') {
+    const R = C.COMPLETE_REASON[en ? 'en' : 'vi']; const why = (retry.reasons || []).map(c => R[c] || c).join('; ');
+    const ns = retry.srcSent || 0;
+    u += en ? 'NOTE: the previous translation of ' + (N > 1 ? 'these paragraphs' : 'this paragraph') + ' was INCOMPLETE' + (why ? ' (' + why + ')' : '') + '. Translate it again IN FULL: every sentence, every clause and every detail, in the original order' + (ns > 1 ? ' — the source has about ' + ns + ' sentences, so the translation must have about as many' : '') + '. Do not summarize, shorten, skip or leave any source text untranslated.\n'
+      : 'LƯU Ý: bản dịch trước của ' + (N > 1 ? 'các đoạn này' : 'đoạn này') + ' CHƯA ĐỦ' + (why ? ' (' + why + ')' : '') + '. Hãy dịch lại TRỌN VẸN: đủ từng câu, từng vế, từng chi tiết, đúng thứ tự' + (ns > 1 ? ' — bản gốc có khoảng ' + ns + ' câu, bản dịch cũng phải đủ chừng ấy câu' : '') + '. Không tóm tắt, không rút gọn, không bỏ câu nào, không để sót chữ gốc chưa dịch.\n';
+    if (retry.prev && String(retry.prev).trim()) u += (en ? 'Previous (incomplete) version — for reference only:\n' : 'Bản trước (bị thiếu — chỉ để tham khảo):\n') + String(retry.prev).trim() + '\n';
+    u += '\n';
+  } else if (retry && retry.kind === 'quality') {
     const R = C.QUALITY_REASON[en ? 'en' : 'vi']; const why = (retry.reasons || []).map(c => R[c] || c).join('; ');
     u += en ? 'NOTE: the previous translation of ' + (N > 1 ? 'these paragraphs' : 'this paragraph') + ' read like a machine conversion' + (why ? ' (' + why + ')' : '') + '. Rewrite it from scratch in natural, fluent, literary English — complete sentence by sentence, faithful to the meaning, names exactly as in the glossary. Do not copy the word order of the source.\n'
       : 'LƯU Ý: bản dịch trước của ' + (N > 1 ? 'các đoạn này' : 'đoạn này') + ' còn cứng, đọc như convert' + (why ? ' (' + why + ')' : '') + '. Hãy viết lại hoàn toàn bằng tiếng Việt tự nhiên, mượt, giàu cảm xúc như một nhà văn Việt viết — đủ từng câu, đúng nghĩa, tên riêng đúng bảng thuật ngữ. Không chép trật tự từ của bản convert.\n';
@@ -1331,6 +1428,166 @@ const capName = s => String(s).trim().split(/\s+/).map(w => /^[\u3400-\u9fff]/.t
 const westOf = han => { const r = [...han].map(c => C.WEST_SYL[c]); if (r.some(x => x == null)) return ''; const w = r.join(''); return w[0].toUpperCase() + w.slice(1); };
 const NAME_SEP = /[．·・•‧]/;
 /* Tìm các cách viết convert của một phần tên Hán có n âm tiết: dạng “媞 na”, “mễ lan đóa” (đếm theo âm tiết) */
+/* ---------- Kiểm tra DỊCH ĐỦ từng đoạn (không bỏ câu, không tóm tắt, không cụt đuôi, không sót chữ gốc) ----------
+   Dựa trên nghiên cứu phát hiện bỏ sót (SEGALE, Align-then-Slide…): chỉ so độ dài là không đủ → kết hợp số câu, đuôi câu, dấu hiệu tóm tắt, chữ gốc còn sót.
+   Trả về mã lỗi: short | sentences | cut | summary | untranslated. Đoạn ngắn (≤ 12 ký tự) và dòng ký hiệu luôn được bỏ qua. */
+const CSCRIPT = { han: /[\u3400-\u9fff\uf900-\ufaff]/g, hangul: /[\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]/g, kana: /[\u3040-\u309f\u30a0-\u30ff]/g, thai: /[\u0e00-\u0e7f]/g };
+const ccount = (s, re) => (String(s || '').match(re) || []).length;
+C.sentenceCount = s => {
+  const t = String(s || '').replace(/[「」『』“”"‘’《》〈〉（）()\[\]【】]/g, ' ').trim(); if (!t) return 0;
+  return t.split(/[。！？!?]+|…+|\.{3,}|\.(?=\s|$)/).map(x => x.trim()).filter(x => /[\p{L}\p{N}]/u.test(x) && [...x.replace(/\s/g, '')].length >= 2).length;
+};
+/* đơn vị đo + tỉ lệ độ dài kỳ vọng (ký tự không khoảng trắng của bản dịch / đơn vị gốc) theo cặp ngôn ngữ */
+C.lengthProfile = (src, target) => {
+  const s = String(src || ''); const slen = s.replace(/\s/g, '').length || 1; const en = target === 'en';
+  const han = ccount(s, CSCRIPT.han) + ccount(s, CSCRIPT.kana), hg = ccount(s, CSCRIPT.hangul), th = ccount(s, CSCRIPT.thai);
+  if (han / slen > 0.3) return { units: han, expect: en ? 2.6 : 2.4, min: 25, script: 'han' };
+  if (hg / slen > 0.3) return { units: hg, expect: en ? 2.2 : 2.0, min: 30, script: 'hangul' };
+  if (th / slen > 0.3) return { units: th, expect: 0.85, min: 60, script: 'thai' };
+  return { units: slen, expect: 1.0, min: 80, script: 'latin' };
+};
+const SUMMARY_MARK = /[(\[（【]\s*(?:tóm tắt|tóm lược|lược bớt|lược dịch|đã lược|lược|còn tiếp|còn nữa|bỏ qua|summary|summari[sz]ed|omitted|abridged|skipped|cont(?:inued|\.)?|\.\.\.|…)\s*[)\]）】]|(?:phần|đoạn|nội dung|các câu) (?:còn lại|sau|tiếp theo|phía sau)(?: của đoạn(?: này)?)? (?:được |đã |xin )?(?:lược|tóm tắt|bỏ qua|không dịch)|(?:the )?rest of (?:the|this) (?:paragraph|passage|text|chapter) (?:is |has been )?(?:omitted|summari[sz]ed|skipped)|(?:đại ý|tóm tắt nội dung|nội dung chính)\s*[:：]/i;
+const SUMMARY_ETC = /(?:^|[\s,，])(?:v\.v\.?|vân vân|etc\.)(?=$|[\s,.!?…])/i;
+C.completenessIssues = (src, out, opts) => {
+  opts = opts || {}; const res = [];
+  const s = String(src || '').trim(), v = String(out || '').trim();
+  if (!s || !v || C.noLetters(s) || C.isShortLine(s)) return res;
+  const target = opts.target === 'en' ? 'en' : 'vi'; const soft = !!opts.soft;
+  const lp = C.lengthProfile(s, target);
+  const vlen = v.replace(/\s/g, '').length;
+  /* 1) chữ gốc còn sót trong bản dịch (trừ thuật ngữ cố ý giữ nguyên) */
+  const keep = (opts.terms || []).map(t => (t.vi && String(t.vi)) || String(t.zh || '')).join(' ');
+  let left = 0, total = 0;
+  for (const k of ['han', 'hangul', 'kana', 'thai']) {
+    const sv = ccount(s, CSCRIPT[k]); if (!sv) continue; total += sv;
+    left += (v.match(CSCRIPT[k]) || []).filter(c => !keep.includes(c)).length;
+  }
+  if (left >= 2) res.push('untranslated');
+  /* 2) ngắn hơn hẳn mức thường gặp của cặp ngôn ngữ này */
+  const ratio = vlen / Math.max(1, lp.units * lp.expect);
+  if (lp.units >= lp.min && ratio < (soft ? 0.3 : 0.5)) res.push('short');
+  /* 3) thiếu câu: gốc ≥ 4 câu mà bản dịch còn chưa tới một nửa, và bản dịch cũng ngắn rõ rệt */
+  const ss = C.sentenceCount(s), vs = C.sentenceCount(v);
+  if (ss >= 4 && vs < Math.ceil(ss * (soft ? 0.34 : 0.5)) && ratio < 0.85) res.push('sentences');
+  /* 4) cụt đuôi: gốc kết thúc bằng dấu câu mà bản dịch dừng giữa chừng */
+  const endP = /[.!?…。！？"”’»)\]】」』~～—*：:]$/;
+  if (endP.test(s) && !endP.test(v) && /[\p{L}\p{N},，;；、-]$/u.test(v) && vlen >= 20) res.push('cut');
+  /* 5) dấu hiệu tóm tắt/lược bớt không có trong bản gốc */
+  if ((SUMMARY_MARK.test(v) && !SUMMARY_MARK.test(s)) || (SUMMARY_ETC.test(v) && !/等等|等|云云|之类|etc\.?|v\.v\.|vân vân|등등|ฯลฯ/i.test(s))) res.push('summary');
+  return res;
+};
+C.completeScore = codes => (codes || []).reduce((a, c) => a + ({ summary: 3, cut: 3, sentences: 3, short: 2, untranslated: 2 }[c] || 1), 0);
+C.COMPLETE_REASON = {
+  vi: { short: 'ngắn hơn hẳn bản gốc — có thể bỏ ý', sentences: 'thiếu câu so với bản gốc', cut: 'bị cắt cụt ở cuối', summary: 'có dấu hiệu tóm tắt / lược bớt', untranslated: 'còn chữ gốc chưa dịch' },
+  en: { short: 'far shorter than the source — meaning may be missing', sentences: 'fewer sentences than the source', cut: 'cut off at the end', summary: 'looks summarised / abridged', untranslated: 'source text left untranslated' }
+};
+
+/* ---------- Thể loại (preset văn phong theo truyện) ---------- */
+const CO_TRANG_VI = 'dịch đủ từng câu; văn phong cổ trang trang nhã mà mượt, Hán Việt vừa phải, tránh lối convert (\'nàng ta\',\'hắn ta\',\'một cái\',\'liền\',\'thập phần\'); xưng hô đúng vai vế (trẫm/bệ hạ, bổn cung/thần thiếp, thần/vi thần/hạ quan, nô tỳ/nô tài, phụ thân/mẫu thân, ca ca/tỷ tỷ/muội muội, ta/ngươi, ta/nàng, chàng/thiếp, tại hạ/các hạ, cô nương/công tử/tiểu thư) nhất quán, đổi theo tiến triển quan hệ; người kể gọi nữ \'nàng\', nam \'hắn\'/\'y\'/\'chàng\' nhất quán; lời thoại đúng thân phận; cảnh cung đấu sắc, chiến trận dồn dập, biệt ly thấm, tình e ấp; hài dí dỏm nhưng không tiếng lóng hiện đại; tên riêng/tước vị/chức quan Hán Việt chuẩn, giờ cổ (giờ Tý, canh ba, một nén nhang); thơ từ dịch có vần nhịp; thành ngữ Hán Việt quen thuộc; cảnh nhạy cảm dịch đủ nhưng tinh tế theo lối văn cổ; chỉ trả bản dịch.';
+const bullets = t => t.split(/;\s*/).map(x => x.trim().replace(/\.$/, '')).filter(Boolean).map(x => '- ' + x.charAt(0).toUpperCase() + x.slice(1) + '.').join('\n');
+C.GENRES = {
+  'default': { label: { vi: 'Mặc định', en: 'Default' }, vi: '', en: '' },
+  'co-trang': { label: { vi: 'Cổ trang', en: 'Historical (cổ trang)' },
+    vi: '## THỂ LOẠI: CỔ TRANG\n' + bullets(CO_TRANG_VI),
+    en: '## GENRE: HISTORICAL / ANCIENT CHINA\n- Translate every sentence.\n- Elegant period prose that still reads smoothly; no modern slang, even in comic scenes.\n- Keep ranks and forms of address consistent and true to status (Your Majesty, this consort, this servant, Father/Mother, elder sister…); let them change only as relationships change.\n- Dialogue fits each speaker\'s rank; palace intrigue sharp, battles fast, partings poignant, romance restrained.\n- Proper names, titles and offices consistent with the glossary; traditional time units (the hour of the Rat, the third watch, the time it takes an incense stick to burn).\n- Poems rendered with rhythm; sensitive scenes translated in full but tastefully, in a classical register.\n- Return only the translation.' },
+  'ngon-tinh': { label: { vi: 'Ngôn tình hiện đại', en: 'Modern romance' },
+    vi: '## THỂ LOẠI: NGÔN TÌNH HIỆN ĐẠI\n- Dịch đủ từng câu; bối cảnh đương đại nên văn phong tiếng Việt hiện đại, tự nhiên, mượt — không dùng giọng cổ trang (ta/ngươi, nàng/hắn) trừ khi bản gốc cố ý.\n- Xưng hô theo tuổi và quan hệ: tôi/cậu, tớ/cậu, anh/em, chị/em, mày/tao khi gay gắt; người kể gọi nhân vật nhất quán (cô ấy, anh ấy, cô, anh, chị); đổi xưng hô khi quan hệ tiến triển rõ trong truyện.\n- Cảm xúc tinh tế: rung động, ghen, giận, nhớ — câu có nhịp, có hơi thở; lời thoại tự nhiên như người Việt nói, tránh lối convert (\'một cái\', \'liền\', \'thập phần\', \'hắn ta\', \'nàng ta\').\n- Tên người Trung viết Hán Việt; công ty, thương hiệu, chức danh dịch nghĩa hoặc theo bảng thuật ngữ; mạng xã hội, tin nhắn giữ đúng giọng.\n- Hài dí dỏm, khẩu ngữ đương thời vừa phải.\n- Chỉ trả bản dịch.',
+    en: '## GENRE: MODERN ROMANCE\n- Translate every sentence in natural contemporary English; no archaic register unless the source intends it.\n- Keep how characters address each other consistent with age and relationship, changing only as the relationship changes.\n- Emotions subtle and rhythmic; dialogue sounds like real people talking.\n- Return only the translation.' },
+  'tien-hiep': { label: { vi: 'Tiên hiệp / Huyền huyễn', en: 'Xianxia / Fantasy' },
+    vi: '## THỂ LOẠI: TIÊN HIỆP / HUYỀN HUYỄN\n- Dịch đủ từng câu; cảnh giới, công pháp, pháp bảo, linh dược, tông môn viết Hán Việt chuẩn, viết hoa tên riêng (Luyện Khí, Trúc Cơ, Kim Đan, Nguyên Anh, Hóa Thần; Thanh Vân Tông…), luôn đúng bảng thuật ngữ.\n- Xưng hô tu chân đúng vai vế: sư tôn/sư phụ – đồ nhi, sư huynh/sư đệ, sư tỷ/sư muội, tiền bối/vãn bối, bổn tọa, lão phu, tại hạ, đạo hữu, ta/ngươi; người kể gọi nữ \'nàng\', nam \'hắn\' nhất quán.\n- Chiến đấu dồn dập: câu ngắn, động từ mạnh, chiêu thức mô tả đủ; đột phá, thiên kiếp hùng tráng; cảnh tình cảm vẫn mềm mại.\n- Tránh lối convert (\'một cái\', \'liền\', \'thập phần\', \'nàng ta\', \'hắn ta\'); Hán Việt vừa đủ, câu vẫn mượt.\n- Khẩu quyết, thơ: dịch có vần nhịp.\n- Chỉ trả bản dịch.',
+    en: '## GENRE: XIANXIA / FANTASY\n- Translate every sentence; cultivation realms, techniques, artifacts and sects exactly as in the glossary, capitalised.\n- Sect hierarchy forms of address kept consistent (Master/disciple, senior/junior brother or sister, senior/junior, fellow Daoist).\n- Fights fast and vivid, breakthroughs grand, chants and poems with rhythm.\n- Return only the translation.' },
+  'han': { label: { vi: 'Truyện Hàn', en: 'Korean fiction' },
+    vi: '## THỂ LOẠI: TRUYỆN HÀN\n- Dịch đủ từng câu; tên người Hàn giữ phiên âm Latinh thông dụng (Kim Ji-won, Han Seo-yeon), không Hán Việt hóa; địa danh (Seoul, Busan, Gangnam) giữ nguyên.\n- Kính ngữ: 존댓말 → lời lẽ lịch sự (dạ, ạ, tôi, anh/chị – em); 반말 → thân mật (cậu/tớ, anh/em, mày/tao khi gay gắt); nhân vật đổi kiểu nói thì đổi xưng hô theo.\n- 언니/누나 → chị, 오빠/형 → anh, 선배 → tiền bối hoặc anh/chị tùy bối cảnh, 후배 → hậu bối/em, -씨 → \'cô/anh\' + tên hoặc bỏ; chức danh công ty (팀장 trưởng nhóm, 부장 trưởng phòng, 대표 giám đốc) dịch nghĩa.\n- Lời thoại tự nhiên như phim Hàn lồng tiếng Việt, cảm xúc rõ; không dùng giọng cổ trang (trừ truyện Hàn cổ trang).\n- Chỉ trả bản dịch.',
+    en: '## GENRE: KOREAN FICTION\n- Translate every sentence; Korean names in standard romanisation; honorific vs. casual speech shown through tone and word choice; unnie/oppa etc. rendered naturally or kept if the glossary says so.\n- Return only the translation.' }
+};
+C.GENRE_IDS = Object.keys(C.GENRES);
+C.genreText = (id, target) => { const g = C.GENRES[id]; return g ? (g[target === 'en' ? 'en' : 'vi'] || '') : ''; };
+/* Xưng hô theo cặp nhân vật (ma trận đại từ): khóa cách xưng/gọi để không bị “lật” giữa chương. */
+C.pairsBlock = (pairs, target) => {
+  const en = target === 'en';
+  const list = (pairs || []).filter(x => x && String(x.a || '').trim() && String(x.b || '').trim() && (x.aSelf || x.aCallsB || x.bSelf || x.bCallsA || x.note));
+  if (!list.length) return '';
+  const q = x => '“' + String(x).trim() + '”';
+  const line = x => {
+    const a = String(x.a).trim(), b = String(x.b).trim(); const parts = [];
+    if (en) {
+      if (x.aSelf || x.aCallsB) parts.push(a + (x.aSelf ? ' refers to self as ' + q(x.aSelf) : '') + (x.aSelf && x.aCallsB ? ',' : '') + (x.aCallsB ? ' calls ' + b + ' ' + q(x.aCallsB) : ''));
+      if (x.bSelf || x.bCallsA) parts.push(b + (x.bSelf ? ' refers to self as ' + q(x.bSelf) : '') + (x.bSelf && x.bCallsA ? ',' : '') + (x.bCallsA ? ' calls ' + a + ' ' + q(x.bCallsA) : ''));
+    } else {
+      if (x.aSelf || x.aCallsB) parts.push(a + (x.aSelf ? ' xưng ' + q(x.aSelf) : '') + (x.aSelf && x.aCallsB ? ',' : '') + (x.aCallsB ? ' gọi ' + b + ' là ' + q(x.aCallsB) : ''));
+      if (x.bSelf || x.bCallsA) parts.push(b + (x.bSelf ? ' xưng ' + q(x.bSelf) : '') + (x.bSelf && x.bCallsA ? ',' : '') + (x.bCallsA ? ' gọi ' + a + ' là ' + q(x.bCallsA) : ''));
+    }
+    return '- ' + a + ' ↔ ' + b + ': ' + (parts.join('; ') || '') + (x.note ? (parts.length ? ' — ' : '') + String(x.note).trim() : '')
+      + (x.locked ? (en ? ' [LOCKED — never change]' : ' [CỐ ĐỊNH — không tự đổi]') : (en ? ' [may change only when the relationship clearly changes]' : ' [chỉ đổi khi quan hệ thay đổi rõ trong truyện]'));
+  };
+  return (en ? '## FORMS OF ADDRESS BY CHARACTER PAIR (keep consistent throughout)\n' : '## XƯNG HÔ THEO CẶP NHÂN VẬT (giữ nhất quán suốt chương)\n') + list.slice(0, 30).map(line).join('\n');
+};
+
+/* ---------- Trích tên & thuật ngữ TRƯỚC khi dịch (kiểu LinguaGacha/OmniTranslate: phân tích → thống nhất → dịch) ---------- */
+C.buildExtractMessages = (srcText, glossary, pairs, direction, genre) => {
+  const en = C.targetOf(direction) === 'en'; const d = C.dir(direction);
+  const src = C.effectiveSource(direction, String(srcText || '').slice(0, 4000));
+  const zh = /^zh|^hv/.test(src) || src === 'auto';
+  const known = (glossary || []).map(g => g.zh).filter(Boolean).slice(0, 400).join('; ');
+  const kp = (pairs || []).map(x => x.a + '↔' + x.b).slice(0, 60).join('; ');
+  const gl = (C.GENRES[genre] || C.GENRES.default).label[en ? 'en' : 'vi'];
+  const sys = en
+    ? 'You are a terminology assistant for a literary translator. BEFORE translation, read the source chapter and build: (1) proper nouns — people, places, sects/organisations, ranks/titles, techniques/artifacts and recurring special terms — that are NOT in the existing glossary; (2) how each pair of characters who speak to each other address one another.\n'
+      + '- Only proper nouns and real recurring terms; never common words, never whole sentences.\n- Names as they should appear in English (pinyin for Chinese names, standard romanisation for Korean, Western spelling for transliterated Western names).\n- Put gender and role in "note" (e.g. "female, empress").\n'
+      + 'Genre: ' + gl + '.\nReturn ONLY one JSON object, no other text: {"terms":[{"source":"exactly as written in the source","target":"rendering","kind":"name|place|org|title|term","gender":"f|m|","note":"who/what"}],"pairs":[{"a":"A (translated name)","b":"B","a_self":"how A refers to self","a_calls_b":"what A calls B","b_self":"","b_calls_a":"","note":"relationship"}]}. At most 40 terms and 12 pairs. If nothing new: {"terms":[],"pairs":[]}.'
+    : 'Bạn là trợ lý thuật ngữ cho dịch giả văn học. TRƯỚC khi dịch, hãy đọc chương gốc và lập: (1) tên riêng — người, địa danh, môn phái/tổ chức, tước vị/chức quan, chiêu thức/pháp bảo và thuật ngữ đặc biệt lặp lại — CHƯA có trong bảng hiện có; (2) cách xưng hô giữa từng cặp nhân vật có nói chuyện với nhau.\n'
+      + '- Chỉ lấy danh từ riêng và thuật ngữ thật sự lặp lại; KHÔNG lấy từ thường, KHÔNG lấy cả câu.\n'
+      + (zh ? '- Tên tiếng Trung: Hán Việt chuẩn, viết hoa mỗi âm tiết (林晚 → Lâm Vãn; 青云宗 → Thanh Vân Tông; 贵妃 → Quý phi); tên phiên âm phương Tây viết kiểu Tây (艾米莉 → Emily).\n' : '- Tên Hàn giữ phiên âm Latinh thông dụng; tên Thái/Tây giữ cách viết Latinh; tên Trung viết Hán Việt.\n')
+      + '- Ghi giới tính và thân phận vào "note" (ví dụ "nữ, hoàng hậu").\n- Xưng hô: theo vai vế, tuổi, quan hệ và thể loại ' + gl + ' (ví dụ cổ trang: trẫm/bệ hạ, bổn cung/thần thiếp, ta/nàng; hiện đại: tôi/cậu, chị/em).\n'
+      + 'Chỉ trả về một đối tượng JSON, không thêm chữ nào khác: {"terms":[{"source":"đúng như trong bản gốc","target":"cách dịch","kind":"name|place|org|title|term","gender":"f|m|","note":"là ai/cái gì"}],"pairs":[{"a":"tên A (đã dịch)","b":"tên B","a_self":"A xưng","a_calls_b":"A gọi B","b_self":"B xưng","b_calls_a":"B gọi A","note":"quan hệ"}]}. Tối đa 40 thuật ngữ, 12 cặp. Không có gì mới thì trả về {"terms":[],"pairs":[]}.';
+  const user = (en ? 'Existing glossary (do not repeat): ' : 'Bảng thuật ngữ hiện có (không lặp lại): ') + (known || (en ? '(empty)' : '(trống)')) + '\n'
+    + (en ? 'Pairs already set (do not repeat): ' : 'Cặp xưng hô đã có (không lặp lại): ') + (kp || (en ? '(none)' : '(chưa có)')) + '\n\n'
+    + (en ? 'SOURCE (' + SRC_NAME.en[d.source] + '):\n' : 'BẢN GỐC (' + SRC_NAME.vi[d.source] + '):\n') + String(srcText || '').slice(0, 12000);
+  return [{ role: 'system', content: sys }, { role: 'user', content: user }];
+};
+C.parseExtraction = (text, opts) => {
+  opts = opts || {};
+  const t = C.stripThink(text || '').replace(/```(?:json)?/gi, '');
+  let obj = null; const a = t.indexOf('{'), b = t.lastIndexOf('}');
+  if (a >= 0 && b > a) { try { obj = JSON.parse(t.slice(a, b + 1)); } catch (e) {} }
+  if (!obj || Array.isArray(obj) || typeof obj !== 'object') obj = null;
+  const termsRaw = obj ? (Array.isArray(obj.terms) ? obj.terms : []) : null;
+  const terms = C.parseTermSuggestions(termsRaw ? JSON.stringify(termsRaw) : t, { source: opts.source, existing: opts.existing, max: opts.max || 40 });
+  const byZh = {}; (termsRaw || []).forEach(x => { if (x && x.source) byZh[String(x.source).replace(/\s+/g, ' ').trim().toLowerCase()] = x; });
+  terms.forEach(x => {
+    const r = byZh[x.zh.toLowerCase()] || {}; const k = String(r.kind || '').toLowerCase(); const g = String(r.gender || '').toLowerCase();
+    if (k === 'name' || k === 'person') x.kind = 'name';
+    const gn = /^f|nữ|female/.test(g) ? (C.lang === 'en' ? 'female' : 'nữ') : /^m|nam|male/.test(g) ? (C.lang === 'en' ? 'male' : 'nam') : '';
+    if (gn && !new RegExp(gn, 'i').test(x.note)) x.note = (gn + (x.note ? ', ' + x.note : '')).slice(0, 120);
+    x.auto = 'ai';
+  });
+  const norm = x => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().slice(0, 40);
+  const key = (a, b) => [a.toLowerCase(), b.toLowerCase()].sort().join('↔');
+  const seen = new Set((opts.pairs || []).map(x => key(norm(x.a), norm(x.b))));
+  const pairs = [];
+  for (const p of (obj && Array.isArray(obj.pairs) ? obj.pairs : [])) {
+    if (!p || typeof p !== 'object') continue;
+    const x = { id: C.uid(), a: norm(p.a), b: norm(p.b), aSelf: norm(p.a_self || p.aSelf), aCallsB: norm(p.a_calls_b || p.aCallsB), bSelf: norm(p.b_self || p.bSelf), bCallsA: norm(p.b_calls_a || p.bCallsA), note: String(p.note || '').replace(/\s+/g, ' ').trim().slice(0, 120), locked: false, auto: 'ai' };
+    if (!x.a || !x.b || x.a.toLowerCase() === x.b.toLowerCase() || !(x.aSelf || x.aCallsB || x.bSelf || x.bCallsA)) continue;
+    const k = key(x.a, x.b); if (seen.has(k)) continue; seen.add(k); pairs.push(x);
+    if (pairs.length >= 12) break;
+  }
+  return { terms, pairs };
+};
+
+/* ---------- Lượt “Trau chuốt” (biên tập bản nháp; giữ đủ N khối, đủ câu) ---------- */
+C.REFINE = {
+  vi: '## NHIỆM VỤ LẦN NÀY: TRAU CHUỐT BẢN DỊCH NHÁP\n- Mỗi khối có bản gốc và bản dịch nháp. Biên tập bản nháp cho mượt, tự nhiên, đúng văn phong và thể loại; sửa xưng hô và tên riêng theo bảng; sửa chỗ sai nghĩa.\n- TUYỆT ĐỐI giữ đủ mọi câu, mọi ý, mọi chi tiết của bản gốc — không rút gọn, không tóm tắt, không gộp hay tách đoạn.\n- Trả về đúng N khối [1]…[N], mỗi khối chỉ chứa bản dịch đã biên tập.',
+  en: '## THIS TASK: POLISH THE DRAFT TRANSLATION\n- Each block has the source and a draft translation. Edit the draft so it reads smoothly and naturally in the project style and genre; fix names and forms of address per the glossary; fix mistranslations.\n- NEVER drop a sentence, idea or detail of the source — no shortening, no summarising, no merging or splitting paragraphs.\n- Return exactly N blocks [1]…[N], each containing only the polished translation.'
+};
+C.buildRefineMessages = (system, srcList, draftList, direction) => {
+  const en = C.targetOf(direction) === 'en'; const N = srcList.length;
+  const user = (en ? 'Polish these ' + N + ' draft paragraphs (return [1]–[' + N + ']):\n\n' : 'Hãy trau chuốt ' + N + ' đoạn nháp sau (trả về đủ [1]–[' + N + ']):\n\n')
+    + srcList.map((z, i) => '[' + (i + 1) + '] ' + (en ? '(source) ' : '(gốc) ') + String(z).trim() + '\n' + (en ? '(draft) ' : '(nháp) ') + String(draftList[i] || '').trim()).join('\n\n');
+  return [{ role: 'system', content: String(system || '') + '\n\n' + C.REFINE[en ? 'en' : 'vi'] }, { role: 'user', content: user }];
+};
+/* bản trau chuốt có thể lặp lại nhãn “(nháp)”/“(gốc)” → bỏ đi */
+C.cleanRefined = t => String(t || '').replace(/^\s*\((?:nháp|gốc|draft|source|đã trau chuốt|polished)\)\s*/i, '').trim();
 C.buildNameGlossary = ({ titles, titlesVi, text }) => {
   titles = (titles || []).filter(Boolean); titlesVi = (titlesVi || []).filter(Boolean); text = String(text || '');
   const out = []; const seen = new Set();
@@ -1457,6 +1714,7 @@ C.blockReasonVi = r => (C.lang === 'en' ? { SAFETY: 'safety filter', PROHIBITED_
 C.interpretResult = (r, n, src) => {
   const text = C.stripThink(r.text || '').trim();
   if (r.finish === 'blocked') return { status: 'blocked', message: M('Nhà cung cấp đã chặn nội dung', 'The provider blocked this content') + (r.reason ? ' (' + C.blockReasonVi(r.reason) + ')' : '') + '.', text };
+  if (!text && r.finish === 'length') return { status: 'error', format: true, truncated: true, message: M('Kết quả bị cắt do giới hạn độ dài trước khi kịp trả lời — sẽ chia nhỏ để dịch lại.', 'The answer hit the length limit before any output — it will be split and retried.'), text };
   if (!text) return { status: 'blocked', message: M('Model trả về kết quả rỗng — có thể đã bị bộ lọc nội dung chặn.', 'The model returned nothing — it may have been stopped by a content filter.'), text, empty: true };
   let map = C.parseNumbered(text);
   if (!map) {
@@ -1465,7 +1723,7 @@ C.interpretResult = (r, n, src) => {
     else {
       const lines = C.splitParagraphs(text);
       if (lines.length === n) { map = {}; lines.forEach((l, i) => { map[i + 1] = l; }); }
-      else return { status: 'error', message: M('Không đọc được định dạng kết quả (thiếu số thứ tự [n]). Hãy thử lại.', 'Could not read the result format (missing [n] numbers). Please try again.'), text };
+      else return { status: 'error', format: true, message: M('Không đọc được định dạng kết quả (thiếu số thứ tự [n]). Hãy thử lại.', 'Could not read the result format (missing [n] numbers). Please try again.'), text };
     }
   }
   Object.keys(map).forEach(k => { if (+k < 1 || +k > n) delete map[k]; });
@@ -1593,12 +1851,17 @@ C.maxTokensFor = p => {
   if (!p) return 0; const v = Number(p.maxTokens); if (v > 0) return Math.round(v);
   const m = String(p.model || '').toLowerCase();
   if (/reasoner|r1\b/.test(m)) return 0;
-  if (/deepseek-(chat|v3)/.test(m) || (/deepseek/.test(String(p.baseUrl || '')) && /chat/.test(m))) return 8192;
+  if (/deepseek-(chat|v3|v4|flash)/.test(m) || (/deepseek/.test(String(p.baseUrl || '')) && /chat|flash|v4/.test(m))) return 8192;
   return 0;
 };
+C.dsNoThinking = p => !!p && /api\.deepseek\.com/i.test(String(p.baseUrl || '')) && !/reasoner|r1\b/i.test(String(p.model || '')) && p.thinking !== true;
 C.buildOpenAIRequest = (p, messages, o) => {
   const body = { model: p.model, messages, temperature: Number(p.temperature == null || p.temperature === '' ? 0.7 : p.temperature), stream: p.stream !== false };
+  if (o && o.temperature != null) body.temperature = o.temperature;
   if (o && o.maxTokens) body.max_tokens = o.maxTokens;
+  /* DeepSeek V4 (deepseek-flash / -v4-pro) bật “thinking” mặc định: suy nghĩ ăn chung max_tokens (dễ cắt cụt bản dịch) và bỏ qua temperature → tắt cho model không phải reasoner */
+  if (C.dsNoThinking(p) && !(o && o.noThinking === false)) body.thinking = { type: 'disabled' };
+  if (o && o.json && /deepseek\.com/i.test(String(p.baseUrl || ''))) body.response_format = { type: 'json_object' };
   return { url: C.joinUrl(p.baseUrl, '/chat/completions'),
     init: { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + String(p.apiKey).trim() }, body: JSON.stringify(body) } };
 };
@@ -1617,8 +1880,14 @@ C.buildGeminiRequest = (p, messages, o) => {
   return { url, init: { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': String(p.apiKey).trim() }, body: JSON.stringify(body) } };
 };
 async function chatOpenAI(p, messages, o) {
-  const rq = C.buildOpenAIRequest(p, messages, o); rq.init.signal = o.signal;
-  const res = await doFetch(rq.url, rq.init);
+  let rq = C.buildOpenAIRequest(p, messages, o); rq.init.signal = o.signal;
+  let res = await doFetch(rq.url, rq.init);
+  if (!res.ok && res.status === 400) { /* máy chủ không nhận tham số “thinking”/“response_format” → gửi lại không kèm (một lần) */
+    const t = await res.text().catch(() => ''); const b = JSON.parse(rq.init.body);
+    const drop = ['thinking', 'response_format'].filter(k => k in b && new RegExp(k, 'i').test(t));
+    if (!drop.length) throw C.httpError(400, t);
+    drop.forEach(k => delete b[k]); rq.init.body = JSON.stringify(b); res = await doFetch(rq.url, rq.init);
+  }
   if (!res.ok) throw C.httpError(res.status, await res.text().catch(() => ''));
   let text = '', finish = null;
   const handle = j => {
@@ -2847,7 +3116,7 @@ const DB = {
 const SKEY = 'dichtruyen_settings_v1';
 function loadSettings() {
   let s = {}; try { s = JSON.parse(localStorage.getItem(SKEY) || '{}'); } catch (e) {}
-  return Object.assign({ profiles: [], defaultProfileId: '', fallbackProfileId: '', chunkSize: 1200, corsProxy: '', onBlocked: 'report', autoSummary: true, suggestTerms: true, defaultTranslator: '' }, s);
+  return Object.assign({ profiles: [], defaultProfileId: '', fallbackProfileId: '', chunkSize: 1200, corsProxy: '', onBlocked: 'report', autoSummary: true, suggestTerms: true, defaultTranslator: '', autoExtract: true, completeCheck: true }, s);
 }
 /* Khi gặp đoạn bị chặn trong lúc dịch hàng loạt */
 const BLOCK_POLICIES = ['report', 'fallback', 'soften', 'fallback_soften'];
@@ -2964,9 +3233,17 @@ async function goHome() {
   const allCh = await DB.all('chapters');
   renderHeader(); renderHome(allCh);
 }
+/* Truyện cũ (trước bản có thể loại / xưng hô theo cặp): thêm trường mới, không xóa gì */
+function migrateProject(P) {
+  if (!P.genre || !C.GENRES[P.genre]) P.genre = 'default';
+  if (!Array.isArray(P.pairs)) P.pairs = [];
+  if (P.refine == null) P.refine = false;
+  return P;
+}
 async function openProject(id) {
   S.project = (await DB.all('projects')).find(p => p.id === id);
   if (!S.project) return goHome();
+  migrateProject(S.project);
   S.chapters = await DB.byProject(id);
   const chs = sortedChapters();
   S.chapterId = chs[0] ? chs[0].id : null;
@@ -3087,7 +3364,7 @@ function renderHome(allCh) {
 }
 function newProjectObj(title, author, direction) {
   const dir = direction || C.DEFAULT_DIRECTION;
-  return { id: C.uid(), title: title || T('Truyện mới'), author: author || '', translator: (S.settings.defaultTranslator || '').trim(), originalTitle: '', editor: '', source: '', creditNote: '', tags: '', blurb: '', direction: dir, styleGuide: C.defaultStyle(C.targetOf(dir)), glossary: [], address: '', profileId: '', fallbackProfileId: '', autoFallback: true, createdAt: Date.now(), updatedAt: Date.now() };
+  return { id: C.uid(), title: title || T('Truyện mới'), author: author || '', translator: (S.settings.defaultTranslator || '').trim(), originalTitle: '', editor: '', source: '', creditNote: '', tags: '', blurb: '', direction: dir, styleGuide: C.defaultStyle(C.targetOf(dir)), glossary: [], address: '', profileId: '', fallbackProfileId: '', autoFallback: true, genre: 'default', pairs: [], refine: false, createdAt: Date.now(), updatedAt: Date.now() };
 }
 
 /* ---------- Trang truyện: thanh truyện | Chương | Gốc | Bản dịch ---------- */
@@ -3164,7 +3441,16 @@ function renderQbar() {
     <div class="progress"><div style="width:${n ? Math.round(d / n * 100) : 0}%"></div></div>
     <div class="qlist">${q.items.map(x => { const c = S.chapters.find(y => y.id === x.id); return c ? `<button class="qchip ${x.st}" data-act="openChapter" data-id="${x.id}">${esc(c.titleVi || c.title)} · <span class="st ${x.st === 'warn' ? 'blocked' : x.st}">${esc(stLabel(x))}</span>${x.note ? ' <span class="muted">· ' + esc(x.note) + '</span>' : ''}</button>` : ''; }).join('')}</div>
     ${!q.running && q.items.some(x => x.sumFail) ? `<div class="small muted" id="sumNote">${esc(T('Không tự tóm tắt được {n} chương (bị chặn hoặc rỗng) — bản dịch vẫn giữ nguyên; có thể bấm “Tóm tắt (AI)” sau.', { n: q.items.filter(x => x.sumFail).length }))}</div>` : ''}
+    ${!q.running ? gapSummaryHtml(q) : ''}
+    ${!q.running && q.items.some(x => x.extracted) ? `<div class="small muted" id="exNote">${esc(T('Đã tự trích {n} tên/thuật ngữ & cặp xưng hô trước khi dịch — xem ở “Thuật ngữ”.', { n: q.items.reduce((a, x) => a + (x.extracted || 0), 0) }))}</div>` : ''}
     ${!q.running && q.items.some(x => x.terms) ? `<div class="small muted" id="sgNote">${esc(T('AI gợi ý {n} thuật ngữ mới — xem ở bảng “Thuật ngữ & xưng hô”.', { n: q.items.reduce((a, x) => a + (x.terms || 0), 0) }))}</div>` : ''}</div>`;
+}
+/* Tổng kết sau khi dịch hàng loạt: chương nào còn đoạn trống / nghi thiếu ý, đoạn số mấy — bấm để mở đúng chương */
+function gapSummaryHtml(q) {
+  const rows = q.items.map(x => S.chapters.find(c => c.id === x.id)).filter(Boolean).map(c => ({ c, gaps: gapInfo(c).all, inc: c.paras.map((p, i) => i).filter(i => { const p = c.paras[i]; return p.incomplete && p.incomplete.length && cEligible(p); }) })).filter(r => r.gaps.length || r.inc.length);
+  if (!rows.length) return q.items.some(x => x.st === 'done') ? `<div class="small okc" id="gapSum">✓ ${esc(T('Kiểm tra đầy đủ: mọi đoạn của các chương đã dịch đều có bản dịch, không phát hiện đoạn thiếu ý.'))}</div>` : '';
+  return `<div class="gapsum" id="gapSum"><div class="small"><b>⚠ ${esc(T('Còn {n} chương chưa đủ — không đoạn nào bị bỏ qua âm thầm:', { n: rows.length }))}</b></div>
+    <ul>${rows.map(r => `<li><button class="small link" data-act="openChapter" data-id="${r.c.id}">${esc(r.c.titleVi || r.c.title)}</button>: ${r.gaps.length ? esc(T('chưa dịch đoạn {p}', { p: paraList(r.gaps) })) : ''}${r.gaps.length && r.inc.length ? ' · ' : ''}${r.inc.length ? esc(T('nghi thiếu ý đoạn {p}', { p: paraList(r.inc) })) : ''}</li>`).join('')}</ul></div>`;
 }
 function renderSide() {
   renderPbar(); renderQbar();
@@ -3179,7 +3465,7 @@ function renderSide() {
         <input type="checkbox" class="chk" data-id="${c.id}" ${S.sel.has(c.id) ? 'checked' : ''} aria-label="${esc(T('Chọn'))}">
         <span class="dot ${run ? 'run' : isDone(c) ? (c.status === 'approved' ? 'approved' : 'draft') : done ? 'part' : ''}"></span>
         <span class="cbody"><span class="t">${esc(c.titleVi || c.title || T('Chương') + ' ' + (k + 1))}</span>
-        <span class="meta">${run ? esc(T('đang dịch…')) : esc(T('{d}/{n} đoạn', { d: done, n: c.paras.length }))}${holes ? ' · <span class="warnc">' + esc(T('thiếu {n} đoạn', { n: holes })) + '</span>' : ''}${c.status === 'approved' ? ' · ' + esc(T('đã duyệt')) : ''}${c.direction || d.target === 'en' ? ' · ' + esc(d.target === 'en' ? '→ EN' : '→ VI') : ''}${isStale(c) ? ' · <span class="warnc">' + esc(T('đã đổi')) + '</span>' : ''}${softCount(c) ? ' · <span class="softc">' + esc(T('{n} đoạn giảm nhẹ', { n: softCount(c) })) + '</span>' : ''}</span></span>
+        <span class="meta">${run ? esc(T('đang dịch…')) : esc(T('{d}/{n} đoạn', { d: done, n: c.paras.length }))}${holes ? ' · <span class="warnc">' + esc(T('thiếu {n} đoạn', { n: holes })) + '</span>' : ''}${c.status === 'approved' ? ' · ' + esc(T('đã duyệt')) : ''}${c.direction || d.target === 'en' ? ' · ' + esc(d.target === 'en' ? '→ EN' : '→ VI') : ''}${isStale(c) ? ' · <span class="warnc">' + esc(T('đã đổi')) + '</span>' : ''}${!run && incCount(c) ? ' · <span class="warnc incc">' + esc(T('{n} đoạn nghi thiếu', { n: incCount(c) })) + '</span>' : ''}${softCount(c) ? ' · <span class="softc">' + esc(T('{n} đoạn giảm nhẹ', { n: softCount(c) })) + '</span>' : ''}</span></span>
         <span class="mvs"><button class="mv" data-act="moveCh" data-id="${c.id}" data-d="-1" title="${esc(T('Lên'))}" aria-label="${esc(T('Lên'))}">${I('up')}</button><button class="mv" data-act="moveCh" data-id="${c.id}" data-d="1" title="${esc(T('Xuống'))}" aria-label="${esc(T('Xuống'))}">${I('down')}</button></span></div>`;
     }).join('') || `<div class="muted small dashed">${esc(T('Chưa có chương. Dán chữ hoặc kéo thả file vào bên phải.'))}</div>`}</div>
     ${chs.length ? `<div class="muted small hint">${esc(T('Đánh dấu ô vuông để chỉ dịch vài chương; không đánh dấu thì nút Dịch sẽ dịch mọi chương chưa xong.'))}</div>` : ''}`;
@@ -3228,6 +3514,11 @@ function renderEditor(m) {
       ${gi.trailing.length ? ' ' + esc(T('Còn {n} đoạn cuối (từ đoạn {a}) chưa dịch tới — lần dịch trước bị dừng giữa chừng.', { n: gi.trailing.length, a: gi.trailing[0] + 1 })) : ''}
       ${esc(T('Chỉ dịch các đoạn này, không dịch lại cả chương.'))}
       <div class="row-flex"><button class="small primary" data-act="fixAll" ${running ? 'disabled' : ''}>${esc(T('Dịch lại tất cả đoạn thiếu'))}</button>${gi.holes.length ? `<button class="small link" data-act="gotoRow" data-i="${gi.holes[0]}">${esc(T('Xem đoạn {a}', { a: gi.holes[0] + 1 }))}</button>` : ''}</div></div>` : '';
+  const incIdx = ch.paras.map((p, i) => i).filter(i => { const p = ch.paras[i]; return p.incomplete && p.incomplete.length && cEligible(p); });
+  const nOm = ch.paras.filter(p => p.omitted).length, nFill = ch.paras.filter(p => p.vi && p.vi.trim() && !p.omitted).length;
+  const cstat = any && !runHereNow ? `<div class="cstatus ${gi.all.length || incIdx.length ? 'warn' : 'ok'}" id="cStatus" role="status">
+      <b>${esc(T('Độ đầy đủ:'))}</b> ${gi.all.length || incIdx.length ? '' : '✓ '}${esc(T('{d}/{n} đoạn có bản dịch', { d: nFill + nOm, n: ch.paras.length }))}${nOm ? ' · ' + esc(T('{n} đoạn lược', { n: nOm })) : ''}${gi.all.length ? ' · <span class="warnc">' + esc(T('{n} đoạn chưa dịch', { n: gi.all.length })) + '</span>' : ''}${incIdx.length ? ' · <span class="warnc">' + esc(T('{n} đoạn nghi thiếu ý: {p}', { n: incIdx.length, p: paraList(incIdx) })) + '</span>' : ''}${!gi.all.length && !incIdx.length ? ' · ' + esc(T('không phát hiện đoạn thiếu ý')) : ''}
+      <span class="spacer"></span>${incIdx.length ? `<button class="small primary" data-act="fixIncomplete" ${running ? 'disabled' : ''}>${esc(T('Dịch lại các đoạn nghi thiếu'))}</button><button class="small link" data-act="gotoRow" data-i="${incIdx[0]}">${esc(T('Xem đoạn {a}', { a: incIdx[0] + 1 }))}</button>` : ''}<button class="small link" data-act="checkComplete" title="${esc(T('So từng đoạn với bản gốc: số câu, độ dài, câu cụt, dấu hiệu tóm tắt, chữ gốc chưa dịch'))}">${esc(T('Kiểm tra lại'))}</button></div>` : '';
   m.innerHTML = `<div class="edgrid ${S.gpOpen ? 'gp-open' : ''}"><div class="edcol">
   <div class="ed-head">
     <div class="toolbar">
@@ -3237,7 +3528,7 @@ function renderEditor(m) {
       ${!prim ? `<button class="primary" data-act="settings">${esc(T('Kết nối AI để dịch'))}</button>` : ''}
     </div>
     ${C.looksFontLocked(srcText) ? `<div class="note warn">${esc(T('Chữ trong chương này có vẻ bị vỡ — file gốc khóa chữ bằng font riêng. Bản dịch sẽ sai. Hãy tìm bản txt UTF-8.'))}</div>` : ''}
-    ${gapNote}
+    ${cstat}${gapNote}
     ${ch.paras.length > 150 && splitPlanOf(ch).length >= 2 ? `<div class="note warn" id="splitNote">${esc(T('Chương này dài {n} đoạn và có {k} dòng tiêu đề chương bên trong — có thể cả truyện nằm chung một chương.', { n: ch.paras.length, k: splitPlanOf(ch).filter(r => !r.pre).length }))} <div class="row-flex"><button class="small primary" data-act="splitCh" ${running ? 'disabled' : ''}>${esc(T('Tách chương'))}</button></div></div>` : ''}
     ${isStale(ch) ? `<div class="note warn" id="staleNote">${esc(T('Nguồn hoặc ngôn ngữ đã đổi. Bản dưới là lần dịch trước.'))}</div>` : ''}
     <details class="adv chadv" id="chAdv" ${S.chAdvOpen ? 'open' : ''}><summary>${esc(T('Nâng cao cho chương này'))}</summary>
@@ -3275,13 +3566,15 @@ function renderEditor(m) {
   <div id="rows" class="${any ? '' : 'noviyet'}">${ch.paras.map((p, i) => {
     const iss = issuesBy[i]; const rm = S.rowMsg[i];
     const gap = holeSet.has(i);
-    return `<div class="prow ${iss ? 'flag' : ''} ${p.qflag && p.qflag.length && !p.edited ? 'qbad' : ''} ${p.omitted ? 'omit' : ''} ${p.softened ? 'soft' : ''} ${gap ? 'gap' : ''}" id="row-${i}"><div class="zh serif"><span class="num">${i + 1}</span>${hl(p.zh)}</div>
+    const inc = p.incomplete && p.incomplete.length && cEligible(p);
+    return `<div class="prow ${iss ? 'flag' : ''} ${inc ? 'incomplete' : ''} ${p.qflag && p.qflag.length && !p.edited ? 'qbad' : ''} ${p.omitted ? 'omit' : ''} ${p.softened ? 'soft' : ''} ${gap ? 'gap' : ''}" id="row-${i}"><div class="zh serif"><span class="num">${i + 1}</span>${hl(p.zh)}</div>
       <div class="vi"><span class="num m">${i + 1}</span><textarea class="vi serif" data-i="${i}" rows="1" lang="${tgt}" placeholder="${esc(gap ? T('(chưa dịch — AI bỏ sót đoạn này)') : T('(chưa dịch)'))}">${esc(p.vi || '')}</textarea>
       <div class="ptools"><button class="small" data-act="retransPara" data-i="${i}" ${running ? 'disabled' : ''}>↻ ${esc(T('Dịch lại'))}</button>${p.vi && p.vi.trim() && !p.omitted ? `<button class="small" data-act="smoothPara" data-i="${i}" ${running ? 'disabled' : ''}>${esc(T('Dịch lại cho mượt'))}</button>` : ''}
       ${p.qflag && p.qflag.length && !p.edited ? `<span class="flagtxt qflag" title="${esc(T('Bộ kiểm tra thấy đoạn này còn đọc như convert. Bấm “Dịch lại cho mượt” hoặc sửa tay.'))}">⚠ ${esc(T('Câu còn cứng:'))} ${esc(qText(p.qflag))}</span>` : ''}
       ${p.edited && p.vi && p.vi.trim() ? `<span class="muted small editednote" title="${esc(T('Đoạn bạn đã sửa tay — “Rà soát chương” và “Dịch lại cho mượt” sẽ không đụng tới.'))}">${esc(T('đã sửa tay'))}</span>` : ''}
       ${p.keptSrc === 'short' && p.vi && p.vi.trim() ? `<span class="muted small keptnote" title="${esc(T('AI không trả lời dòng ngắn này nên app giữ nguyên bản gốc. Bạn có thể sửa trực tiếp.'))}">${esc(T('giữ nguyên bản gốc'))}</span>` : ''}
-      ${gap ? `<span class="flagtxt gapflag">⚠ ${esc(T('AI bỏ sót đoạn {a} — chưa dịch. Bấm “Dịch lại”.', { a: i + 1 }))}</span>` : ''}
+      ${gap ? `<span class="flagtxt gapflag">⚠ ${esc(T('AI bỏ sót đoạn {a} — chưa dịch. Bấm “Dịch lại”.', { a: i + 1 }))}</span><button class="small primary redo" data-act="retransPara" data-i="${i}" ${running ? 'disabled' : ''}>${esc(T('Dịch lại đoạn này'))}</button>` : ''}
+      ${inc ? `<span class="flagtxt incflag" title="${esc(T('Bộ kiểm tra đầy đủ so đoạn này với bản gốc và thấy có thể thiếu ý. Bấm “Dịch lại đoạn này” hoặc sửa tay (sửa tay sẽ bỏ dấu).'))}">⚠ ${esc(T('Có thể dịch chưa đủ:'))} ${esc(cText(p.incomplete))}</span><button class="small primary redo" data-act="retransPara" data-i="${i}" ${running ? 'disabled' : ''}>${esc(T('Dịch lại đoạn này'))}</button><button class="small link" data-act="incOk" data-i="${i}">${esc(T('Đã đủ, bỏ dấu'))}</button>` : ''}
       ${iss ? `<span class="flagtxt">⚠ ${esc(T('Thiếu thuật ngữ:'))} ${iss.map(x => esc(x.zh + ' → ' + x.vi)).join('; ')}</span>` : ''}
       ${rm ? `<span class="errtxt">${esc(rm)}</span> ${fallbackProfile() ? `<button class="small" data-act="retransPara" data-i="${i}" data-other="1">${esc(T('Dịch lại với model khác'))} (${esc(fallbackProfile().name)})</button>` : ''}${S.rowBlocked && S.rowBlocked[i] ? `<button class="small" data-act="softenPara" data-i="${i}" ${running ? 'disabled' : ''}>${esc(T('Dịch giảm nhẹ'))}</button>` : ''}` : ''}
       ${p.softened ? `<span class="st softened sbadge" title="${esc(T('Đoạn này được dịch theo cách giảm nhẹ. Có thể dịch lại bằng model khác.'))}">${esc(T('đã giảm nhẹ'))}</span>${!rm && fallbackProfile() ? `<button class="small" data-act="retransPara" data-i="${i}" data-other="1" ${running ? 'disabled' : ''}>${esc(T('Dịch lại với model khác'))} (${esc(fallbackProfile().name)})</button>` : ''}<button class="small link" data-act="unsoften" data-i="${i}">${esc(T('Bỏ dấu'))}</button>` : ''}</div></div></div>`;
@@ -3412,6 +3705,7 @@ async function smoothPara(i) {
   $('#row-' + i) && $('#row-' + i).scrollIntoView({ block: 'center' });
 }
 /* Bảng nhỏ cạnh bàn dịch: xưng hô + thuật ngữ trong chương */
+const genreOptions = v => C.GENRE_IDS.map(k => `<option value="${k}" ${(v || 'default') === k ? 'selected' : ''}>${esc(C.GENRES[k].label[UI === 'en' ? 'en' : 'vi'])}</option>`).join('');
 function renderGPanel() {
   const el = $('#gpanel'); const ch = curCh(); if (!el || !ch) return;
   const terms = chapterTerms(ch);
@@ -3422,6 +3716,8 @@ function renderGPanel() {
     <div class="gterms">${terms.map(g => `<div class="gterm"><span class="zhfont" title="${esc(g.note || '')}">${esc(g.zh)}</span><input data-g="vi" data-id="${g.id}" value="${esc(g.vi)}" aria-label="${esc(g.zh)}"></div>`).join('') || `<div class="muted small">${esc(T('Chưa có thuật ngữ nào xuất hiện.'))}</div>`}</div>
     ${conflictHtml(ch)}
     ${suggestHtml()}
+    <label class="small" for="gpGenre">${esc(T('Thể loại'))}</label><select id="gpGenre" data-pf="genre">${genreOptions(S.project.genre)}</select>
+    <button class="small" data-act="extractTerms" ${S.busy ? 'disabled' : ''} title="${esc(T('AI đọc chương này, trích tên riêng (kèm giới tính, Hán Việt cho tên Trung), thuật ngữ và cách xưng hô theo cặp. Chỉ thêm mục mới, không ghi đè.'))}">${esc(T('Trích tên & thuật ngữ (AI)'))}</button>${(S.project.pairs || []).length ? ` <span class="muted small">${esc(T('{n} cặp xưng hô', { n: S.project.pairs.length }))}</span>` : ''}
     <button class="small" data-act="autoNames" title="${esc(T('Đọc tên truyện và chương đầu để lập bảng tên nhân vật (mỗi tên một cách viết, tên Tây viết kiểu Tây). Sửa được.'))}">${esc(T('Tự tìm tên nhân vật'))}</button>
     <div class="small gph"><b>${esc(T('Thêm nhanh'))}</b></div>
     <div class="qa"><input id="qaZh" class="zhfont" placeholder="${esc(T('Gốc'))}" aria-label="${esc(T('Gốc'))}"><input id="qaVi" placeholder="${esc(T('Dịch là'))}" aria-label="${esc(T('Dịch là'))}"><button class="small" data-act="qaAdd">${esc(T('Thêm'))}</button></div>
@@ -3490,14 +3786,23 @@ function prevContext(ch) {
   const prev = sortedChapters().filter(c => c.order < ch.order && c.paras.some(p => p.vi && p.vi.trim()));
   const pc = prev[prev.length - 1]; if (!pc) return {};
   const vis = pc.paras.filter(p => !p.omitted).map(p => p.vi).filter(v => v && v.trim());
-  let tail = vis.slice(-3).join('\n'); if (tail.length > 900) tail = tail.slice(-900);
+  let tail = vis.slice(-5).join('\n'); if (tail.length > 1200) tail = tail.slice(-1200);
   return { prevSummary: pc.summary || '', prevTail: tail };
 }
 /* Lời nhắc hệ thống dùng chung cho MỌI đường dịch (thường, dịch bù, từng dòng, giảm nhẹ, viết lại cho mượt):
    văn phong + chuẩn của người dịch + hài hước + thuật ngữ/tên + bối cảnh chương trước + xưng hô */
 function systemFor(ch, soften, format) {
   const ctx = prevContext(ch); const dir = chDir(ch);
-  return C.buildSystemPrompt({ sample: ch.paras.map(p => p.zh).join('\n').slice(0, 4000), styleGuide: styleFor(dir), terms: chapterTerms(ch), prevSummary: ctx.prevSummary, prevTail: ctx.prevTail, direction: dir, address: [S.project.address, ch.address].map(x => (x || '').trim()).filter(Boolean).join('\n'), soften: !!soften, humor: !!S.project.humor, format });
+  return C.buildSystemPrompt({ sample: ch.paras.map(p => p.zh).join('\n').slice(0, 4000), styleGuide: styleFor(dir), terms: chapterTerms(ch), prevSummary: ctx.prevSummary, prevTail: ctx.prevTail, direction: dir, address: [S.project.address, ch.address].map(x => (x || '').trim()).filter(Boolean).join('\n'), soften: !!soften, humor: !!S.project.humor, format, genre: S.project.genre || 'default', pairs: pairsFor(ch) });
+}
+/* Xưng hô theo cặp: truyện ít cặp → gửi hết; nhiều cặp → chỉ cặp có nhân vật xuất hiện trong chương (theo chữ gốc hoặc tên đã dịch) */
+function pairsFor(ch) {
+  const all = (S.project.pairs || []).filter(x => x && x.a && x.b); if (all.length <= 8) return all;
+  const txt = (ch.title || '') + '\n' + ch.paras.map(p => p.zh + '\n' + (p.vi || '')).join('\n');
+  const seen = name => { const n = String(name || '').trim(); if (!n) return false; if (txt.includes(n)) return true;
+    return S.project.glossary.some(g => g.zh && g.vi && String(g.vi).split('/').map(v => v.trim()).includes(n) && txt.includes(g.zh)); };
+  const hit = all.filter(x => seen(x.a) || seen(x.b));
+  return hit.length ? hit : all.slice(0, 8);
 }
 /* Ngữ cảnh quanh các đoạn cần dịch: 3 đoạn ngay trước (gốc + bản dịch nếu có) và 2 đoạn ngay sau (chỉ gốc) */
 function paraContext(ch, idx) {
@@ -3540,6 +3845,7 @@ async function qualityPass(ch, idxs, profile, signal, soften, onMsg, force) {
       if (signal && signal.aborted) break;
       const v = r && r.map && r.map[1] && String(r.map[1]).trim(); if (!v || C.looksLikeRefusal(v)) continue;
       const q = C.qualityIssues(p.zh, v, o); const sc = C.qualityScore(q);
+      if (completeOn() && C.completeScore(C.completenessIssues(p.zh, v, cOpts(ch, p))) > C.completeScore(C.completenessIssues(p.zh, best, cOpts(ch, p)))) continue; /* viết lại cho mượt mà làm mất ý → bỏ */
       if (sc < score || (force && !bestQ.length && sc <= score)) { best = v; bestQ = q; score = sc; took = true; }
     }
     if (p.edited) continue; /* người dịch sửa tay trong lúc chờ → giữ bản của người dịch */
@@ -3550,6 +3856,98 @@ async function qualityPass(ch, idxs, profile, signal, soften, onMsg, force) {
   return res;
 }
 const qualityOn = () => S.settings.qualityGuard !== false;
+/* ---------- Bộ gác đầy đủ: đoạn dịch thiếu ý / thiếu câu / bị cắt cụt / bị tóm tắt / còn chữ gốc → tự dịch lại riêng đoạn đó ----------
+   Không bao giờ im lặng bỏ qua: không sửa được thì đánh dấu đỏ ở dòng đó + nút “Dịch lại đoạn này”. */
+const completeOn = () => S.settings.completeCheck !== false;
+const cOpts = (ch, p) => ({ target: C.targetOf(chDir(ch)), terms: chapterTerms(ch), soft: !!(p && p.softened) });
+const cEligible = p => p && !p.edited && !p.omitted && !p.keptSrc && p.vi && p.vi.trim();
+const cText = codes => (codes || []).map(c => T(C.COMPLETE_REASON.vi[c] || c)).join(', ');
+const incCount = ch => ch.paras.filter(p => p.incomplete && p.incomplete.length && cEligible(p)).length;
+/* chỉ kiểm tra (không gọi AI); trả về các đoạn bị đánh dấu */
+function checkComplete(ch, idxs) {
+  const out = [];
+  for (const i of idxs || ch.paras.map((p, k) => k)) {
+    const p = ch.paras[i]; if (!p) continue;
+    if (!cEligible(p)) { delete p.incomplete; continue; }
+    const c = C.completenessIssues(p.zh, p.vi, cOpts(ch, p));
+    if (c.length) { p.incomplete = c; out.push(i); } else delete p.incomplete;
+  }
+  return out;
+}
+async function completePass(ch, idxs, profile, signal, soften, onMsg) {
+  const res = { flagged: [], fixed: [], still: [] };
+  const cand = checkComplete(ch, idxs); res.flagged = cand.slice();
+  if (!profile || !cand.length) { res.still = cand; return res; }
+  const pol = blockPolicy(); const autoSoft = pol === 'soften' || pol === 'fallback_soften';
+  let n = 0;
+  for (const i of cand) {
+    if (signal && signal.aborted) break;
+    const p = ch.paras[i]; n++;
+    let best = p.vi, bestC = p.incomplete || [], score = C.completeScore(bestC), took = false, tookSoft = false;
+    let soft = !!soften || !!p.softened;
+    for (let t = 1; t <= 2 && bestC.length; t++) {
+      onMsg && onMsg(T('Đoạn {a} có thể dịch chưa đủ ({w}) — đang dịch lại cho trọn vẹn… ({k}/{n}, lần {t}/2)', { a: i + 1, w: cText(bestC), k: n, n: cand.length, t }));
+      const ask = sf => C.runChunk(profile, buildMessages(ch, [i], sf, { kind: 'complete', reasons: bestC, prev: best, srcSent: C.sentenceCount(p.zh) }), 1, { signal, src: [p.zh] });
+      let r;
+      try { r = await ask(soft); if (r.status === 'blocked' && !soft && autoSoft) { soft = true; r = await ask(true); } }
+      catch (e) { if (e && e.name === 'AbortError') throw e; continue; }
+      if (signal && signal.aborted) break;
+      const v = r && r.map && r.map[1] && String(r.map[1]).trim(); if (!v || C.looksLikeRefusal(v)) continue;
+      const c = C.completenessIssues(p.zh, v, Object.assign(cOpts(ch, p), { soft: soft || !!p.softened }));
+      const sc = C.completeScore(c);
+      if (sc < score || (sc === score && v.replace(/\s/g, '').length > best.replace(/\s/g, '').length * 1.15)) { best = v; bestC = c; score = sc; took = true; tookSoft = soft; }
+    }
+    if (p.edited) continue; /* người dịch sửa tay trong lúc chờ → giữ bản của người dịch */
+    if (took) { setViLive(ch, i, best); delete p.qflag; if (tookSoft) p.softened = true; res.fixed.push(i); }
+    if (bestC.length) { p.incomplete = bestC; res.still.push(i); } else delete p.incomplete;
+    await saveNow('chapters', ch);
+  }
+  return res;
+}
+/* Lượt “Trau chuốt” (tùy chọn theo truyện): đọc lại bản nháp + bản gốc, viết mượt hơn. Chỉ nhận khi không làm mất ý (kiểm lại độ đầy đủ). */
+async function refinePass(ch, idxs, profile, signal, soften) {
+  const ids = idxs.filter(i => { const p = ch.paras[i]; return p && p.vi && p.vi.trim() && !p.edited && !p.omitted && !p.keptSrc && !C.noLetters(p.zh || ''); });
+  if (!ids.length || !profile) return [];
+  let r;
+  try { r = await C.runChunk(profile, C.buildRefineMessages(systemFor(ch, soften), ids.map(i => ch.paras[i].zh), ids.map(i => ch.paras[i].vi), chDir(ch)), ids.length, { signal, src: ids.map(i => ch.paras[i].zh) }); }
+  catch (e) { if (e && e.name === 'AbortError') throw e; return []; }
+  if (!r || !r.map) return [];
+  const took = [];
+  ids.forEach((i, k) => {
+    const p = ch.paras[i]; const v = r.map[k + 1] && C.cleanRefined(String(r.map[k + 1]));
+    if (!v || p.edited || C.looksLikeRefusal(v) || v === p.vi) return;
+    const o = cOpts(ch, p);
+    if (C.completeScore(C.completenessIssues(p.zh, v, o)) > C.completeScore(C.completenessIssues(p.zh, p.vi, o))) return;
+    if (v.replace(/\s/g, '').length < p.vi.replace(/\s/g, '').length * 0.8) return;
+    if (qualityOn() && C.qualityScore(C.qualityIssues(p.zh, v, qOpts(ch))) > C.qualityScore(C.qualityIssues(p.zh, p.vi, qOpts(ch)))) return;
+    setViLive(ch, i, v); p.refined = true; took.push(i);
+  });
+  if (took.length) await saveNow('chapters', ch);
+  return took;
+}
+/* Cả phần bị chặn mà dài (> 6 đoạn): chia đôi dần — phần không có vấn đề dịch như thường, chỉ đoạn thật sự bị chặn mới đi đường giảm nhẹ / AI dự phòng */
+async function bisectBlocked(ch, chunk, profile, signal, allowAuto, firstMsg) {
+  const half = Math.ceil(chunk.idx.length / 2);
+  const subs = [chunk.idx.slice(0, half), chunk.idx.slice(half)].map(a => ({ idx: a, status: 'wait', msg: '', bisect: true })).filter(x => x.idx.length);
+  chunk.status = 'run'; chunk.repairing = true; chunk.msg = T('Cả phần bị chặn — đang chia nhỏ để dịch như thường phần không có vấn đề, chỉ xử lý riêng đoạn bị chặn…'); renderJob();
+  try { for (const s of subs) { if (signal && signal.aborted) break; await runChunkUI(ch, s, profile, signal, allowAuto, false); } }
+  catch (e) { chunk.repairing = false; chunk.status = 'stopped'; chunk.msg = T('Đã dừng — bản dịch cũ được giữ nguyên.'); renderJob(); throw e; }
+  chunk.repairing = false;
+  const left = chunk.idx.filter(i => isEmptyPara(ch.paras[i]));
+  chunk.softened = subs.some(s => s.softened); chunk.profileId = profile ? profile.id : ''; chunk.profileName = profile ? profile.name : '';
+  chunk.incomplete = subs.reduce((a, s) => a + (s.incomplete || 0), 0);
+  /* gom ghi chú của các phần con (bỏ thông báo bị chặn lặp lại ở mỗi cấp chia đôi) */
+  const noteList = [...new Set(subs.flatMap(s => s.noteList || (s.status === 'blocked' || !s.msg ? [] : [s.msg])))];
+  chunk.noteList = noteList; const notes = noteList.join(' | ');
+  if (!left.length) { chunk.status = 'done'; chunk.msg = (T('Cả phần bị chặn → đã chia nhỏ và dịch đủ từng đoạn.') + ' ' + notes).trim(); }
+  else {
+    left.forEach(i => { ch.paras[i].missing = true; });
+    chunk.status = 'partial'; chunk.blockedMissing = subs.some(s => s.status === 'blocked' || s.blockedMissing);
+    chunk.msg = (missMsg(left) + ' — ' + T('vẫn bị chặn sau khi chia nhỏ; các đoạn khác đã dịch xong. Thử “Dịch giảm nhẹ” hoặc model khác.') + ' ' + (firstMsg ? '[' + firstMsg + '] ' : '') + notes).trim();
+  }
+  ch.translatedDir = chDir(ch); ch.translatedSrc = srcHash(ch);
+  await saveNow('chapters', ch); renderJob(); if (ch.id === S.chapterId) updateStats();
+}
 /* ---------- Mạng chập chờn / app bị ẩn (iPhone khóa màn hình, chuyển app) ----------
    Ẩn app → hàng đợi tạm dừng trước phần kế tiếp; phần bị đứt lúc ẩn được gửi lại cả phần khi mở lại (không tính vào số lần thử). */
 const NET = { hiddenAt: 0, offAt: 0, waiting: 0, waiters: [], wake: null, wantWake: false, noWake: false };
@@ -3627,6 +4025,10 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
     if (e && e.name === 'AbortError') { chunk.status = 'stopped'; chunk.msg = T('Đã dừng — bản dịch cũ được giữ nguyên.'); renderJob(); throw e; }
     res = C.isTransientError(e) ? { status: 'error', kind: 'network', transient: true, message: C.NET_FRIENDLY(), detail: String(e && e.message || e) } : { status: 'error', message: String(e && e.message || e) };
   }
+  if (res.status === 'error' && res.format && (n > 1 || res.truncated)) {
+    /* không đọc được định dạng / bị cắt trước khi kịp trả lời → không bỏ phần này: dịch bù theo nhóm nhỏ rồi từng đoạn */
+    res = { status: 'partial', map: {}, missing: chunk.idx.map((_, k) => k + 1), suspect: [], truncated: !!res.truncated, message: res.message };
+  }
   if (n === 1 && res.status === 'blocked' && res.empty && C.isShortLine(ch.paras[chunk.idx[0]].zh)) {
     /* dòng ngắn (“嗯。”, “「……」”…) mà AI trả rỗng: không phải bị chặn — hỏi riêng bằng lời nhắc tối giản, vẫn rỗng thì giữ nguyên bản gốc */
     const how = await lineFallback(ch, chunk.idx[0], profile, signal);
@@ -3640,6 +4042,7 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
     chunk.status = res.status; chunk.msg = res.message || ''; chunk.softened = false; chunk.chars = 0;
     chunk.detail = res.detail ? String(res.detail).slice(0, 200) : ''; chunk.transient = !!res.transient;
     if (soften && res.status === 'blocked') chunk.msg = T('Bản dịch giảm nhẹ cũng bị chặn: ') + chunk.msg + ' ' + T('Có thể thử AI khác hoặc bấm “Lược phần này”.');
+    if (res.status === 'blocked' && allowAuto && !soften && (n > 6 || (chunk.bisect && n > 1))) { /* chia đôi tiếp tới khi cô lập đúng đoạn bị chặn */ await bisectBlocked(ch, chunk, profile, signal, allowAuto, chunk.msg); return; }
     if (res.status === 'blocked' && allowAuto) {
       /* Chính sách khi bị chặn (Cài đặt → Kết nối AI → Nâng cao). “Chỉ báo” giữ cách cũ: ô “Tự động thử lại bằng AI dự phòng” của truyện vẫn có hiệu lực. */
       const pol = allowAuto === 'manual' ? 'report' : blockPolicy(); /* bấm thử lại bằng tay: chỉ theo ô AI dự phòng của truyện như trước */
@@ -3664,12 +4067,18 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
     Object.keys(res.map).forEach(k => { const i = chunk.idx[k - 1]; if (i != null) { setViLive(ch, i, res.map[k]); delete ch.paras[i].edited; delete ch.paras[i].qflag; delete ch.paras[i].omitted; delete ch.paras[i].missing; delete ch.paras[i].keptSrc; if (soften) ch.paras[i].softened = true; else delete ch.paras[i].softened; } });
     chunk.softened = !!soften;
     chunk.idx.forEach((i, k) => { if (!res.map[k + 1]) setViLive(ch, i, snapshot[k]); });
-    chunk.status = res.status; chunk.msg = res.message || '';
+    chunk.status = res.status; chunk.msg = res.message || ''; chunk.truncated = !!res.truncated;
     if (res.attempts > 1) chunk.msg = (T('Đã dịch xong sau {n} lần gửi (mất kết nối giữa chừng, đã gửi lại cả phần).', { n: res.attempts }) + ' ' + chunk.msg).trim();
     ch.translatedDir = chDir(ch); ch.translatedSrc = srcHash(ch);
     if (res.status === 'partial') { /* AI bỏ sót / gộp đoạn → tự hỏi lại riêng những đoạn đó */
       const abs = ks => (ks || []).map(k => chunk.idx[k - 1]).filter(i => i != null);
       await repairChunk(ch, chunk, abs(res.missing), abs(res.suspect), profile, signal, soften);
+    }
+    if (completeOn() && !(signal && signal.aborted)) { /* kiểm tra từng đoạn: đủ câu, đủ độ dài, không cụt, không tóm tắt, không sót chữ gốc */
+      const keep = chunk.msg, st = chunk.status;
+      const cp = await completePass(ch, chunk.idx, profile, signal, soften, m => { chunk.msg = m; renderJob(); });
+      chunk.status = st;
+      chunk.msg = [keep, cp.fixed.length ? T('Đã tự dịch lại cho đủ ý: đoạn {p}.', { p: paraList(cp.fixed) }) : '', cp.still.length ? T('Đoạn {p} có thể còn thiếu ý — kiểm tra hoặc bấm “Dịch lại đoạn này”.', { p: paraList(cp.still) }) : ''].filter(Boolean).join(' ');
     }
     if (qualityOn() && !(signal && signal.aborted)) {
       const keep = chunk.msg, st = chunk.status;
@@ -3677,6 +4086,12 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
       chunk.status = st;
       chunk.msg = [keep, q.fixed.length ? T('Đã tự viết lại cho mượt: đoạn {p}.', { p: paraList(q.fixed) }) : '', q.still.length ? T('Đoạn {p} vẫn còn cứng — bấm “Dịch lại cho mượt” hoặc sửa tay.', { p: paraList(q.still) }) : ''].filter(Boolean).join(' ');
     }
+    if (S.project.refine && profile && !(signal && signal.aborted) && (chunk.status === 'done' || chunk.status === 'partial')) {
+      const keep = chunk.msg; chunk.msg = T('Đang trau chuốt…'); renderJob();
+      const rf = await refinePass(ch, chunk.idx, profile, signal, soften);
+      chunk.msg = [keep, rf.length ? T('Đã trau chuốt {n} đoạn (đã kiểm lại đủ ý).', { n: rf.length }) : ''].filter(Boolean).join(' ');
+    }
+    if (completeOn()) chunk.incomplete = checkComplete(ch, chunk.idx).length; /* kiểm lần cuối sau mọi lượt viết lại */
   }
   await saveNow('chapters', ch);
   renderJob(); if (ch.id === S.chapterId) updateStats();
@@ -3824,7 +4239,15 @@ async function translateOne(ch, mode, signal, prof) {
   const job = S.jobs[ch.id] = { chunks: [].concat(...runs.map(r => C.chunkParagraphs(zh, r, size, 24))).map(a => ({ idx: a, status: 'wait', msg: '' })) };
   if (ch.id === S.chapterId) renderJob();
   try {
-    for (const c of job.chunks) { if (signal.aborted) break; await netGate(signal); await runChunkUI(ch, c, prof, signal, true); }
+    let cur = size;
+    for (let k = 0; k < job.chunks.length; k++) {
+      const c = job.chunks[k]; if (signal.aborted) break; await netGate(signal); await runChunkUI(ch, c, prof, signal, true);
+      if (c.truncated && cur > 400) { /* bị cắt vì giới hạn độ dài → các phần sau chia nhỏ một nửa */
+        cur = Math.max(300, Math.floor(cur / 2));
+        const rest = job.chunks.slice(k + 1).filter(x => x.status === 'wait');
+        if (rest.length) { const ids = [].concat(...rest.map(x => x.idx)); job.chunks.splice(k + 1, job.chunks.length - k - 1, ...[].concat(...C.contiguousRuns(ids).map(r => C.chunkParagraphs(zh, r, cur, 12))).map(a => ({ idx: a, status: 'wait', msg: '' }))); renderJob(); }
+      }
+    }
     /* các phần mất kết nối: dịch tiếp phần khác trước, cuối chương tự thử lại thêm một lượt */
     for (const c of job.chunks.filter(x => x.status === 'error' && x.transient)) {
       if (signal.aborted) break;
@@ -3838,7 +4261,7 @@ async function translateOne(ch, mode, signal, prof) {
     if (ch.status === 'todo' && hasAny(ch)) { ch.status = 'draft'; await saveNow('chapters', ch); }
   }
   const bads = job.chunks.filter(c => c.status !== 'done' && c.status !== 'omitted');
-  return { bad: bads.length, gapOnly: bads.length > 0 && bads.every(c => c.status === 'partial'), gaps: job.chunks.reduce((a, c) => a + c.idx.filter(i => isEmptyPara(ch.paras[i])).length, 0) };
+  return { bad: bads.length, gapOnly: bads.length > 0 && bads.every(c => c.status === 'partial'), gaps: job.chunks.reduce((a, c) => a + c.idx.filter(i => isEmptyPara(ch.paras[i])).length, 0), incomplete: incCount(ch) };
 }
 /* Sau mỗi chương (hàng loạt): tóm tắt nội bộ cho chương sau + gợi ý thuật ngữ mới. Không đụng tới bản dịch. */
 const chapterTargetText = ch => ch.paras.filter(p => !p.omitted).map(p => p.vi).filter(v => v && v.trim()).join('\n');
@@ -3850,6 +4273,22 @@ async function makeSummary(ch, prof, signal) {
     if (r.finish === 'blocked' || !t || C.looksLikeRefusal(t)) return false;
     ch.summary = t; await saveNow('chapters', ch); return true; /* chỉ ghi ch.summary, không bao giờ ghi vào bản dịch */
   } catch (e) { if (e && e.name === 'AbortError') throw e; return false; }
+}
+/* Trích tên riêng + thuật ngữ (kèm giới tính, Hán Việt cho tên Trung) + xưng hô theo cặp trước khi dịch. Chỉ THÊM, không ghi đè mục đã có. */
+async function extractTerms(ch, prof, signal) {
+  const P = S.project; migrateProject(P);
+  const src = (ch.title || '') + '\n' + ch.paras.map(p => p.zh).join('\n'); if (!src.trim()) return null;
+  try {
+    const r = await C.chat(prof, C.buildExtractMessages(src, P.glossary, P.pairs, chDir(ch), P.genre), { signal, json: true, temperature: 0.3 });
+    if (r.finish === 'blocked') return null;
+    const out = C.parseExtraction(r.text, { source: src, existing: P.glossary.map(g => g.zh).concat(P.termDismissed || []), pairs: P.pairs });
+    const have = new Set(P.glossary.map(g => String(g.zh).toLowerCase()));
+    out.terms = out.terms.filter(t => !have.has(String(t.zh).toLowerCase()));
+    out.terms.forEach(t => P.glossary.push({ id: C.uid(), zh: t.zh, vi: t.vi, note: t.note || '', kind: t.kind, auto: 'ai' }));
+    out.pairs.forEach(x => P.pairs.push(Object.assign({ locked: false }, x)));
+    ch.extracted = true; await saveNow('chapters', ch); await saveNow('projects', P);
+    return out;
+  } catch (e) { if (e && e.name === 'AbortError') throw e; return null; }
 }
 async function suggestTermsFor(ch, prof, signal) {
   const idx = ch.paras.map((p, i) => i).filter(i => ch.paras[i].vi && ch.paras[i].vi.trim() && !ch.paras[i].omitted);
@@ -3893,9 +4332,14 @@ async function runQueue(items) {
       if (S.tab !== 'editor' || S.chapterId !== ch.id) { S.tab = 'editor'; S.chapterId = ch.id; S.issues = null; S.rowMsg = {}; }
       if (S.mtab === 'list' || S.mtab === 'src') S.mtab = 'tgt';
       renderSide(); renderMain();
+      if (S.settings.autoExtract === true && !ch.extracted && ch.paras.some(p => !(p.vi && p.vi.trim()))) {
+        it.note = T('đang trích tên & thuật ngữ…'); renderQbar();
+        try { const x = await extractTerms(ch, prof, ctrl.signal); if (x) it.extracted = x.terms.length + x.pairs.length; } catch (e) { if (e && e.name === 'AbortError') { it.st = 'stopped'; break; } }
+        it.note = ''; renderQbar();
+      }
       try {
         const r = await translateOne(ch, it.mode, ctrl.signal, prof);
-        it.st = r.skip ? 'skip' : r.bad ? 'warn' : 'done'; it.bad = r.bad || 0; it.gapOnly = !!r.gapOnly; it.gaps = r.gaps || 0;
+        it.st = r.skip ? 'skip' : r.bad ? 'warn' : 'done'; it.bad = r.bad || 0; it.gapOnly = !!r.gapOnly; it.gaps = r.gaps || 0; it.incomplete = r.incomplete || 0;
       } catch (e) {
         if (e && e.name === 'AbortError') { it.st = 'stopped'; break; }
         it.st = 'warn'; it.bad = 1; toast(String(e.message || e), 'err');
@@ -3986,6 +4430,34 @@ async function retransPara(i, useOther, soften) {
     if (chunk.status === 'blocked') S.rowBlocked[i] = true;
     afterTranslate(ch);
     $('#row-' + i) && $('#row-' + i).scrollIntoView({ block: 'center' });
+  }
+}
+/* Nút “Dịch lại các đoạn nghi thiếu”: chỉ hỏi lại riêng từng đoạn bị đánh dấu */
+async function fixIncomplete() {
+  const ch = curCh(); if (!ch || S.busy) return;
+  const idx = ch.paras.map((p, i) => i).filter(i => { const p = ch.paras[i]; return p.incomplete && p.incomplete.length && cEligible(p); });
+  if (!idx.length) return toast(T('Không còn đoạn nghi thiếu ý.'));
+  const prof = primaryProfile(); if (!prof) return toast(T('Chưa kết nối AI.'), 'err');
+  const ctrl = new AbortController(); S.busy = ctrl; renderEditor($('#main'));
+  let r = null;
+  try { r = await completePass(ch, idx, prof, ctrl.signal, false, m => { const el = $('#cStatus'); if (el) el.textContent = m; }); } catch (e) {}
+  finally {
+    S.busy = null; afterTranslate(ch);
+    if (r) toast(r.still.length ? T('Đã dịch lại {a} đoạn; còn {n} đoạn nghi thiếu ({p}) — kiểm tra hoặc sửa tay.', { a: r.fixed.length, n: r.still.length, p: paraList(r.still) }) : T('Đã dịch lại cho đủ {a} đoạn.', { a: r.fixed.length }), r.still.length ? 'warn' : 'ok');
+  }
+}
+async function extractTermsUI() {
+  if (S.busy || !S.project) return;
+  const ch = curCh() || sortedChapters()[0]; if (!ch) return toast(T('Chưa có chương nào.'));
+  const prof = primaryProfile(); if (!prof) { toast(T('Chưa kết nối AI.'), 'err'); return openSettings(); }
+  const ctrl = new AbortController(); S.busy = ctrl; toast(T('Đang đọc chương “{t}” để trích tên & thuật ngữ…', { t: ch.titleVi || ch.title }));
+  let out = null;
+  try { out = await extractTerms(ch, prof, ctrl.signal); } catch (e) {}
+  finally {
+    S.busy = null;
+    if (!out) toast(T('Không trích được (AI bị chặn hoặc trả lời sai định dạng). Thử lại hoặc dùng AI khác.'), 'err');
+    else toast(T('Đã thêm {t} tên/thuật ngữ và {p} cặp xưng hô — kiểm tra, sửa trong bảng Thuật ngữ.', { t: out.terms.length, p: out.pairs.length }), 'ok', 9000);
+    renderMain();
   }
 }
 async function reviewChapter() {
@@ -4332,11 +4804,20 @@ function renderAdv(m) {
 function renderGlossary(m) {
   m.innerHTML = `<h2 class="serif">${esc(T('Bảng thuật ngữ'))}</h2>
     <div class="note">${T('Tên nhân vật, danh xưng, địa danh, quy ước xưng hô (ta/ngươi/nàng…). Thuật ngữ xuất hiện trong chương sẽ được <mark class="term">tô sáng</mark> và tự động gửi kèm cho AI. Nếu chấp nhận nhiều cách dịch, ngăn cách bằng “/” (ví dụ: <i>sư tỷ / sư tỉ</i>).')}</div>
-    <div class="row-flex"><button class="primary" data-act="glAdd">${I('plus')} ${esc(T('Thêm dòng'))}</button><button data-act="glImport">${esc(T('Nhập CSV…'))}</button><button data-act="glExport">${esc(T('Xuất CSV'))}</button>
+    <div class="row-flex"><button class="primary" data-act="glAdd">${I('plus')} ${esc(T('Thêm dòng'))}</button><button data-act="glImport">${esc(T('Nhập CSV…'))}</button><button data-act="glExport">${esc(T('Xuất CSV'))}</button><button data-act="extractTerms" ${S.busy ? 'disabled' : ''}>${esc(T('Trích tên & thuật ngữ (AI)'))}</button>
       <input id="glFilter" placeholder="${esc(T('Tìm…'))}" style="max-width:240px" value="${esc(S.glFilter)}"><span class="muted small">${esc(T('{n} mục · CSV gồm 3 cột: Tiếng Trung, Tiếng Việt, Ghi chú', { n: S.project.glossary.length }))}</span></div>
-    <div class="tablewrap"><table class="gl"><thead><tr><th style="width:24%">${esc(T('Gốc'))}</th><th style="width:28%">${esc(T('Bản dịch'))}</th><th>${esc(T('Ghi chú'))}</th><th style="width:44px"></th></tr></thead><tbody id="glBody"></tbody></table></div>`;
+    <div class="tablewrap"><table class="gl"><thead><tr><th style="width:24%">${esc(T('Gốc'))}</th><th style="width:28%">${esc(T('Bản dịch'))}</th><th>${esc(T('Ghi chú'))}</th><th style="width:44px"></th></tr></thead><tbody id="glBody"></tbody></table></div>
+    <h3 class="serif" style="margin-top:22px" id="pairsHead">${esc(T('Xưng hô theo cặp nhân vật'))}</h3>
+    <div class="note">${esc(T('Mỗi cặp: A tự xưng gì, gọi B là gì và ngược lại. Gửi kèm mọi lần dịch để xưng hô không bị đổi giữa chừng. Đánh dấu “Cố định” để AI không tự đổi; bỏ dấu khi quan hệ thay đổi (ví dụ thành người yêu).'))}</div>
+    <div class="row-flex"><button data-act="pairAdd">${I('plus')} ${esc(T('Thêm cặp'))}</button><span class="muted small">${esc(T('{n} cặp', { n: (S.project.pairs || []).length }))}</span></div>
+    <div class="tablewrap"><table class="gl pairs"><thead><tr><th>${esc(T('Nhân vật A'))}</th><th>${esc(T('Nhân vật B'))}</th><th>${esc(T('A tự xưng'))}</th><th>${esc(T('A gọi B'))}</th><th>${esc(T('B tự xưng'))}</th><th>${esc(T('B gọi A'))}</th><th>${esc(T('Ghi chú'))}</th><th style="width:64px">${esc(T('Cố định'))}</th><th style="width:44px"></th></tr></thead><tbody id="pairBody">${pairRows()}</tbody></table></div>`;
   renderGlBody();
   $('#glFilter').oninput = e => { S.glFilter = e.target.value; renderGlBody(); };
+}
+function pairRows() {
+  const ps = S.project.pairs || [];
+  return ps.map(x => `<tr>${['a', 'b', 'aSelf', 'aCallsB', 'bSelf', 'bCallsA', 'note'].map(f => `<td><input data-pair="${f}" data-id="${x.id}" value="${esc(x[f] || '')}" aria-label="${esc(f)}"></td>`).join('')}<td style="text-align:center"><input type="checkbox" data-pairlock="${x.id}" ${x.locked ? 'checked' : ''} aria-label="${esc(T('Cố định'))}"></td><td><button class="small danger" data-act="pairDel" data-id="${x.id}" title="${esc(T('Xóa'))}" aria-label="${esc(T('Xóa'))}">${I('trash')}</button></td></tr>`).join('')
+    || `<tr><td colspan="9" class="muted small" style="padding:14px">${esc(T('Chưa có cặp nào. Bấm “Trích tên & thuật ngữ (AI)” để AI tự đề xuất, hoặc “Thêm cặp”.'))}</td></tr>`;
 }
 function renderGlBody() {
   const f = S.glFilter.trim().toLowerCase();
@@ -4363,6 +4844,10 @@ function renderStory(m) {
     <h3 class="serif" style="margin-top:22px">${esc(T('Dịch'))}</h3>
     <label>${esc(T('Dịch từ (mặc định cho mọi chương)'))}</label><select data-pf="direction" id="pDir">${dirOptions(projDir())}</select>
     <div class="muted small">${esc(T('Án Mực tự đoán khi bạn thêm chương đầu tiên. Từng chương có thể chọn hướng riêng trong “Nâng cao cho chương này”.'))}</div>
+    <label for="pGenre">${esc(T('Thể loại (bộ quy tắc văn phong gửi kèm mỗi lần dịch)'))}</label><select data-pf="genre" id="pGenre">${genreOptions(p.genre)}</select>
+    <details class="adv"><summary class="small">${esc(T('Xem quy tắc của thể loại này'))}</summary><div class="guide small genretext">${esc(C.genreText(p.genre || 'default', projTarget()) || T('Mặc định: chỉ dùng văn phong chung, không thêm quy tắc riêng.'))}</div></details>
+    <label class="inline" style="margin-top:12px"><input type="checkbox" id="pRefine" data-pf="refine" ${p.refine ? 'checked' : ''}> ${esc(T('Trau chuốt sau khi dịch (thêm 1 lượt AI mỗi phần)'))}</label>
+    <div class="muted small">${esc(T('AI đọc lại bản nháp cạnh bản gốc và viết mượt hơn. Bản trau chuốt chỉ được nhận khi vẫn đủ câu, đủ ý (kiểm lại tự động); đoạn bạn đã sửa tay không bị đụng tới.'))}</div>
     <label class="inline" style="margin-top:12px"><input type="checkbox" id="pHumor" data-pf="humor" ${p.humor ? 'checked' : ''}> ${esc(T('Tăng chất hài (truyện hài, nhẹ nhàng)'))}</label>
     <div class="muted small">${esc(T('Bật cho truyện hài: AI dịch giọng tươi, dí dỏm hơn ở cảnh đời thường; cảnh nghiêm túc vẫn giữ nghiêm túc, không bịa thêm câu đùa. Mặc định tắt — văn phong mặc định đã có mục “Hài hước, duyên dáng” cho đoạn hài.'))}</div>
     <h3 class="serif" style="margin-top:22px">${esc(T('AI cho truyện này'))}</h3>
@@ -4450,6 +4935,8 @@ function openSettings() {
     <label class="inline"><input type="checkbox" id="setAutoSum" ${s.autoSummary !== false ? 'checked' : ''}> ${esc(T('Tự tóm tắt mỗi chương khi dịch hàng loạt (giữ mạch truyện)'))}</label>
     <div class="muted small">${esc(T('Ghi chú tóm tắt nội bộ giúp AI nhớ mạch truyện — không thay bản dịch, không có trong file xuất.'))}</div>
     <label class="inline"><input type="checkbox" id="setSuggest" ${s.suggestTerms !== false ? 'checked' : ''}> ${esc(T('Gợi ý thuật ngữ mới sau mỗi chương'))}</label>
+    <label class="inline"><input type="checkbox" id="setAutoEx" ${s.autoExtract !== false ? 'checked' : ''}> ${esc(T('Tự trích tên, thuật ngữ & xưng hô trước khi dịch chương mới'))}</label>
+    <label class="inline"><input type="checkbox" id="setComplete" ${s.completeCheck !== false ? 'checked' : ''}> ${esc(T('Kiểm tra dịch đủ từng đoạn (số câu, độ dài, câu cụt, tóm tắt) và tự dịch lại đoạn thiếu'))}</label>
     <div class="muted small">${esc(T('AI đề xuất tên riêng, thuật ngữ, xưng hô mới; bạn tự chọn Thêm hoặc Bỏ — không tự đưa vào bảng thuật ngữ.'))}</div>
     <label>${esc(T('Kích thước mỗi phần khi dịch (số ký tự bản gốc, khuyên dùng 1000–2000)'))}</label><input type="number" id="setChunk" min="300" max="6000" step="100" value="${s.chunkSize}">
     <label for="setDefTr">${esc(T('Tên người dịch mặc định'))}</label><input id="setDefTr" value="${esc(s.defaultTranslator || '')}" placeholder="${esc(T('Điền sẵn vào mục “Người dịch” của truyện mới'))}">
@@ -4463,6 +4950,8 @@ function openSettings() {
     $('#setOnBlocked', b).onchange = e => { s.onBlocked = e.target.value; saveSettings(); };
     $('#setAutoSum', b).onchange = e => { s.autoSummary = e.target.checked; saveSettings(); };
     $('#setSuggest', b).onchange = e => { s.suggestTerms = e.target.checked; saveSettings(); };
+    $('#setAutoEx', b).onchange = e => { s.autoExtract = e.target.checked; saveSettings(); };
+    $('#setComplete', b).onchange = e => { s.completeCheck = e.target.checked; saveSettings(); };
     $('#setChunk', b).onchange = e => { s.chunkSize = Math.max(300, Number(e.target.value) || 1200); saveSettings(); };
     $('#setDefTr', b).onchange = e => { s.defaultTranslator = e.target.value.trim(); saveSettings(); };
   });
@@ -4518,7 +5007,7 @@ function openProfileForm(p) {
     <label>Base URL</label><input id="pfUrl" value="${esc(p.baseUrl)}" placeholder="https://…">
     <label>${esc(T('Khóa API'))}</label><div class="row-flex" style="flex-wrap:nowrap"><input type="password" id="pfKey" value="${esc(p.apiKey || '')}" autocomplete="off" placeholder="${esc(T('Dán khóa API vào đây'))}"><button id="pfShow" type="button">${esc(T('Hiện'))}</button></div>
     <div class="muted small">${esc(T('Khóa chỉ lưu trong localStorage của trình duyệt này.'))}</div>
-    <div class="two"><div><label>${esc(T('Tên model'))}</label><input id="pfModel" value="${esc(p.model)}"></div><div><label>${esc(T('Nhiệt độ (0–2; 0.6–0.9 cho văn chương)'))}</label><input type="number" id="pfTemp" min="0" max="2" step="0.05" value="${p.temperature == null ? 0.7 : p.temperature}"></div></div>
+    <div class="two"><div><label>${esc(T('Tên model'))}</label><input id="pfModel" value="${esc(p.model)}"></div><div><label>${esc(T('Nhiệt độ (0–2; 0.6–0.9 cho văn chương; DeepSeek khuyên 1.3 cho dịch thuật)'))}</label><input type="number" id="pfTemp" min="0" max="2" step="0.05" value="${p.temperature == null ? 0.7 : p.temperature}"></div></div>
     <label class="inline"><input type="checkbox" id="pfStream" ${p.stream !== false ? 'checked' : ''}> ${esc(T('Hiển thị kết quả dần dần (streaming)'))}</label>
     <div id="pfSafetyBox" style="display:${p.type === 'gemini' ? 'block' : 'none'}"><label>${esc(T('Mức lọc an toàn của Gemini (safetySettings — áp dụng cho 4 nhóm: quấy rối, thù ghét, khiêu dâm, nguy hiểm)'))}</label>
       <select id="pfSafety">${SAFETY().map(x => `<option value="${x[0]}" ${(p.safety || '') === x[0] ? 'selected' : ''}>${esc(x[1])}</option>`).join('')}</select>
@@ -4981,6 +5470,12 @@ const A = {
   fixChunk: el => fixChunk(Number(el.dataset.k)),
   fixChunkSoft: el => fixChunk(Number(el.dataset.k), true),
   fixAll: () => fixAll(),
+  fixIncomplete: () => fixIncomplete(),
+  checkComplete: () => { const ch = curCh(); if (!ch) return; const f = checkComplete(ch); saveNow('chapters', ch); renderSide(); renderEditor($('#main')); toast(f.length ? T('{n} đoạn nghi dịch thiếu ý: {p}.', { n: f.length, p: paraList(f) }) : T('Không phát hiện đoạn thiếu ý.') + (gapInfo(ch).all.length ? ' ' + T('Còn {n} đoạn chưa dịch.', { n: gapInfo(ch).all.length }) : ''), f.length ? 'warn' : 'ok'); },
+  incOk: el => { const ch = curCh(); const p = ch && ch.paras[Number(el.dataset.i)]; if (!p) return; delete p.incomplete; p.edited = true; saveNow('chapters', ch); renderSide(); renderEditor($('#main')); },
+  extractTerms: () => extractTermsUI(),
+  pairAdd: () => { migrateProject(S.project); S.project.pairs.unshift({ id: C.uid(), a: '', b: '', aSelf: '', aCallsB: '', bSelf: '', bCallsA: '', note: '', locked: true }); scheduleSave('projects', S.project, 0); renderGlossary($('#advBody')); const i = $('#pairBody input'); i && i.focus(); },
+  pairDel: el => { S.project.pairs = (S.project.pairs || []).filter(x => x.id !== el.dataset.id); scheduleSave('projects', S.project, 0); renderGlossary($('#advBody')); },
   retryFailed: () => retryFailed(),
   softenPara: el => retransPara(Number(el.dataset.i), false, true),
   unsoften: async el => { const ch = curCh(); if (!ch) return; delete ch.paras[Number(el.dataset.i)].softened; await saveNow('chapters', ch); const sc = $('#main').scrollTop; renderEditor($('#main')); $('#main').scrollTop = sc; renderSide(); },
@@ -5096,9 +5591,10 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('input', e => {
   const t = e.target; const ch = curCh();
-  if (t.matches('textarea.vi') && ch) { const p = ch.paras[Number(t.dataset.i)]; p.vi = t.value; p.edited = true; delete p.qflag; delete p.omitted; if (t.value.trim()) delete p.missing; delete p.keptSrc; autosize(t); scheduleSave('chapters', ch); clearTimeout(timers._st); timers._st = setTimeout(updateStats, 300); }
+  if (t.matches('textarea.vi') && ch) { const p = ch.paras[Number(t.dataset.i)]; p.vi = t.value; p.edited = true; delete p.qflag; delete p.incomplete; delete p.omitted; if (t.value.trim()) delete p.missing; delete p.keptSrc; autosize(t); scheduleSave('chapters', ch); clearTimeout(timers._st); timers._st = setTimeout(updateStats, 300); }
   else if (t.dataset.cf && ch && t.tagName !== 'SELECT') { ch[t.dataset.cf] = t.value; scheduleSave('chapters', ch); if (t.dataset.cf === 'title' || t.dataset.cf === 'titleVi') { clearTimeout(timers._sd); timers._sd = setTimeout(renderSide, 500); } }
   else if (t.dataset.sg && S.project) { const x = (S.project.termSuggest || []).find(y => y.id === t.dataset.sg); if (x) { x.vi = t.value; scheduleSave('projects', S.project); } }
+  else if (t.dataset.pair && S.project) { const x = (S.project.pairs || []).find(y => y.id === t.dataset.id); if (x) { x[t.dataset.pair] = t.value; scheduleSave('projects', S.project); } }
   else if (t.dataset.g && S.project) { const g = S.project.glossary.find(x => x.id === t.dataset.id); if (g) { g[t.dataset.g] = t.value; scheduleSave('projects', S.project); } }
   else if (t.dataset.pf && S.project && t.type !== 'checkbox' && t.tagName !== 'SELECT') { S.project[t.dataset.pf] = t.value; scheduleSave('projects', S.project); if (t.dataset.pf === 'title') { const c = $('#crumb'); if (c) c.textContent = t.value; clearTimeout(timers._sd); timers._sd = setTimeout(renderPbar, 500); } }
 });
@@ -5110,12 +5606,14 @@ document.addEventListener('change', async e => {
     else { if (t.checked) S.sel.add(id); else S.sel.delete(id); renderPbar(); const all = $('input.chk[data-id="*"]'); if (all) all.checked = S.chapters.length && S.chapters.every(c => S.sel.has(c.id)); }
     return;
   }
+  if (t.dataset.pairlock && S.project) { const x = (S.project.pairs || []).find(y => y.id === t.dataset.pairlock); if (x) { x.locked = t.checked; await saveNow('projects', S.project); } return; }
   if (t.dataset.cf === 'status' && ch) { ch.status = t.value; saveNow('chapters', ch); renderSide(); }
   else if (t.dataset.cf === 'direction' && ch) { ch.direction = t.value; await saveNow('chapters', ch); renderSide(); renderEditor($('#main')); }
   else if (t.dataset.pf === 'direction' && S.project) { await setProjDir(t.value); renderSide(); if (curCh() && $('#rows')) renderEditor($('#main')); }
   else if (t.dataset.pf && S.project && (t.type === 'checkbox' || t.tagName === 'SELECT')) {
     S.project[t.dataset.pf] = t.type === 'checkbox' ? t.checked : t.value;
     await saveNow('projects', S.project);
+    if (t.dataset.pf === 'genre') { $$('select[data-pf="genre"]').forEach(x => { x.value = t.value; }); const g = $('.genretext'); if (g) g.textContent = C.genreText(t.value, projTarget()) || T('Mặc định: chỉ dùng văn phong chung, không thêm quy tắc riêng.'); toast(T('Thể loại: {g} — áp dụng từ lần dịch tiếp theo.', { g: C.GENRES[t.value] ? C.GENRES[t.value].label[UI === 'en' ? 'en' : 'vi'] : t.value }), 'ok'); }
   }
 });
 /* Bôi đen chữ ở cột Gốc → điền sẵn vào ô “Thêm nhanh” thuật ngữ */
@@ -5147,7 +5645,7 @@ window.addEventListener('beforeunload', e => { if (pending.size || S.busy) { e.p
 
 
 /* ---------- Ứng dụng trên màn hình chính (PWA) ---------- */
-const APP_BUILD = 'd73741e5df36';
+const APP_BUILD = '05f605285257';
 const ONLINE_ORIGIN = /^https?:$/.test(location.protocol);
 function setThemeMeta(t) { document.querySelectorAll('meta[name=theme-color]').forEach(m => { m.content = t === 'dark' ? '#1a1714' : '#f3eee6'; m.removeAttribute('media'); }); }
 // Service worker chỉ chạy khi mở qua http(s); mở file:// thì bỏ qua (app vẫn chạy trọn trong một file)
@@ -5202,7 +5700,7 @@ function renderA2hs() {
   const ps = await DB.all('projects');
   if (last && ps.some(p => p.id === last)) openProject(last); else goHome();
 })();
-window.__app = { S, DB, A, T, gapInfo, viParas };
+window.__app = { S, DB, A, T, gapInfo, viParas, runQueue };
 })();
 </script>
 </body>
