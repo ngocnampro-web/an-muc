@@ -2158,6 +2158,11 @@ C.PRESETS = {
   gemini: { name: 'Google Gemini (gốc)', type: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', model: 'gemini-2.5-flash', safety: 'BLOCK_ONLY_HIGH' },
   geminiOpenAI: { name: 'Google Gemini (tương thích OpenAI)', type: 'openai', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/', model: 'gemini-2.5-flash' },
   openai: { name: 'OpenAI', type: 'openai', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
+  claude: { name: 'Claude · OpenRouter', type: 'openai', baseUrl: 'https://openrouter.ai/api/v1', model: '', modelPrefix: 'anthropic/' },
+  grok: { name: 'Grok · OpenRouter', type: 'openai', baseUrl: 'https://openrouter.ai/api/v1', model: '', modelPrefix: 'x-ai/' },
+  qwen: { name: 'Qwen · OpenRouter', type: 'openai', baseUrl: 'https://openrouter.ai/api/v1', model: '', modelPrefix: 'qwen/' },
+  glm: { name: 'GLM · OpenRouter', type: 'openai', baseUrl: 'https://openrouter.ai/api/v1', model: '', modelPrefix: 'z-ai/' },
+  mistral: { name: 'Mistral · OpenRouter', type: 'openai', baseUrl: 'https://openrouter.ai/api/v1', model: '', modelPrefix: 'mistralai/' },
   custom: { name: 'Tùy chỉnh', type: 'openai', baseUrl: '', model: '' }
 };
 
@@ -3067,6 +3072,17 @@ const esc = C.esc;
 const LKEY = 'anmuc_ui_lang';
 let UI = localStorage.getItem(LKEY) === 'en' ? 'en' : 'vi';
 const DICT = window.AM_EN || {};
+Object.assign(DICT, {
+ 'Kho truyện': 'My novels', 'Kết nối AI khác…': 'Connect another AI…', 'Cần kết nối': 'Setup required',
+ 'Đang dịch — hãy dừng trước khi tạo truyện mới.': 'Translation is running. Stop it before creating a new novel.',
+ 'Truyện hiện tại vẫn được giữ trong Kho truyện. Mỗi truyện có chương, bản dịch và thuật ngữ riêng.': 'Your current novel stays in My novels. Each novel keeps its own chapters, translations and glossary.',
+ 'Tạo truyện': 'Create novel', 'Nhập file truyện mới': 'Import a new novel',
+ 'Chọn AI chưa kết nối để thêm khóa API. Claude, Grok, Qwen, GLM và Mistral dùng khóa OpenRouter; mỗi dịch vụ có phí riêng.': 'Choose an unconnected AI to add an API key. Claude, Grok, Qwen, GLM and Mistral use an OpenRouter key; provider charges apply.',
+ 'Thử lần lượt tất cả AI đã kết nối nếu AI dự phòng cũng không dịch được': 'Try all connected AIs in order if the fallback AI also fails',
+ 'Tải danh sách model hiện có': 'Load available models', '{n} model — gõ hoặc chọn tên model.': '{n} models — type or select a model ID.',
+ 'Không tải được danh sách. Có thể nhập tên model thủ công.': 'Could not load models. You can enter a model ID manually.',
+ 'Đã dịch bằng AI dự phòng: {p}.': 'Translated with fallback AI: {p}.'
+});
 function T(s, vars) {
   let r = UI === 'en' && DICT[s] != null ? DICT[s] : s;
   if (vars) r = r.replace(/\{(\w+)\}/g, (m, k) => vars[k] != null ? vars[k] : m);
@@ -3189,6 +3205,15 @@ async function saveNow(store, obj) {
 function profileOptions(sel, emptyLabel) {
   return (emptyLabel != null ? '<option value="">' + esc(emptyLabel) + '</option>' : '') + S.settings.profiles.map(p => '<option value="' + p.id + '"' + (p.id === sel ? ' selected' : '') + '>' + esc(p.name + ' · ' + p.model) + '</option>').join('');
 }
+function storyProfileOptions(sel, emptyLabel) {
+  return profileOptions(sel, emptyLabel) + '<optgroup label="' + esc(T('Kết nối AI khác…')) + '">' + Object.entries(C.PRESETS).map(([k, p]) => '<option value="preset:' + k + '">' + esc(T(p.name)) + ' · ' + esc(T('Cần kết nối')) + '</option>').join('') + '</optgroup>';
+}
+function fallbackProfiles(excludeId) {
+  const first = fallbackProfile(excludeId);
+  const profiles = first ? [first] : [];
+  if (S.project && S.project.fallbackAll) profiles.push(...S.settings.profiles);
+  return profiles.filter((p, i, a) => p.id !== excludeId && p.apiKey && a.findIndex(x => x.id === p.id) === i);
+}
 function dirOptions(sel, inheritLabel) {
   return (inheritLabel ? '<option value="">' + esc(inheritLabel) + '</option>' : '') + C.DIRECTIONS.map(d => '<option value="' + d.id + '"' + (d.id === sel ? ' selected' : '') + '>' + esc(UI === 'en' ? d.en : d.vi) + '</option>').join('');
 }
@@ -3212,8 +3237,23 @@ function renderHeader() {
     <button class="iconbtn" data-act="settings" title="${esc(T('Kết nối AI'))}" aria-label="${esc(T('Kết nối AI'))}">${I('gear')}</button>
     <button class="iconbtn" data-act="theme" title="${esc(T('Giao diện sáng / tối'))}" aria-label="${esc(T('Giao diện sáng / tối'))}">${I('moon')}</button>
     <div class="pill" role="group" aria-label="${esc(T('Ngôn ngữ giao diện'))}"><button data-act="uiLang" data-l="vi" class="${UI === 'vi' ? 'on' : ''}" aria-pressed="${UI === 'vi'}">VI</button><button data-act="uiLang" data-l="en" class="${UI === 'en' ? 'on' : ''}" aria-pressed="${UI === 'en'}">EN</button></div>
-  </div>`;
+  </div>${inProj ? `<div class="row-flex" style="padding:0 12px 10px"><button data-act="home">${I('folder')} ${esc(T('Kho truyện'))}</button><button data-act="newNovel">${I('plus')} ${esc(T('Truyện mới'))}</button></div>` : ''}`;
   renderMTabs();
+}
+function openNewNovel() {
+  if (S.busy) return toast(T('Đang dịch — hãy dừng trước khi tạo truyện mới.'), 'warn');
+  openModal(T('Truyện mới'), `<p class="muted small">${esc(T('Truyện hiện tại vẫn được giữ trong Kho truyện. Mỗi truyện có chương, bản dịch và thuật ngữ riêng.'))}</p><label for="newNovelTitle">${esc(T('Tên truyện'))}</label><input id="newNovelTitle"><div class="row-flex" style="margin-top:12px"><button class="primary" id="newNovelCreate">${I('plus')} ${esc(T('Tạo truyện'))}</button><button id="newNovelImport">${I('upload')} ${esc(T('Nhập file truyện mới'))}</button></div>`, b => {
+    $('#newNovelTitle', b).focus();
+    $('#newNovelCreate', b).onclick = async () => {
+      const title = $('#newNovelTitle', b).value.trim(); if (!title) return $('#newNovelTitle', b).focus();
+      await goHome(); const p = newProjectObj(title); await DB.put('projects', p); closeModal(); await openProject(p.id);
+    };
+    $('#newNovelTitle', b).onkeydown = e => { if (e.key === 'Enter') $('#newNovelCreate', b).click(); };
+    $('#newNovelImport', b).onclick = async () => {
+      const f = (await pickFiles(ACCEPT, false))[0]; if (!f) return;
+      await goHome(); closeModal(); await importNewProject(f);
+    };
+  });
 }
 function renderMTabs() {
   const el = $('#mtabs'); if (!el) return;
@@ -3228,6 +3268,10 @@ function renderMTabs() {
 /* ---------- Điều hướng ---------- */
 async function goHome() {
   if (!confirmLeaveJob()) return;
+  if (S.project) {
+    await DB.put('projects', S.project); clearTimeout(timers[S.project.id]); pending.delete(S.project.id);
+    for (const ch of S.chapters) { await DB.put('chapters', ch); clearTimeout(timers[ch.id]); pending.delete(ch.id); }
+  }
   S.project = null; S.chapters = []; S.chapterId = null; S.jobs = {}; S.queue = null; S.sel = new Set();
   S.projects = (await DB.all('projects')).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
   const allCh = await DB.all('chapters');
@@ -3238,6 +3282,7 @@ function migrateProject(P) {
   if (!P.genre || !C.GENRES[P.genre]) P.genre = 'default';
   if (!Array.isArray(P.pairs)) P.pairs = [];
   if (P.refine == null) P.refine = false;
+  if (P.fallbackAll == null) P.fallbackAll = true;
   return P;
 }
 async function openProject(id) {
@@ -3364,7 +3409,7 @@ function renderHome(allCh) {
 }
 function newProjectObj(title, author, direction) {
   const dir = direction || C.DEFAULT_DIRECTION;
-  return { id: C.uid(), title: title || T('Truyện mới'), author: author || '', translator: (S.settings.defaultTranslator || '').trim(), originalTitle: '', editor: '', source: '', creditNote: '', tags: '', blurb: '', direction: dir, styleGuide: C.defaultStyle(C.targetOf(dir)), glossary: [], address: '', profileId: '', fallbackProfileId: '', autoFallback: true, genre: 'default', pairs: [], refine: false, createdAt: Date.now(), updatedAt: Date.now() };
+  return { id: C.uid(), title: title || T('Truyện mới'), author: author || '', translator: (S.settings.defaultTranslator || '').trim(), originalTitle: '', editor: '', source: '', creditNote: '', tags: '', blurb: '', direction: dir, styleGuide: C.defaultStyle(C.targetOf(dir)), glossary: [], address: '', profileId: '', fallbackProfileId: '', autoFallback: true, fallbackAll: true, genre: 'default', pairs: [], refine: false, createdAt: Date.now(), updatedAt: Date.now() };
 }
 
 /* ---------- Trang truyện: thanh truyện | Chương | Gốc | Bản dịch ---------- */
@@ -4049,12 +4094,14 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
       const tryFb = pol === 'fallback' || pol === 'fallback_soften' || (pol === 'report' && S.project.autoFallback);
       const trySoft = pol === 'soften' || pol === 'fallback_soften';
       const msgs = ['[' + (profile ? profile.name : '') + '] ' + chunk.msg]; let last = profile;
-      const fb = tryFb ? fallbackProfile(profile && profile.id) : null; /* không có AI dự phòng → bỏ qua bước này */
-      if (fb) {
+      const backups = tryFb ? fallbackProfiles(profile && profile.id) : [];
+      for (const fb of backups) {
         await runChunkUI(ch, chunk, fb, signal, false); last = fb;
-        if (chunk.status === 'done') { chunk.msg = T('Hồ sơ chính bị chặn → đã dịch bằng hồ sơ dự phòng.'); return; }
+        if (chunk.status === 'done' || chunk.status === 'partial') { chunk.msg = T('Đã dịch bằng AI dự phòng: {p}.', { p: fb.name }) + (chunk.status === 'partial' ? ' ' + chunk.msg : ''); renderJob(); return; }
         msgs.push('[' + fb.name + '] ' + chunk.msg);
-        if (!(trySoft && chunk.status === 'blocked')) { chunk.msg = msgs.join(' | '); renderJob(); return; }
+        if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
+      }
+      if (backups.length && !(trySoft && chunk.status === 'blocked')) { chunk.msg = msgs.join(' | '); renderJob(); return;
       }
       if (trySoft && last) {
         await runChunkUI(ch, chunk, last, signal, false, true);
@@ -4851,8 +4898,10 @@ function renderStory(m) {
     <label class="inline" style="margin-top:12px"><input type="checkbox" id="pHumor" data-pf="humor" ${p.humor ? 'checked' : ''}> ${esc(T('Tăng chất hài (truyện hài, nhẹ nhàng)'))}</label>
     <div class="muted small">${esc(T('Bật cho truyện hài: AI dịch giọng tươi, dí dỏm hơn ở cảnh đời thường; cảnh nghiêm túc vẫn giữ nghiêm túc, không bịa thêm câu đùa. Mặc định tắt — văn phong mặc định đã có mục “Hài hước, duyên dáng” cho đoạn hài.'))}</div>
     <h3 class="serif" style="margin-top:22px">${esc(T('AI cho truyện này'))}</h3>
-    <div class="two"><div><label>${esc(T('AI chính'))}</label><select data-pf="profileId">${profileOptions(p.profileId, T('— Dùng AI mặc định —'))}</select></div>
-    <div><label>${esc(T('AI dự phòng (khi bị chặn)'))}</label><select data-pf="fallbackProfileId">${profileOptions(p.fallbackProfileId, T('— Dùng AI dự phòng chung —'))}</select></div></div>
+    <div class="two"><div><label>${esc(T('AI chính'))}</label><select data-pf="profileId">${storyProfileOptions(p.profileId, T('— Dùng AI mặc định —'))}</select></div>
+    <div><label>${esc(T('AI dự phòng (khi bị chặn)'))}</label><select data-pf="fallbackProfileId">${storyProfileOptions(p.fallbackProfileId, T('— Dùng AI dự phòng chung —'))}</select></div></div>
+    <p class="muted small">${esc(T('Chọn AI chưa kết nối để thêm khóa API. Claude, Grok, Qwen, GLM và Mistral dùng khóa OpenRouter; mỗi dịch vụ có phí riêng.'))}</p>
+    <label class="inline"><input type="checkbox" data-pf="fallbackAll" ${p.fallbackAll ? 'checked' : ''}> ${esc(T('Thử lần lượt tất cả AI đã kết nối nếu AI dự phòng cũng không dịch được'))}</label>
     <label class="inline"><input type="checkbox" data-pf="autoFallback" ${p.autoFallback ? 'checked' : ''}> ${esc(T('Tự động thử lại bằng AI dự phòng khi một phần bị chặn'))}</label>
     <div class="muted small">${esc(T('Nếu tắt, phần bị chặn sẽ được đánh dấu “bị chặn” và bạn tự bấm “Dịch lại với model khác”, “Dịch giảm nhẹ” hoặc “Lược phần này”. Cách xử lý tự động khác: Kết nối AI → Nâng cao.'))}</div>
     <div class="row-flex" style="margin-top:24px"><button data-act="settings">${I('gear')} ${esc(T('Kết nối AI'))}</button><span class="spacer"></span><button class="danger" data-act="delProject">${I('trash')} ${esc(T('Xóa truyện…'))}</button></div>`;
@@ -4922,7 +4971,7 @@ function openSettings() {
     <div class="note">${esc(T('🔒 Khóa API chỉ được lưu trong trình duyệt này (localStorage) trên máy của bạn và chỉ được gửi thẳng tới địa chỉ API của hồ sơ tương ứng. Bản sao lưu dự án không chứa khóa. Không nên dùng trên máy tính công cộng.'))}</div>
     <div class="note">${esc(T('Lưu ý: Mỗi nhà cung cấp AI có chính sách riêng về tiểu thuyết dành cho người lớn. Hãy đọc điều khoản sử dụng của nhà cung cấp bạn chọn. Nếu một phần bị chặn, có thể dịch lại bằng model khác, hoặc chọn “Dịch giảm nhẹ” (giữ cốt truyện, viết tiết chế cảnh nhạy cảm).'))}</div>
     ${prim ? `<div class="pitem cur"><span class="nm">${esc(T('Đang dùng:'))} ${esc(prim.name)}</span><span class="muted small">${esc(prim.model)}</span><span class="spacer"></span><button class="small" data-act="testProfile" data-id="${prim.id}">${esc(T('Kiểm tra kết nối'))}</button><button class="small" data-act="editProfile" data-id="${prim.id}">${esc(T('Sửa'))}</button></div>` : `<div id="setQuick">${quickSetupHtml()}</div>`}
-    <details class="adv" id="setAdv"><summary>${esc(T('Nâng cao: nhiều AI, AI dự phòng, Gemini'))}</summary>
+    <details class="adv" id="setAdv" open><summary>${esc(T('Nâng cao: nhiều AI, AI dự phòng, Gemini'))}</summary>
     <div class="plist">${s.profiles.map(p => `<div class="pitem"><span class="nm">${esc(p.name)}</span><span class="muted small">${p.type === 'gemini' ? esc(T('Gemini gốc')) : 'OpenAI-compatible'} · ${esc(p.model)}</span>
       ${p.id === s.defaultProfileId ? '<span class="badge approved">' + esc(T('mặc định')) + '</span>' : ''}${p.id === s.fallbackProfileId ? '<span class="badge draft">' + esc(T('dự phòng')) + '</span>' : ''}
       <span class="spacer"></span><button class="small" data-act="testProfile" data-id="${p.id}">${esc(T('Kiểm tra kết nối'))}</button><button class="small" data-act="editProfile" data-id="${p.id}">${esc(T('Sửa'))}</button><button class="small danger" data-act="delProfile" data-id="${p.id}">${esc(T('Xóa'))}</button></div>`).join('') || `<div class="muted small">${esc(T('Chưa có hồ sơ nào.'))}</div>`}</div>
@@ -4943,7 +4992,7 @@ function openSettings() {
     </details>
     <div class="row-flex" style="margin-top:14px"><button ${prim ? 'class="primary"' : ''} data-act="closeModal">${esc(T('Xong'))}</button></div>`, b => {
     if (!prim) bindQuickSetup(b, () => { closeModal(); if (S.project) renderProject(); else goHome(); });
-    if (setAdvOpen) $('#setAdv', b).open = true;
+    $('#setAdv', b).open = true;
     $('#setAdv', b).addEventListener('toggle', e => { setAdvOpen = e.target.open; });
     $('#setDefault', b).onchange = e => { s.defaultProfileId = e.target.value; saveSettings(); };
     $('#setFallback', b).onchange = e => { s.fallbackProfileId = e.target.value; saveSettings(); };
@@ -5000,7 +5049,7 @@ function openAddTerm(zh) {
   });
 }
 
-function openProfileForm(p) {
+function openProfileForm(p, afterSave) {
   openModal(p.id ? T('Sửa hồ sơ AI') : T('Thêm hồ sơ AI'), `
     <div class="two"><div><label>${esc(T('Tên hồ sơ'))}</label><input id="pfName" value="${esc(p.name)}"></div>
     <div><label>${esc(T('Loại API'))}</label><select id="pfType"><option value="openai" ${p.type !== 'gemini' ? 'selected' : ''}>${esc(T('Tương thích OpenAI (Chat Completions)'))}</option><option value="gemini" ${p.type === 'gemini' ? 'selected' : ''}>${esc(T('Google Gemini gốc (generateContent)'))}</option></select></div></div>
@@ -5008,23 +5057,39 @@ function openProfileForm(p) {
     <label>${esc(T('Khóa API'))}</label><div class="row-flex" style="flex-wrap:nowrap"><input type="password" id="pfKey" value="${esc(p.apiKey || '')}" autocomplete="off" placeholder="${esc(T('Dán khóa API vào đây'))}"><button id="pfShow" type="button">${esc(T('Hiện'))}</button></div>
     <div class="muted small">${esc(T('Khóa chỉ lưu trong localStorage của trình duyệt này.'))}</div>
     <div class="two"><div><label>${esc(T('Tên model'))}</label><input id="pfModel" value="${esc(p.model)}"></div><div><label>${esc(T('Nhiệt độ (0–2; 0.6–0.9 cho văn chương; DeepSeek khuyên 1.3 cho dịch thuật)'))}</label><input type="number" id="pfTemp" min="0" max="2" step="0.05" value="${p.temperature == null ? 0.7 : p.temperature}"></div></div>
+    ${p.baseUrl.includes('openrouter.ai') ? `<div class="row-flex"><button id="pfModels">${esc(T('Tải danh sách model hiện có'))}</button><span class="muted small" id="pfModelStatus"></span></div><datalist id="pfModelList"></datalist>` : ''}
     <label class="inline"><input type="checkbox" id="pfStream" ${p.stream !== false ? 'checked' : ''}> ${esc(T('Hiển thị kết quả dần dần (streaming)'))}</label>
     <div id="pfSafetyBox" style="display:${p.type === 'gemini' ? 'block' : 'none'}"><label>${esc(T('Mức lọc an toàn của Gemini (safetySettings — áp dụng cho 4 nhóm: quấy rối, thù ghét, khiêu dâm, nguy hiểm)'))}</label>
       <select id="pfSafety">${SAFETY().map(x => `<option value="${x[0]}" ${(p.safety || '') === x[0] ? 'selected' : ''}>${esc(x[1])}</option>`).join('')}</select>
       <div class="muted small">${esc(T('Theo tài liệu của Google, một số mức (BLOCK_NONE/OFF) có thể không khả dụng với mọi model/tài khoản; nội dung thuộc diện cấm tuyệt đối vẫn bị chặn bất kể cài đặt.'))}</div></div>
     <div class="muted small" style="margin-top:6px">${esc(T('Gợi ý:'))} DeepSeek <code>https://api.deepseek.com/v1</code> · OpenRouter <code>https://openrouter.ai/api/v1</code> · Gemini (OpenAI) <code>https://generativelanguage.googleapis.com/v1beta/openai/</code> · Gemini ${esc(T('gốc'))} <code>https://generativelanguage.googleapis.com/v1beta</code> · OpenAI <code>https://api.openai.com/v1</code></div>
     <div class="row-flex" style="margin-top:14px"><button class="primary" id="pfSave">${esc(T('Lưu hồ sơ'))}</button><button id="pfBack">${esc(T('Quay lại'))}</button></div>`, b => {
+    if ($('#pfModels', b)) {
+      $('#pfModel', b).setAttribute('list', 'pfModelList');
+      $('#pfModels', b).onclick = async () => {
+        const btn = $('#pfModels', b), status = $('#pfModelStatus', b); btn.disabled = true;
+        const ctrl = new AbortController(); const timeout = setTimeout(() => ctrl.abort(), 15000);
+        try {
+          const r = await fetch('https://openrouter.ai/api/v1/models', { signal: ctrl.signal }); if (!r.ok) throw new Error(String(r.status));
+          const data = await r.json(); const models = (data.data || []).filter(m => !p.modelPrefix || m.id.startsWith(p.modelPrefix));
+          $('#pfModelList', b).innerHTML = models.map(m => '<option value="' + esc(m.id) + '">' + esc(m.name || m.id) + '</option>').join('');
+          status.textContent = T('{n} model — gõ hoặc chọn tên model.', { n: models.length }); $('#pfModel', b).focus();
+        } catch (e) { status.textContent = T('Không tải được danh sách. Có thể nhập tên model thủ công.'); }
+        finally { clearTimeout(timeout); btn.disabled = false; }
+      };
+    }
     $('#pfType', b).onchange = e => { $('#pfSafetyBox', b).style.display = e.target.value === 'gemini' ? 'block' : 'none'; };
     $('#pfShow', b).onclick = () => { const k = $('#pfKey', b); k.type = k.type === 'password' ? 'text' : 'password'; $('#pfShow', b).textContent = k.type === 'password' ? T('Hiện') : T('Ẩn'); };
     $('#pfBack', b).onclick = openSettings;
-    $('#pfSave', b).onclick = () => {
+    $('#pfSave', b).onclick = async () => {
       const np = Object.assign({}, p, { name: $('#pfName', b).value.trim() || T('Hồ sơ'), type: $('#pfType', b).value, baseUrl: $('#pfUrl', b).value.trim(), apiKey: $('#pfKey', b).value.trim(), model: $('#pfModel', b).value.trim(), temperature: Number($('#pfTemp', b).value), stream: $('#pfStream', b).checked, safety: $('#pfSafety', b).value });
+      if (!np.apiKey) return toast(T('Hãy dán khóa API.'), 'err');
       if (!np.model) return toast(T('Hãy nhập tên model.'), 'err');
       if (np.type === 'openai' && !/^https?:\/\//.test(np.baseUrl)) return toast(T('Base URL phải bắt đầu bằng https://'), 'err');
       if (!np.id) { np.id = C.uid(); S.settings.profiles.push(np); } else S.settings.profiles[S.settings.profiles.findIndex(x => x.id === np.id)] = np;
       if (!S.settings.defaultProfileId) S.settings.defaultProfileId = np.id;
       else if (!S.settings.fallbackProfileId && np.id !== S.settings.defaultProfileId) S.settings.fallbackProfileId = np.id;
-      saveSettings(); toast(T('Đã lưu hồ sơ “{n}”.', { n: np.name }), 'ok'); openSettings();
+      saveSettings(); toast(T('Đã lưu hồ sơ “{n}”.', { n: np.name }), 'ok'); if (afterSave) await afterSave(np); else openSettings();
     };
   });
 }
@@ -5431,7 +5496,7 @@ function setUiLang(l) {
 
 /* ---------- Sự kiện ---------- */
 const A = {
-  home: () => goHome(), settings: () => openSettings(), closeModal: () => closeModal(),
+  home: () => goHome(), newNovel: () => openNewNovel(), settings: () => openSettings(), closeModal: () => closeModal(),
   theme: () => { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = t; localStorage.setItem('dichtruyen_theme', t); setThemeMeta(t); },
   uiLang: el => setUiLang(el.dataset.l),
   mtab: el => { S.mtab = el.dataset.m; if (S.mtab !== 'list' && S.tab !== 'editor') { S.tab = 'editor'; renderSide(); renderMain(); } renderMTabs(); window.scrollTo(0, 0); },
@@ -5606,6 +5671,14 @@ document.addEventListener('change', async e => {
     else { if (t.checked) S.sel.add(id); else S.sel.delete(id); renderPbar(); const all = $('input.chk[data-id="*"]'); if (all) all.checked = S.chapters.length && S.chapters.every(c => S.sel.has(c.id)); }
     return;
   }
+  if ((t.dataset.pf === 'profileId' || t.dataset.pf === 'fallbackProfileId') && t.value.startsWith('preset:') && S.project) {
+    const preset = C.PRESETS[t.value.slice(7)]; const field = t.dataset.pf; const projectId = S.project.id;
+    t.value = S.project[field] || '';
+    if (preset) openProfileForm(Object.assign({ id: '', apiKey: '', temperature: 0.7, stream: true, safety: '' }, preset), async np => {
+      if (S.project && S.project.id === projectId) { S.project[field] = np.id; await saveNow('projects', S.project); closeModal(); renderProject(); }
+    });
+    return;
+  }
   if (t.dataset.pairlock && S.project) { const x = (S.project.pairs || []).find(y => y.id === t.dataset.pairlock); if (x) { x.locked = t.checked; await saveNow('projects', S.project); } return; }
   if (t.dataset.cf === 'status' && ch) { ch.status = t.value; saveNow('chapters', ch); renderSide(); }
   else if (t.dataset.cf === 'direction' && ch) { ch.direction = t.value; await saveNow('chapters', ch); renderSide(); renderEditor($('#main')); }
@@ -5645,7 +5718,7 @@ window.addEventListener('beforeunload', e => { if (pending.size || S.busy) { e.p
 
 
 /* ---------- Ứng dụng trên màn hình chính (PWA) ---------- */
-const APP_BUILD = '05f605285257';
+const APP_BUILD = 'novel-ai-1101';
 const ONLINE_ORIGIN = /^https?:$/.test(location.protocol);
 function setThemeMeta(t) { document.querySelectorAll('meta[name=theme-color]').forEach(m => { m.content = t === 'dark' ? '#1a1714' : '#f3eee6'; m.removeAttribute('media'); }); }
 // Service worker chỉ chạy khi mở qua http(s); mở file:// thì bỏ qua (app vẫn chạy trọn trong một file)
