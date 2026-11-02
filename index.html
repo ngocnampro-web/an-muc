@@ -130,6 +130,7 @@ details.menu summary::-webkit-details-marker{display:none}
 .menu-list button{border-radius:10px;justify-content:flex-start;border-color:transparent}
 #rows{border:1px solid var(--line);border-top:0;border-radius:0 0 16px 16px;background:var(--sheet);overflow:hidden}
 .prow{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+#rows.big .prow{content-visibility:auto;contain-intrinsic-size:auto 120px}
 .prow:first-child{border-top:0}
 .prow.flag{background:var(--warn-soft)}
 .prow.omit .vi textarea{color:var(--muted);font-style:italic}
@@ -165,7 +166,11 @@ table.gl input{min-height:36px;padding:6px 8px;border-radius:8px}
 .mbox{background:var(--sheet);border:1px solid var(--line);border-radius:20px;width:min(760px,100%);padding:18px 20px 22px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
 .mhead{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:6px}
 .mhead h3{margin:0;font-family:var(--serif);font-size:1.2rem;flex:1}
-#toasts{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:8px;z-index:60;max-width:min(440px,calc(100vw - 28px))}
+#toasts{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:8px;z-index:60;max-width:min(440px,calc(100vw - 28px));pointer-events:none}
+#toasts .toast{pointer-events:auto;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;position:relative;padding-right:40px}
+#toasts .toast .tmsg{flex:1 1 200px}
+#toasts .toast .tclose{position:absolute;top:4px;right:4px;min-height:32px;min-width:32px;padding:0;border:0;background:transparent;color:inherit;font-size:1.25rem;line-height:1;opacity:.75}
+@media (max-width:47.99rem){#toasts .toast{font-size:.82rem;padding:8px 40px 8px 12px;max-height:30vh;overflow:auto}}
 .toast{background:var(--ink);color:var(--paper);padding:10px 14px;border-radius:14px;font-size:.88rem;box-shadow:0 6px 20px rgba(0,0,0,.2)}
 .toast.err{background:var(--cin);color:var(--cin-ink)}
 .toast.ok{background:var(--ok);color:#fff}
@@ -270,10 +275,12 @@ body.dragging::after{content:"⇩";position:fixed;inset:10px;border:3px dashed v
   #saveState{display:none}
   .iconbtn{width:40px;height:40px;min-height:40px}
   .pill button{min-width:40px;padding:0 9px}
-  #mtabs{display:grid;grid-template-columns:repeat(3,1fr);position:sticky;top:0;z-index:20;background:var(--sheet);border-bottom:1px solid var(--line)}
+  #mtabs{display:grid;grid-template-columns:48px repeat(3,1fr);position:sticky;top:0;z-index:20;background:var(--sheet);border-bottom:1px solid var(--line)}
   #mtabs[hidden]{display:none}
   #mtabs button{border:0;border-radius:0;background:transparent;min-height:46px;border-bottom:2px solid transparent;color:var(--muted)}
   #mtabs button.on{border-bottom-color:var(--cin);color:var(--cin);font-weight:600}
+  #mtabs button.mhome{color:var(--ink);border-right:1px solid var(--line)}
+  .stopbtn{border-color:var(--cin)!important;font-weight:600}
   .desk{display:block;min-height:0}
   .pbar{padding:10px 12px}.pb-t h2{max-width:none;white-space:normal}
   .pbar .big{flex:1 1 100%}
@@ -1796,6 +1803,8 @@ C.httpError = (status, body) => {
     return new ApiError('blocked', M('Nhà cung cấp từ chối nội dung theo chính sách của họ (lỗi ' + status + ').', 'The provider rejected the content under its policy (error ' + status + ').') + tail, status);
   if (status === 402) return new ApiError('quota', M('Tài khoản hết số dư hoặc hết hạn mức (lỗi 402). Hãy nạp thêm tiền hoặc dùng hồ sơ khác.', 'The account is out of credit or quota (error 402). Top up or use another profile.') + tail, status);
   if (status === 403) return new ApiError('auth', M('Không có quyền truy cập (lỗi 403). Khóa API có thể không được phép dùng model này hoặc khu vực của bạn.', 'Access denied (error 403). The key may not be allowed to use this model or your region.') + tail, status);
+  if (/model[ _]?not[ _]?exist|model_not_found|no longer available|not found for API version|is not supported for generateContent|does not exist|No endpoints found|not a valid model|invalid model/i.test(body) && (status === 400 || status === 403 || status === 404 || status === 410 || status === 422))
+    return new ApiError('notfound', M('Model đã ngừng hoạt động hoặc không tồn tại (lỗi ' + status + '). Vào Cài đặt AI → Sửa hồ sơ, đổi tên model (DeepSeek: deepseek-flash · Gemini: gemini-3.8-flash · OpenRouter: tải danh sách model).', 'The model is retired or does not exist (error ' + status + '). Edit the AI profile and change the model (DeepSeek: deepseek-flash · Gemini: gemini-3.8-flash · OpenRouter: load the model list).') + tail, status);
   if (status === 404) return new ApiError('notfound', M('Không tìm thấy model hoặc địa chỉ API sai (lỗi 404). Kiểm tra Base URL và tên model.', 'Model not found or wrong API address (error 404). Check the Base URL and model name.') + tail, status);
   if (status === 429) return new ApiError('rate', M('Gửi quá nhanh hoặc đã hết hạn mức (lỗi 429). Đợi một lát rồi thử lại.', 'Too many requests or quota reached (error 429). Wait a moment and try again.') + tail, status);
   if (status >= 500) return new ApiError('server', M('Máy chủ AI đang gặp sự cố (lỗi ' + status + '). Thử lại sau ít phút.', 'The AI server has a problem (error ' + status + '). Try again in a few minutes.') + tail, status);
@@ -1844,6 +1853,7 @@ C.netError = (raw, how) => {
   e.detail = String((raw && raw.message) || raw || ''); e.interrupted = how !== 'timeout'; return e;
 };
 C.IDLE_TIMEOUT = 120000; /* không nhận được dữ liệu nào trong 2 phút → coi là mất kết nối */
+C.TOTAL_TIMEOUT = 300000; /* một yêu cầu kéo dài quá 5 phút (kể cả khi vẫn nhỏ giọt dữ liệu / “suy nghĩ” mãi) → hủy, coi là hết giờ, để không treo “đang chạy” mãi */
 C.GEMINI_CATEGORIES = ['HARM_CATEGORY_HARASSMENT', 'HARM_CATEGORY_HATE_SPEECH', 'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'HARM_CATEGORY_DANGEROUS_CONTENT'];
 C.GEMINI_BLOCK_REASONS = ['SAFETY', 'PROHIBITED_CONTENT', 'BLOCKLIST', 'SPII', 'RECITATION', 'IMAGE_SAFETY'];
 /* Giới hạn độ dài trả lời. DeepSeek (deepseek-chat) mặc định chỉ 4096 token — dễ bị cắt cụt cuối phần; nâng lên mức tối đa 8192.
@@ -1861,7 +1871,7 @@ C.buildOpenAIRequest = (p, messages, o) => {
   if (o && o.temperature != null) body.temperature = o.temperature;
   if (o && o.maxTokens) body.max_tokens = o.maxTokens;
   /* DeepSeek V4 (deepseek-flash / -v4-pro) bật “thinking” mặc định: suy nghĩ ăn chung max_tokens (dễ cắt cụt bản dịch) và bỏ qua temperature → tắt cho model không phải reasoner */
-  if (C.dsNoThinking(p) && !(o && o.noThinking === false)) body.thinking = { type: 'disabled' };
+  if ((C.dsNoThinking(p) && !(o && o.noThinking === false)) || (o && o.forceNoThinking && /api\.deepseek\.com/i.test(String(p.baseUrl || '')))) body.thinking = { type: 'disabled' };
   if (o && o.json && /deepseek\.com/i.test(String(p.baseUrl || ''))) body.response_format = { type: 'json_object' };
   return { url: C.joinUrl(p.baseUrl, '/chat/completions'),
     init: { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + String(p.apiKey).trim() }, body: JSON.stringify(body) } };
@@ -1943,6 +1953,8 @@ C.chat = async (p, messages, o) => {
   INFLIGHT.add(nudge);
   if (outer) { if (outer.aborted) inner.abort(); else outer.addEventListener('abort', onAbort); }
   const oo = Object.assign({}, o, { signal: inner.signal, tick });
+  const total = o.totalTimeout != null ? o.totalTimeout : C.TOTAL_TIMEOUT;
+  const hard = total ? setTimeout(() => { timedOut = true; inner.abort(); }, total) : null;
   tick();
   try { return await (p.type === 'gemini' ? chatGemini(p, messages, oo) : chatOpenAI(p, messages, oo)); }
   catch (e) {
@@ -1952,7 +1964,7 @@ C.chat = async (p, messages, o) => {
     if (e instanceof ApiError) throw e;
     /* TypeError “Load failed” khi đang đọc luồng, AbortError do trình duyệt tự hủy (màn hình khóa, chuyển app)… */
     throw C.netError(e);
-  } finally { clearTimeout(timer); INFLIGHT.delete(nudge); if (outer) outer.removeEventListener('abort', onAbort); }
+  } finally { clearTimeout(timer); clearTimeout(hard); INFLIGHT.delete(nudge); if (outer) outer.removeEventListener('abort', onAbort); }
 };
 const INFLIGHT = new Set();
 C.netNudge = ms => { INFLIGHT.forEach(f => f(ms)); return INFLIGHT.size; };
@@ -1968,7 +1980,7 @@ C.runChunk = async (profile, messages, n, o) => {
     if (gate) await gate(o.signal);
     const t0 = Date.now();
     try {
-      const r = await C.chat(profile, messages, { signal: o.signal, onText: o.onPartial, maxTokens, idleTimeout: o.idleTimeout });
+      const r = await C.chat(profile, messages, { signal: o.signal, onText: o.onPartial, maxTokens, idleTimeout: o.idleTimeout, totalTimeout: o.totalTimeout, forceNoThinking: o.forceNoThinking });
       const out = C.interpretResult(r, n, o.src); if (attempt || free) out.attempts = attempt + free + 1; return out;
     } catch (e) {
       if (e && e.name === 'AbortError' && (!o.signal || o.signal.aborted)) throw e;
@@ -2154,10 +2166,10 @@ C.SAMPLE_GLOSSARY = [
   { zh: '屋檐', vi: 'mái hiên', note: 'ví dụ thuật ngữ thường' }
 ];
 C.PRESETS = {
-  deepseek: { name: 'DeepSeek', type: 'openai', baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
+  deepseek: { name: 'DeepSeek', type: 'openai', baseUrl: 'https://api.deepseek.com', model: 'deepseek-flash' }, /* deepseek-chat/-reasoner bị khai tử 24/07/2026 */
   openrouter: { name: 'OpenRouter', type: 'openai', baseUrl: 'https://openrouter.ai/api/v1', model: 'deepseek/deepseek-chat' },
-  gemini: { name: 'Google Gemini (gốc)', type: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', model: 'gemini-2.5-flash', safety: 'BLOCK_ONLY_HIGH' },
-  geminiOpenAI: { name: 'Google Gemini (tương thích OpenAI)', type: 'openai', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/', model: 'gemini-2.5-flash' },
+  gemini: { name: 'Google Gemini (gốc)', type: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', model: 'gemini-3.8-flash', safety: 'BLOCK_ONLY_HIGH' },
+  geminiOpenAI: { name: 'Google Gemini (tương thích OpenAI)', type: 'openai', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/', model: 'gemini-3.8-flash' } /* 2.5 chỉ còn cho tài khoản đã dùng trước 18/09/2026 */,
   openai: { name: 'OpenAI', type: 'openai', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
   claude: { name: 'Claude · OpenRouter', type: 'openai', baseUrl: 'https://openrouter.ai/api/v1', model: '', modelPrefix: 'anthropic/' },
   grok: { name: 'Grok · OpenRouter', type: 'openai', baseUrl: 'https://openrouter.ai/api/v1', model: '', modelPrefix: 'x-ai/' },
@@ -3139,7 +3151,10 @@ const DB = {
 const SKEY = 'dichtruyen_settings_v1';
 function loadSettings() {
   let s = {}; try { s = JSON.parse(localStorage.getItem(SKEY) || '{}'); } catch (e) {}
-  return Object.assign({ profiles: [], defaultProfileId: '', fallbackProfileId: '', chunkSize: 1200, corsProxy: '', onBlocked: 'report', autoSummary: true, suggestTerms: true, defaultTranslator: '', autoExtract: true, completeCheck: true }, s);
+  s = Object.assign({ profiles: [], defaultProfileId: '', fallbackProfileId: '', chunkSize: 1200, corsProxy: '', onBlocked: 'report', autoSummary: true, suggestTerms: true, defaultTranslator: '', autoExtract: true, completeCheck: true }, s);
+  /* DeepSeek đã khai tử deepseek-chat / deepseek-reasoner (24/07/2026) → hồ sơ cũ gọi là lỗi; chuyển sang deepseek-flash */
+  (s.profiles || []).forEach(p => { if (p && /api\.deepseek\.com/i.test(String(p.baseUrl || '')) && /^deepseek-(chat|reasoner)$/i.test(String(p.model || '').trim())) p.model = 'deepseek-flash'; });
+  return s;
 }
 /* Khi gặp đoạn bị chặn trong lúc dịch hàng loạt */
 const BLOCK_POLICIES = ['report', 'fallback', 'soften', 'fallback_soften'];
@@ -3174,9 +3189,13 @@ const isStale = ch => ch.paras.some(p => p.vi && p.vi.trim()) && ((ch.translated
 
 /* ---------- Tiện ích ---------- */
 function toast(msg, kind, ms, action) {
-  const t = document.createElement('div'); t.className = 'toast ' + (kind || ''); t.textContent = msg;
+  const box = $('#toasts'); if (!box) return null;
+  const t = document.createElement('div'); t.className = 'toast ' + (kind || ''); t.setAttribute('role', kind === 'err' ? 'alert' : 'status');
+  const m = document.createElement('span'); m.className = 'tmsg'; m.textContent = msg; t.appendChild(m);
   if (action) { const b = document.createElement('button'); b.className = 'tact'; b.textContent = action.label; b.onclick = () => { t.remove(); action.fn(); }; t.appendChild(b); }
-  $('#toasts').appendChild(t); setTimeout(() => t.remove(), ms || (kind === 'err' ? 8000 : action ? 9000 : 3500)); return t;
+  const x = document.createElement('button'); x.className = 'tclose'; x.type = 'button'; x.textContent = '×'; x.title = T('Đóng'); x.setAttribute('aria-label', T('Đóng')); x.onclick = () => t.remove(); t.appendChild(x);
+  while (box.children.length >= 3) box.firstElementChild.remove(); /* không chồng thông báo che hết màn hình */
+  box.appendChild(t); setTimeout(() => t.remove(), ms || (kind === 'err' ? 8000 : action ? 9000 : 3500)); return t;
 }
 let modalOnClose = null;
 function openModal(title, html, onMount, onClose) {
@@ -3197,6 +3216,31 @@ function download(name, data, mime) {
 }
 const safeName = s => (String(s || 'truyen').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '').trim() || 'truyen').slice(0, 80);
 function autosize(ta) { ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 2) + 'px'; ta.classList.toggle('empty', !ta.value.trim()); }
+/* Đo nhiều ô cùng lúc: ghi hết → đọc hết → ghi hết = 1 lần tính bố cục, thay vì 1 lần cho mỗi ô.
+   (Gọi autosize từng ô trên chương hàng nghìn đoạn làm trình duyệt đứng hàng phút — lỗi “Frozen 0/479 đang chạy”.) */
+let AS_IO = null;
+function autosizeAll(list) {
+  list = Array.from(list || []).filter(ta => ta && ta.isConnected); if (!list.length) return;
+  if (list.length > 300 && 'IntersectionObserver' in window) {
+    // Large chapters: measure only rows near the viewport (one forced layout per batch instead of per textarea).
+    if (AS_IO) AS_IO.disconnect();
+    const io = AS_IO = new IntersectionObserver(es => {
+      const l = es.filter(e => e.isIntersecting).map(e => e.target); if (!l.length) return;
+      l.forEach(t => io.unobserve(t)); sizeNow(l);
+    }, { rootMargin: '1200px 0px' });
+    list.forEach(ta => { ta.classList.toggle('empty', !ta.value.trim()); io.observe(ta); });
+    return;
+  }
+  sizeNow(list);
+}
+function sizeNow(list) {
+  list = list.filter(ta => ta.isConnected); if (!list.length) return;
+  list.forEach(ta => { ta.style.height = 'auto'; });
+  const hs = list.map(ta => ta.scrollHeight);
+  list.forEach((ta, k) => { ta.style.height = (hs[k] + 2) + 'px'; ta.classList.toggle('empty', !ta.value.trim()); });
+}
+const AS_Q = new Set();
+function autosizeLater(ta) { AS_Q.add(ta); if (AS_Q.size === 1) requestAnimationFrame(() => { const l = [...AS_Q]; AS_Q.clear(); sizeNow(l); }); }
 function setSaveState(t) { const el = $('#saveState'); if (el) el.textContent = t; }
 const timers = {}; const pending = new Set();
 function scheduleSave(store, obj, delay) {
@@ -3268,7 +3312,7 @@ function renderMTabs() {
   el.hidden = false;
   const ch = curCh(); const t = ch ? C.targetOf(chDir(ch)) : projTarget();
   const tabs = [['list', T('Chương')], ['src', T('Gốc')], ['tgt', tgtCol(t)]];
-  el.innerHTML = tabs.map(x => `<button data-act="mtab" data-m="${x[0]}" class="${S.mtab === x[0] ? 'on' : ''}">${esc(x[1])}</button>`).join('');
+  el.innerHTML = `<button data-act="home" class="mhome" title="${esc(T('Về Kho truyện'))}" aria-label="${esc(T('Về Kho truyện'))}">${I('folder')}</button>` + tabs.map(x => `<button data-act="mtab" data-m="${x[0]}" class="${S.mtab === x[0] ? 'on' : ''}">${esc(x[1])}</button>`).join('');
   const d = $('#desk'); if (d) d.dataset.m = S.mtab;
 }
 
@@ -3355,8 +3399,23 @@ async function doSplit(ch) {
   toast(T('Đã tách thành {k} chương — giữ nguyên {v} đoạn đã dịch.', { k: parts.length, v: parts.reduce((a, c) => a + c.paras.filter(p => p.vi && p.vi.trim()).length, 0) }) + (gaps ? ' ' + T('Còn {g} đoạn thiếu — bấm “Dịch lại tất cả đoạn thiếu” ở từng chương.', { g: gaps }) : ''), 'ok', 9000);
 }
 function confirmLeaveJob() {
-  if (S.busy) { if (!confirm(T('Đang dịch. Dừng lại và chuyển trang?'))) return false; S.busy.abort(); S.busy = null; }
+  /* Không dùng confirm(): trình duyệt trong app (ChatGPT, Facebook, Zalo…) có thể chặn hộp thoại → nút Kho truyện “không làm gì”. Dừng luôn — phần đã dịch đã được lưu. */
+  if (S.busy) { stopJob(true); toast(T('Đã dừng dịch. Phần đã dịch vẫn được lưu.')); }
   return true;
+}
+/* Dừng mọi việc đang chạy và chắc chắn gỡ trạng thái “đang chạy”, kể cả khi một bước nào đó không chịu dừng. */
+function stopJob(leaving) {
+  const c = S.busy; if (!c) return;
+  try { c.abort(); } catch (e) {}
+  const reset = () => {
+    if (S.busy !== c) return;
+    S.busy = null;
+    if (S.queue) { S.queue.running = false; S.queue.stopped = true; S.queue.items.forEach(x => { if (x.st === 'wait' || x.st === 'run') x.st = 'stopped'; }); }
+    Object.values(S.jobs || {}).forEach(j => (j.chunks || []).forEach(k => { if (k.status === 'run' || k.status === 'wait') { k.status = 'stopped'; k.repairing = false; } }));
+    NET.waiters.splice(0);
+    if (S.project && $('#desk')) { renderSide(); renderMain(); }
+  };
+  if (leaving) reset(); else { renderJob(); renderQbar(); setTimeout(reset, 2500); }
 }
 
 /* ---------- Kết nối AI lần đầu: chỉ hỏi nhà cung cấp + khóa ---------- */
@@ -3489,7 +3548,7 @@ function renderQbar() {
   const bad = q.items.filter(x => x.st === 'warn').length; const J = JOBST();
   const stLabel = x => x.st === 'warn' && x.gapOnly ? T('thiếu {n} đoạn', { n: x.gaps }) : x.st === 'warn' ? T('còn {b} phần lỗi', { b: x.bad }) : x.st === 'skip' ? T('không có gì để dịch') : J[x.st] || x.st;
   const head = q.running ? T('Đang dịch {d}/{n} chương', { d: Math.min(d + 1, n), n }) : q.stopped ? T('Đã dừng: xong {d}/{n} chương', { d, n }) : bad && q.items.filter(x => x.st === 'warn').every(x => x.gapOnly) ? T('Xong {d}/{n} chương — {b} chương còn đoạn AI bỏ sót', { d, n, b: bad }) : bad ? T('Xong {d}/{n} chương — {b} chương còn phần bị chặn hoặc lỗi', { d, n, b: bad }) : T('Đã dịch xong {n} chương', { n });
-  el.innerHTML = `<div class="panel queue" id="queuePanel"><h4>${esc(head)}<span class="spacer"></span>${q.running ? '' : `<button class="small link" data-act="closeQueue">${esc(T('Ẩn'))}</button>`}</h4>
+  el.innerHTML = `<div class="panel queue" id="queuePanel"><h4>${esc(head)}<span class="spacer"></span>${q.running ? (S.busy && S.busy.signal.aborted ? `<span class="muted small">${esc(T('Đang dừng…'))}</span>` : `<button class="small danger stopbtn" data-act="stop">${I('stop')} ${esc(T('Dừng dịch'))}</button>`) : `<button class="small link" data-act="closeQueue">${esc(T('Ẩn'))}</button>`}</h4>
     <div class="progress"><div style="width:${n ? Math.round(d / n * 100) : 0}%"></div></div>
     <div class="qlist">${q.items.map(x => { const c = S.chapters.find(y => y.id === x.id); return c ? `<button class="qchip ${x.st}" data-act="openChapter" data-id="${x.id}">${esc(c.titleVi || c.title)} · <span class="st ${x.st === 'warn' ? 'blocked' : x.st}">${esc(stLabel(x))}</span>${x.note ? ' <span class="muted">· ' + esc(x.note) + '</span>' : ''}</button>` : ''; }).join('')}</div>
     ${!q.running && q.items.some(x => x.sumFail) ? `<div class="small muted" id="sumNote">${esc(T('Không tự tóm tắt được {n} chương (bị chặn hoặc rỗng) — bản dịch vẫn giữ nguyên; có thể bấm “Tóm tắt (AI)” sau.', { n: q.items.filter(x => x.sumFail).length }))}</div>` : ''}
@@ -3616,7 +3675,7 @@ function renderEditor(m) {
       <div class="ttl"><input class="serif" data-cf="titleVi" value="${esc(ch.titleVi || '')}" placeholder="${esc(tgt === 'en' ? T('Tên chương tiếng Anh') : T('Tên chương tiếng Việt'))}"><button class="small" data-act="transTitle" ${running ? 'disabled' : ''} title="${esc(T('Nhờ AI dịch tên chương'))}">${esc(T('Dịch tên'))}</button></div></div>
   </div>
   ${any ? '' : `<div class="vi-empty">${esc(tgt === 'en' ? T('Bản dịch tiếng Anh hiện ra ở đây.') : T('Bản dịch hiện ra ở đây.'))}</div>`}
-  <div id="rows" class="${any ? '' : 'noviyet'}">${ch.paras.map((p, i) => {
+  <div id="rows" class="${any ? '' : 'noviyet'}${ch.paras.length > 300 ? ' big' : ''}">${ch.paras.map((p, i) => {
     const iss = issuesBy[i]; const rm = S.rowMsg[i] || (!(p.vi || '').trim() && p.translationIssue ? p.translationIssue.message : '');
     const gap = holeSet.has(i);
     const inc = p.incomplete && p.incomplete.length && cEligible(p);
@@ -3634,7 +3693,7 @@ function renderEditor(m) {
   }).join('')}</div>
   <div class="stats" id="stats"></div></div>
   <aside class="gpanel" id="gpanel"></aside></div>`;
-  $$('textarea.vi', m).forEach(autosize);
+  autosizeAll($$('textarea.vi', m));
   const d = $('#chAdv', m); if (d) d.addEventListener('toggle', () => { S.chAdvOpen = d.open; });
   renderGPanel(); renderJob(); renderIssues(); renderReview(); updateStats(); renderMTabs();
 }
@@ -3789,7 +3848,7 @@ function setViLive(ch, i, val) {
   if (val && val.trim()) delete ch.paras[i].translationIssue;
   if (ch.id !== S.chapterId) return;
   const ta = $('textarea.vi[data-i="' + i + '"]');
-  if (ta && document.activeElement !== ta) { ta.value = val; autosize(ta); }
+  if (ta && document.activeElement !== ta) { ta.value = val; autosizeLater(ta); }
   if (val && val.trim()) { /* điện thoại, thẻ Bản dịch: lúc mở chương chưa có chữ nào nên khung bị ẩn — hiện ra ngay khi có chữ đầu tiên */
     const rows = $('#rows.noviyet'); if (rows) { rows.classList.remove('noviyet'); const e = $('.vi-empty'); if (e) e.remove(); }
     if (ta) { const row = ta.closest('.prow'); if (row && row.classList.contains('gap')) { row.classList.remove('gap'); const f = row.querySelector('.gapflag'); if (f) f.remove(); } }
@@ -3804,11 +3863,18 @@ function renderJob() {
   const J = JOBST();
   const nPart = j.chunks.filter(c => c.status === 'partial').length, nErr = j.chunks.filter(c => c.status === 'error').length;
   const jch = S.chapters.find(c => c.id === S.chapterId);
-  el.innerHTML = `<div class="panel"><h4>${esc(T('Tiến độ dịch: {d}/{n} phần', { d, n }))} ${runHere ? '<span class="st run">— ' + esc(T('đang chạy')) + '</span>' : ''} <span class="spacer"></span>${nErr && !S.busy ? `<button class="small primary" data-act="retryFailed">↻ ${esc(T('Thử lại các phần lỗi'))} (${nErr})</button>` : ''}${nPart && !S.busy ? `<button class="small primary" data-act="fixAll">${esc(T('Dịch lại tất cả đoạn thiếu'))}</button>` : ''}<button class="small link" data-act="closeJob">${esc(T('Ẩn'))}</button></h4>
+  const stopping = S.busy && S.busy.signal.aborted;
+  const LIM = 40; let shown = j.chunks.map((c, k) => [c, k]);
+  if (n > 60) { /* chương rất dài (hàng trăm phần): chỉ liệt kê phần đang chạy / có lỗi / sắp tới, tránh vẽ lại hàng trăm dòng mỗi 0,4 giây */
+    const act = shown.filter(([c]) => c.status !== 'done' || c.msg);
+    const runAt = act.findIndex(([c]) => c.status === 'run'); const from = Math.max(0, runAt - 5);
+    shown = act.filter(([c]) => ['error', 'blocked', 'partial'].includes(c.status)).slice(0, 15).concat(act.slice(from, from + LIM)).filter((x, i, a) => a.indexOf(x) === i).sort((a, b) => a[1] - b[1]);
+  }
+  el.innerHTML = `<div class="panel"><h4>${esc(T('Tiến độ dịch: {d}/{n} phần', { d, n }))} ${runHere ? '<span class="st run">— ' + esc(stopping ? T('đang dừng…') : T('đang chạy')) + '</span>' : ''} <span class="spacer"></span>${S.busy && !stopping ? `<button class="small danger stopbtn" data-act="stop">${I('stop')} ${esc(T('Dừng dịch'))}</button>` : ''}${nErr && !S.busy ? `<button class="small primary" data-act="retryFailed">↻ ${esc(T('Thử lại các phần lỗi'))} (${nErr})</button>` : ''}${nPart && !S.busy ? `<button class="small primary" data-act="fixAll">${esc(T('Dịch lại tất cả đoạn thiếu'))}</button>` : ''}<button class="small link" data-act="closeJob">${esc(T('Ẩn'))}</button></h4>
     ${S.busy && (NET.waiting || netDown()) ? `<div class="netwait" role="status">${esc(T('Đang chờ mạng / app được mở lại để dịch tiếp…'))}</div>` : ''}
     ${runHere && NET.noWake ? `<div class="small muted wakenote">${esc(T('Giữ màn hình mở trong lúc dịch'))}</div>` : ''}
     <div class="progress"><div style="width:${n ? Math.round(d / n * 100) : 0}%"></div></div>
-    <div class="joblist">${j.chunks.map((c, k) => {
+    <div class="joblist">${shown.length < n ? `<div class="small muted">${esc(T('Hiện {a} trong {n} phần (phần đang chạy, lỗi, sắp tới).', { a: shown.length, n }))}</div>` : ''}${shown.map(([c, k]) => {
       const fb = fallbackProfile(c.profileId); const canAct = !S.busy && !['run', 'wait'].includes(c.status);
       return `<div class="jobitem"><span>${esc(T('Phần {k} · đoạn {a}–{b}', { k: k + 1, a: c.idx[0] + 1, b: c.idx[c.idx.length - 1] + 1 }))}</span>
       <span class="st ${c.status}">${J[c.status]}</span>${c.softened ? `<span class="st softened" title="${esc(T('Phần này được dịch theo cách giảm nhẹ. Có thể dịch lại bằng model khác.'))}">${esc(J.softened)}</span>` : ''}<span class="muted">${esc(c.local ? T('không cần AI') : c.profileName || '')} · ${esc(T('gốc {a} ký tự', { a: c.idx.reduce((a, i) => a + [...String(((jch && jch.paras[i]) || {}).zh || '').trim()].length, 0) }))}${c.chars ? ' · ' + esc(T('AI trả về {b} ký tự', { b: c.chars })) : ''}</span>
@@ -4004,8 +4070,10 @@ async function bisectBlocked(ch, chunk, profile, signal, allowAuto, firstMsg) {
 }
 /* ---------- Mạng chập chờn / app bị ẩn (iPhone khóa màn hình, chuyển app) ----------
    Ẩn app → hàng đợi tạm dừng trước phần kế tiếp; phần bị đứt lúc ẩn được gửi lại cả phần khi mở lại (không tính vào số lần thử). */
-const NET = { hiddenAt: 0, offAt: 0, waiting: 0, waiters: [], wake: null, wantWake: false, noWake: false };
-const appHidden = () => document.visibilityState === 'hidden';
+const NET = { hiddenAt: 0, offAt: 0, waiting: 0, waiters: [], wake: null, wantWake: false, noWake: false, touchAt: 0 };
+/* Người dùng đang chạm / gõ → app chắc chắn đang hiện, dù trình duyệt trong app báo sai visibilityState */
+['pointerdown', 'keydown', 'touchstart'].forEach(ev => window.addEventListener(ev, () => { NET.touchAt = Date.now(); if (NET.waiting) netWake(); }, { passive: true, capture: true }));
+const appHidden = () => document.visibilityState === 'hidden' && Date.now() - (NET.touchAt || 0) > 5000;
 const netDown = () => navigator.onLine === false;
 function netWake() { const w = NET.waiters.splice(0); w.forEach(f => f()); }
 function netGate(signal) {
@@ -4014,8 +4082,11 @@ function netGate(signal) {
   return new Promise((res, rej) => {
     let over = false;
     const fin = () => { if (over) return false; over = true; NET.waiting = Math.max(0, NET.waiting - 1); if (signal) signal.removeEventListener('abort', onAb); return true; };
-    const check = () => { if (over) return; if (!appHidden() && !netDown()) { fin(); res(); renderJob(); } else NET.waiters.push(check); };
-    const onAb = () => { if (!fin()) return; const e = new Error('aborted'); e.name = 'AbortError'; rej(e); renderJob(); };
+    const t0 = Date.now();
+    /* navigator.onLine có thể báo “mất mạng” sai: sau 30 giây (app đang hiện) cứ thử gửi — lỗi mạng thật sẽ được thử lại như thường */
+    const check = () => { if (over) return; if (!appHidden() && (!netDown() || Date.now() - t0 > 30000)) { clearInterval(iv); fin(); res(); renderJob(); } else if (!NET.waiters.includes(check)) NET.waiters.push(check); };
+    const iv = setInterval(check, 10000);
+    const onAb = () => { clearInterval(iv); if (!fin()) return; const e = new Error('aborted'); e.name = 'AbortError'; rej(e); renderJob(); };
     if (signal) { if (signal.aborted) return onAb(); signal.addEventListener('abort', onAb); }
     NET.waiters.push(check);
   });
@@ -4089,6 +4160,26 @@ async function runChunkAttempt(ch, chunk, profile, signal, allowAuto, soften) {
     chunk.idx.forEach((i, k) => setViLive(ch, i, snapshot[k]));
     if (e && e.name === 'AbortError') { chunk.status = 'stopped'; chunk.msg = T('Đã dừng — bản dịch cũ được giữ nguyên.'); renderJob(); throw e; }
     res = C.isTransientError(e) ? { status: 'error', kind: 'network', transient: true, message: C.NET_FRIENDLY(), detail: String(e && e.message || e) } : { status: 'error', message: String(e && e.message || e) };
+  }
+  if (res.status === 'error' && res.format && res.truncated && !(signal && signal.aborted)) {
+    /* Bị cắt trước khi trả được đoạn nào (thường do model “suy nghĩ” ăn hết giới hạn token): gửi lại ngay một lần — tắt suy nghĩ, nới giới hạn,
+       chia đôi phần dài — thay vì đánh dấu cả phần là “AI bỏ sót” rồi dịch bù từng đoạn. */
+    chunk.msg = T('Kết quả bị cắt — đang gửi lại (phần nhỏ hơn, tắt chế độ suy nghĩ)…'); renderJob();
+    const cut = Math.ceil(n / 2); const halves = n > 3 ? [chunk.idx.slice(0, cut), chunk.idx.slice(cut)] : [chunk.idx];
+    const map = {}; let off = 0;
+    for (const part of halves) {
+      try {
+        const r2 = await C.runChunk(profile, buildMessages(ch, part, soften), part.length, { signal, src: part.map(i => ch.paras[i].zh), forceNoThinking: true, maxTokens: Math.max(C.maxTokensFor(profile) || 0, 16384), retryDelays: [2000] });
+        if (r2 && r2.map && (r2.status === 'done' || r2.status === 'partial')) Object.keys(r2.map).forEach(k => { if (String(r2.map[k] || '').trim()) map[off + Number(k)] = r2.map[k]; });
+      } catch (e) {
+        if (e && e.name === 'AbortError') { chunk.idx.forEach((i, k) => setViLive(ch, i, snapshot[k])); chunk.status = 'stopped'; chunk.msg = T('Đã dừng — bản dịch cũ được giữ nguyên.'); renderJob(); throw e; }
+      }
+      off += part.length;
+    }
+    if (Object.keys(map).length) {
+      const missing = []; for (let k = 1; k <= n; k++) if (!map[k]) missing.push(k);
+      res = { status: missing.length ? 'partial' : 'done', map, missing, suspect: [], split: [], truncated: !!missing.length, message: missing.length ? T('AI bỏ sót đoạn ') + missing.join(', ') : '' };
+    }
   }
   if (res.status === 'error' && res.format && (n > 1 || res.truncated)) {
     /* không đọc được định dạng / bị cắt trước khi kịp trả lời → không bỏ phần này: dịch bù theo nhóm nhỏ rồi từng đoạn */
@@ -4405,10 +4496,10 @@ async function runQueue(items) {
   if (S.busy) return;
   const prof = primaryProfile(); if (!prof) { toast(T('Chưa kết nối AI.'), 'err'); return openSettings(); }
   const ctrl = new AbortController(); S.busy = ctrl;
-  S.queue = { items: items.map(x => ({ id: x.id, mode: x.mode, st: 'wait', bad: 0 })), running: true, stopped: false };
+  const Q = S.queue = { items: items.map(x => ({ id: x.id, mode: x.mode, st: 'wait', bad: 0 })), running: true, stopped: false };
   renderSide();
   try {
-    for (const it of S.queue.items) {
+    for (const it of Q.items) {
       if (ctrl.signal.aborted) break;
       const ch = S.chapters.find(c => c.id === it.id); if (!ch) { it.st = 'skip'; continue; }
       it.st = 'run';
@@ -4433,15 +4524,16 @@ async function runQueue(items) {
       renderSide(); if (S.chapterId === ch.id && S.tab === 'editor') renderEditor($('#main'));
     }
   } finally {
-    S.busy = null; S.queue.running = false;
-    S.queue.items.forEach(x => { if (x.st === 'wait' || x.st === 'run') x.st = 'stopped'; });
-    S.queue.stopped = ctrl.signal.aborted;
-    const bad = S.queue.items.filter(x => x.st === 'warn').length;
-    if (ctrl.signal.aborted) toast(T('Đã dừng dịch.'));
-    else if (bad && S.queue.items.filter(x => x.st === 'warn').every(x => x.gapOnly)) toast(T('{n} chương còn đoạn AI bỏ sót chưa dịch được. Mở chương, bấm “Dịch lại tất cả đoạn thiếu” (hoặc “Dịch giảm nhẹ” nếu bị chặn).', { n: bad }), 'err');
+    if (S.busy === ctrl) S.busy = null; Q.running = false;
+    Q.items.forEach(x => { if (x.st === 'wait' || x.st === 'run') x.st = 'stopped'; });
+    Q.stopped = ctrl.signal.aborted;
+    const bad = Q.items.filter(x => x.st === 'warn').length;
+    const here = S.queue === Q && S.project && $('#desk');
+    if (ctrl.signal.aborted) { if (here) toast(T('Đã dừng dịch.')); }
+    else if (bad && Q.items.filter(x => x.st === 'warn').every(x => x.gapOnly)) toast(T('{n} chương còn đoạn AI bỏ sót chưa dịch được. Mở chương, bấm “Dịch lại tất cả đoạn thiếu” (hoặc “Dịch giảm nhẹ” nếu bị chặn).', { n: bad }), 'err');
     else if (bad) toast(T('{n} chương còn phần bị chặn hoặc lỗi. Mở chương để thử AI khác, “Dịch giảm nhẹ” hoặc “Lược phần này”.', { n: bad }), 'err');
     else toast(T('Đã dịch xong!'), 'ok');
-    renderSide(); renderMain();
+    if (here) { renderSide(); renderMain(); }
   }
 }
 async function translateChapter(mode) {
@@ -5537,7 +5629,7 @@ const A = {
   home: () => goHome(), newNovel: () => openNewNovel(), settings: () => openSettings(), closeModal: () => closeModal(),
   theme: () => { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = t; localStorage.setItem('dichtruyen_theme', t); setThemeMeta(t); },
   uiLang: el => setUiLang(el.dataset.l),
-  mtab: el => { S.mtab = el.dataset.m; if (S.mtab !== 'list' && S.tab !== 'editor') { S.tab = 'editor'; renderSide(); renderMain(); } renderMTabs(); window.scrollTo(0, 0); },
+  mtab: el => { S.mtab = el.dataset.m; if (S.mtab !== 'list' && S.tab !== 'editor') { S.tab = 'editor'; renderSide(); renderMain(); } renderMTabs(); if (S.mtab === 'tgt') autosizeAll($$('textarea.vi')); window.scrollTo(0, 0); },
   createProject: async () => {
     const i = $('#npTitle'); const t = i ? i.value.trim() : '';
     if (!t) { toast(T('Hãy nhập tên truyện.')); i && i.focus(); return; }
@@ -5564,7 +5656,7 @@ const A = {
   zipChapters: () => zipChapters(),
   batch: () => batchTranslate(),
   translate: el => translateChapter(el.dataset.mode),
-  stop: () => { if (S.busy) S.busy.abort(); },
+  stop: () => stopJob(),
   closeQueue: () => { S.queue = null; renderQbar(); },
   retryChunk: el => retryChunk(Number(el.dataset.k)),
   retryOther: el => { const sel = $('select.otherSel[data-k="' + el.dataset.k + '"]'); retryChunk(Number(el.dataset.k), sel && sel.value); },
@@ -5756,7 +5848,7 @@ window.addEventListener('beforeunload', e => { if (pending.size || S.busy) { e.p
 
 
 /* ---------- Ứng dụng trên màn hình chính (PWA) ---------- */
-const APP_BUILD = 'translation-fix-1101';
+const APP_BUILD = 'freeze-fix-1101';
 const ONLINE_ORIGIN = /^https?:$/.test(location.protocol);
 function setThemeMeta(t) { document.querySelectorAll('meta[name=theme-color]').forEach(m => { m.content = t === 'dark' ? '#1a1714' : '#f3eee6'; m.removeAttribute('media'); }); }
 // Service worker chỉ chạy khi mở qua http(s); mở file:// thì bỏ qua (app vẫn chạy trọn trong một file)
