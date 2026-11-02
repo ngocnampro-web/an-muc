@@ -1728,6 +1728,7 @@ C.interpretResult = (r, n, src) => {
   }
   Object.keys(map).forEach(k => { if (+k < 1 || +k > n) delete map[k]; });
   if (src) Object.keys(map).forEach(k => { if (/^[\s*_#>`~-]*$/.test(map[k]) && !C.noLetters(src[k - 1])) delete map[k]; });
+  if (!Object.keys(map).length) return { status: 'error', format: true, message: M('AI không trả về đoạn dịch nào có số thứ tự hợp lệ.', 'The AI returned no translations with valid paragraph numbers.'), text };
   const fix = C.repairMap(map, n, src);
   const truncated = r.finish === 'length';
   if (truncated) { /* bị cắt vì giới hạn độ dài: khối cuối cùng có thể dở dang → coi như thiếu, sẽ dịch bù */
@@ -3073,6 +3074,12 @@ const LKEY = 'anmuc_ui_lang';
 let UI = localStorage.getItem(LKEY) === 'en' ? 'en' : 'vi';
 const DICT = window.AM_EN || {};
 Object.assign(DICT, {
+ '(đoạn này chưa có bản dịch)': '(no translation for this paragraph yet)',
+ 'Đoạn {a} chưa có bản dịch. Bấm “Dịch lại” để thử tiếp.': 'Paragraph {a} has no translation. Tap Retranslate to retry.',
+ 'Chưa nhận được bản dịch cho chương này.': 'No translation has been received for this chapter.',
+ 'Kiểm tra kết nối để xem lỗi khóa API, số dư, model hoặc mạng. Chỉ các AI đã có khóa mới dịch được.': 'Test the connection to check API key, credit, model or network errors. Only configured AIs can translate.',
+ 'Kiểm tra AI đang dùng': 'Test current AI', 'Chưa nhận được bản dịch.': 'No translation received.',
+ 'AI trả lời rỗng. Kết nối chưa được xác nhận — kiểm tra model hoặc thử AI khác.': 'The AI returned an empty answer. Connection is unverified — check the model or try another AI.',
  'Kho truyện': 'My novels', 'Kết nối AI khác…': 'Connect another AI…', 'Cần kết nối': 'Setup required',
  'Đang dịch — hãy dừng trước khi tạo truyện mới.': 'Translation is running. Stop it before creating a new novel.',
  'Truyện hiện tại vẫn được giữ trong Kho truyện. Mỗi truyện có chương, bản dịch và thuật ngữ riêng.': 'Your current novel stays in My novels. Each novel keeps its own chapters, translations and glossary.',
@@ -3421,7 +3428,7 @@ const isEmptyPara = p => !(p.vi && p.vi.trim()) && !p.omitted;
 function gapInfo(ch) {
   let last = -1; ch.paras.forEach((p, i) => { if (p.vi && p.vi.trim()) last = i; });
   const holes = [], trailing = [];
-  if (last >= 0) ch.paras.forEach((p, i) => { if (isEmptyPara(p)) (p.missing || i < last ? holes : trailing).push(i); });
+  ch.paras.forEach((p, i) => { if (isEmptyPara(p)) { if (p.missing || i < last) holes.push(i); else if (last >= 0) trailing.push(i); } });
   return { holes, trailing, all: holes.concat(trailing).sort((a, b) => a - b) };
 }
 /* Dòng chỉ có ký hiệu/dấu câu/số (＊＊＊, ———, ……, 1.): điền nguyên bản gốc, không gọi AI. Trả về các chỉ số đã điền. */
@@ -3573,6 +3580,7 @@ function renderEditor(m) {
       ${!prim ? `<button class="primary" data-act="settings">${esc(T('Kết nối AI để dịch'))}</button>` : ''}
     </div>
     ${C.looksFontLocked(srcText) ? `<div class="note warn">${esc(T('Chữ trong chương này có vẻ bị vỡ — file gốc khóa chữ bằng font riêng. Bản dịch sẽ sai. Hãy tìm bản txt UTF-8.'))}</div>` : ''}
+    ${!any && !running && ch.paras.length ? `<div class="note warn" role="status"><b>${esc(T('Chưa nhận được bản dịch cho chương này.'))}</b><p>${esc(T('Kiểm tra kết nối để xem lỗi khóa API, số dư, model hoặc mạng. Chỉ các AI đã có khóa mới dịch được.'))}</p><div class="row-flex"><button data-act="testPrimary">${esc(T('Kiểm tra AI đang dùng'))}</button><button data-act="settings">${esc(T('Kết nối AI'))}</button><button class="primary" data-act="translate" data-mode="empty">${esc(T('Dịch đoạn còn trống'))}</button></div></div>` : ''}
     ${cstat}${gapNote}
     ${ch.paras.length > 150 && splitPlanOf(ch).length >= 2 ? `<div class="note warn" id="splitNote">${esc(T('Chương này dài {n} đoạn và có {k} dòng tiêu đề chương bên trong — có thể cả truyện nằm chung một chương.', { n: ch.paras.length, k: splitPlanOf(ch).filter(r => !r.pre).length }))} <div class="row-flex"><button class="small primary" data-act="splitCh" ${running ? 'disabled' : ''}>${esc(T('Tách chương'))}</button></div></div>` : ''}
     ${isStale(ch) ? `<div class="note warn" id="staleNote">${esc(T('Nguồn hoặc ngôn ngữ đã đổi. Bản dưới là lần dịch trước.'))}</div>` : ''}
@@ -3609,16 +3617,16 @@ function renderEditor(m) {
   </div>
   ${any ? '' : `<div class="vi-empty">${esc(tgt === 'en' ? T('Bản dịch tiếng Anh hiện ra ở đây.') : T('Bản dịch hiện ra ở đây.'))}</div>`}
   <div id="rows" class="${any ? '' : 'noviyet'}">${ch.paras.map((p, i) => {
-    const iss = issuesBy[i]; const rm = S.rowMsg[i];
+    const iss = issuesBy[i]; const rm = S.rowMsg[i] || (!(p.vi || '').trim() && p.translationIssue ? p.translationIssue.message : '');
     const gap = holeSet.has(i);
     const inc = p.incomplete && p.incomplete.length && cEligible(p);
     return `<div class="prow ${iss ? 'flag' : ''} ${inc ? 'incomplete' : ''} ${p.qflag && p.qflag.length && !p.edited ? 'qbad' : ''} ${p.omitted ? 'omit' : ''} ${p.softened ? 'soft' : ''} ${gap ? 'gap' : ''}" id="row-${i}"><div class="zh serif"><span class="num">${i + 1}</span>${hl(p.zh)}</div>
-      <div class="vi"><span class="num m">${i + 1}</span><textarea class="vi serif" data-i="${i}" rows="1" lang="${tgt}" placeholder="${esc(gap ? T('(chưa dịch — AI bỏ sót đoạn này)') : T('(chưa dịch)'))}">${esc(p.vi || '')}</textarea>
+      <div class="vi"><span class="num m">${i + 1}</span><textarea class="vi serif" data-i="${i}" rows="1" lang="${tgt}" placeholder="${esc(gap ? T('(đoạn này chưa có bản dịch)') : T('(chưa dịch)'))}">${esc(p.vi || '')}</textarea>
       <div class="ptools"><button class="small" data-act="retransPara" data-i="${i}" ${running ? 'disabled' : ''}>↻ ${esc(T('Dịch lại'))}</button>${p.vi && p.vi.trim() && !p.omitted ? `<button class="small" data-act="smoothPara" data-i="${i}" ${running ? 'disabled' : ''}>${esc(T('Dịch lại cho mượt'))}</button>` : ''}
       ${p.qflag && p.qflag.length && !p.edited ? `<span class="flagtxt qflag" title="${esc(T('Bộ kiểm tra thấy đoạn này còn đọc như convert. Bấm “Dịch lại cho mượt” hoặc sửa tay.'))}">⚠ ${esc(T('Câu còn cứng:'))} ${esc(qText(p.qflag))}</span>` : ''}
       ${p.edited && p.vi && p.vi.trim() ? `<span class="muted small editednote" title="${esc(T('Đoạn bạn đã sửa tay — “Rà soát chương” và “Dịch lại cho mượt” sẽ không đụng tới.'))}">${esc(T('đã sửa tay'))}</span>` : ''}
       ${p.keptSrc === 'short' && p.vi && p.vi.trim() ? `<span class="muted small keptnote" title="${esc(T('AI không trả lời dòng ngắn này nên app giữ nguyên bản gốc. Bạn có thể sửa trực tiếp.'))}">${esc(T('giữ nguyên bản gốc'))}</span>` : ''}
-      ${gap ? `<span class="flagtxt gapflag">⚠ ${esc(T('AI bỏ sót đoạn {a} — chưa dịch. Bấm “Dịch lại”.', { a: i + 1 }))}</span><button class="small primary redo" data-act="retransPara" data-i="${i}" ${running ? 'disabled' : ''}>${esc(T('Dịch lại đoạn này'))}</button>` : ''}
+      ${gap ? `<span class="flagtxt gapflag">⚠ ${esc(T('Đoạn {a} chưa có bản dịch. Bấm “Dịch lại” để thử tiếp.', { a: i + 1 }))}</span><button class="small primary redo" data-act="retransPara" data-i="${i}" ${running ? 'disabled' : ''}>${esc(T('Dịch lại đoạn này'))}</button>` : ''}
       ${inc ? `<span class="flagtxt incflag" title="${esc(T('Bộ kiểm tra đầy đủ so đoạn này với bản gốc và thấy có thể thiếu ý. Bấm “Dịch lại đoạn này” hoặc sửa tay (sửa tay sẽ bỏ dấu).'))}">⚠ ${esc(T('Có thể dịch chưa đủ:'))} ${esc(cText(p.incomplete))}</span><button class="small primary redo" data-act="retransPara" data-i="${i}" ${running ? 'disabled' : ''}>${esc(T('Dịch lại đoạn này'))}</button><button class="small link" data-act="incOk" data-i="${i}">${esc(T('Đã đủ, bỏ dấu'))}</button>` : ''}
       ${iss ? `<span class="flagtxt">⚠ ${esc(T('Thiếu thuật ngữ:'))} ${iss.map(x => esc(x.zh + ' → ' + x.vi)).join('; ')}</span>` : ''}
       ${rm ? `<span class="errtxt">${esc(rm)}</span> ${fallbackProfile() ? `<button class="small" data-act="retransPara" data-i="${i}" data-other="1">${esc(T('Dịch lại với model khác'))} (${esc(fallbackProfile().name)})</button>` : ''}${S.rowBlocked && S.rowBlocked[i] ? `<button class="small" data-act="softenPara" data-i="${i}" ${running ? 'disabled' : ''}>${esc(T('Dịch giảm nhẹ'))}</button>` : ''}` : ''}
@@ -3778,6 +3786,7 @@ function updateStats() {
 }
 function setViLive(ch, i, val) {
   ch.paras[i].vi = val;
+  if (val && val.trim()) delete ch.paras[i].translationIssue;
   if (ch.id !== S.chapterId) return;
   const ta = $('textarea.vi[data-i="' + i + '"]');
   if (ta && document.activeElement !== ta) { ta.value = val; autosize(ta); }
@@ -4037,6 +4046,17 @@ window.addEventListener('offline', () => { NET.offAt = Date.now(); renderJob(); 
 window.addEventListener('online', () => { NET.offAt = Date.now(); C.netNudge(8000); netWake(); renderJob(); });
 /* Dịch một phần (chunk) và cập nhật giao diện */
 async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
+  try { return await runChunkAttempt(ch, chunk, profile, signal, allowAuto, soften); }
+  finally {
+    for (const i of chunk.idx) {
+      const p = ch.paras[i];
+      if ((p.vi || '').trim()) delete p.translationIssue;
+      else if (['blocked', 'error', 'partial'].includes(chunk.status)) p.translationIssue = { kind: chunk.errorKind || chunk.status, message: ((chunk.profileName || '') + ': ' + (chunk.msg || T('Chưa nhận được bản dịch.'))).slice(0, 1000) };
+    }
+    await saveNow('chapters', ch);
+  }
+}
+async function runChunkAttempt(ch, chunk, profile, signal, allowAuto, soften) {
   if (chunk.idx.every(i => C.noLetters(ch.paras[i].zh))) { /* chỉ toàn dòng ký hiệu/phân cách → không cần AI */
     chunk.idx.forEach(i => { const p = ch.paras[i]; setViLive(ch, i, String(p.zh).trim()); delete p.missing; delete p.omitted; delete p.softened; p.keptSrc = 'sym'; }); chunk.status = 'done'; chunk.chars = 0; chunk.local = true; chunk.msg = T('Dòng ký hiệu/phân cách — giữ nguyên bản gốc, không cần AI.');
     ch.translatedDir = chDir(ch); ch.translatedSrc = srcHash(ch); await saveNow('chapters', ch); renderJob(); return;
@@ -4085,10 +4105,11 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
   if (res.status === 'blocked' || res.status === 'error') {
     chunk.idx.forEach((i, k) => setViLive(ch, i, snapshot[k]));
     chunk.status = res.status; chunk.msg = res.message || ''; chunk.softened = false; chunk.chars = 0;
+    chunk.errorKind = res.kind || '';
     chunk.detail = res.detail ? String(res.detail).slice(0, 200) : ''; chunk.transient = !!res.transient;
     if (soften && res.status === 'blocked') chunk.msg = T('Bản dịch giảm nhẹ cũng bị chặn: ') + chunk.msg + ' ' + T('Có thể thử AI khác hoặc bấm “Lược phần này”.');
     if (res.status === 'blocked' && allowAuto && !soften && (n > 6 || (chunk.bisect && n > 1))) { /* chia đôi tiếp tới khi cô lập đúng đoạn bị chặn */ await bisectBlocked(ch, chunk, profile, signal, allowAuto, chunk.msg); return; }
-    if (res.status === 'blocked' && allowAuto) {
+    if ((res.status === 'blocked' || res.status === 'error') && allowAuto) {
       /* Chính sách khi bị chặn (Cài đặt → Kết nối AI → Nâng cao). “Chỉ báo” giữ cách cũ: ô “Tự động thử lại bằng AI dự phòng” của truyện vẫn có hiệu lực. */
       const pol = allowAuto === 'manual' ? 'report' : blockPolicy(); /* bấm thử lại bằng tay: chỉ theo ô AI dự phòng của truyện như trước */
       const tryFb = pol === 'fallback' || pol === 'fallback_soften' || (pol === 'report' && S.project.autoFallback);
@@ -4097,7 +4118,7 @@ async function runChunkUI(ch, chunk, profile, signal, allowAuto, soften) {
       const backups = tryFb ? fallbackProfiles(profile && profile.id) : [];
       for (const fb of backups) {
         await runChunkUI(ch, chunk, fb, signal, false); last = fb;
-        if (chunk.status === 'done' || chunk.status === 'partial') { chunk.msg = T('Đã dịch bằng AI dự phòng: {p}.', { p: fb.name }) + (chunk.status === 'partial' ? ' ' + chunk.msg : ''); renderJob(); return; }
+        if (chunk.status === 'done' || (chunk.status === 'partial' && chunk.idx.some(i => (ch.paras[i].vi || '').trim()))) { chunk.msg = T('Đã dịch bằng AI dự phòng: {p}.', { p: fb.name }) + (chunk.status === 'partial' ? ' ' + chunk.msg : ''); renderJob(); return; }
         msgs.push('[' + fb.name + '] ' + chunk.msg);
         if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
       }
@@ -4149,9 +4170,21 @@ async function repairParas(ch, need, suspects, profile, signal, soften, onMsg) {
   const local = fillSymbolParas(ch, need); /* dòng ký hiệu/phân cách: giữ nguyên, không gọi AI */
   let todo = need.filter(i => !local.includes(i)); const blocked = new Set(), done = new Set(), softDone = new Set(), kept = [], lined = [];
   const pol = blockPolicy(); const autoSoft = !!soften || pol === 'soften' || pol === 'fallback_soften';
-  const ask = (g, soft) => C.runChunk(profile, buildMessages(ch, g, soft, true), g.length, { signal, src: g.map(i => ch.paras[i].zh) });
+  let errorMessage = '', errorKind = '';
+  const ask = async (g, soft) => {
+    const profiles = [profile];
+    if (S.project.autoFallback || ['fallback', 'fallback_soften'].includes(pol)) profiles.push(...fallbackProfiles(profile && profile.id));
+    let result;
+    for (const prof of profiles.filter(Boolean)) {
+      if (signal && signal.aborted) throw new DOMException('Aborted', 'AbortError');
+      result = await C.runChunk(prof, buildMessages(ch, g, soft, true), g.length, { signal, src: g.map(i => ch.paras[i].zh) });
+      if (result.map && Object.keys(result.map).length) return result;
+      for (const i of g) if (isEmptyPara(ch.paras[i])) ch.paras[i].translationIssue = { kind: result.kind || result.status, message: prof.name + ': ' + (result.message || T('Chưa nhận được bản dịch.')) };
+    }
+    return result || { status: 'error', kind: 'auth', message: T('Chưa kết nối AI.') };
+  };
   try {
-    for (let round = 1; round <= 3 && todo.length; round++) {
+    rounds: for (let round = 1; round <= 3 && todo.length; round++) {
       /* lượt 2–3 bỏ qua dòng ngắn: AI đã bỏ qua một lần thì hỏi lại theo định dạng [n] cũng vô ích → để lượt cuối hỏi riêng từng dòng */
       const ask1 = round === 1 ? todo : todo.filter(i => !C.isShortLine(ch.paras[i].zh));
       if (!ask1.length) break;
@@ -4164,6 +4197,7 @@ async function repairParas(ch, need, suspects, profile, signal, soften, onMsg) {
         /* nhóm nhiều đoạn bị chặn → để lượt sau hỏi từng đoạn (chỉ đoạn thật sự bị chặn mới phải giảm nhẹ) */
         if (r.status === 'blocked' && !soft && autoSoft && g.length === 1) { soft = true; r = await ask(g, true); }
         if (r.status === 'blocked') { g.forEach(i => { if (todo.includes(i)) blocked.add(i); }); continue; }
+        if (r.status === 'error') { errorMessage = r.message || ''; errorKind = r.kind || ''; if (['auth', 'quota', 'notfound', 'bad'].includes(errorKind)) break rounds; }
         if (!r.map) continue;
         const whole = r.status === 'done';
         g.forEach((i, k) => {
@@ -4178,7 +4212,7 @@ async function repairParas(ch, need, suspects, profile, signal, soften, onMsg) {
       await saveNow('chapters', ch);
     }
     /* lượt cuối: dòng ngắn (≤ 12 ký tự) vẫn thiếu → hỏi riêng từng dòng (vẫn đủ văn phong, thuật ngữ, ngữ cảnh); vẫn rỗng → giữ nguyên bản gốc */
-    const shortLeft = todo.filter(i => C.isShortLine(ch.paras[i].zh));
+    const shortLeft = errorKind ? [] : todo.filter(i => C.isShortLine(ch.paras[i].zh));
     if (shortLeft.length) onMsg(missMsg(shortLeft) + ' — ' + T('đang hỏi riêng từng dòng ngắn…'));
     for (const i of shortLeft) {
       const how = await lineFallback(ch, i, profile, signal);
@@ -4189,7 +4223,7 @@ async function repairParas(ch, need, suspects, profile, signal, soften, onMsg) {
   } finally {
     todo.forEach(i => { if (!(ch.paras[i].vi && ch.paras[i].vi.trim())) ch.paras[i].missing = true; });
   }
-  return { left: todo, blocked: [...blocked].filter(i => todo.includes(i)), soft: softDone.size > 0, local, kept, lined };
+  return { left: todo, blocked: [...blocked].filter(i => todo.includes(i)), soft: softDone.size > 0, local, kept, lined, errorMessage, errorKind };
 }
 function finishRepair(chunk, need, r) {
   chunk.repairing = false; chunk.blockedMissing = r.blocked.length > 0;
@@ -4204,8 +4238,8 @@ function finishRepair(chunk, need, r) {
     chunk.msg = (ai.length ? missMsg(ai) + ' — ' + T('đã tự dịch bù.') + (r.soft ? ' ' + T('(dịch giảm nhẹ)') : '') : '') + notes;
     chunk.msg = chunk.msg.trim(); return;
   }
-  chunk.status = 'partial';
-  chunk.msg = missMsg(r.left) + ' — ' + T('bấm “Dịch lại đoạn thiếu”.') + (fixed.length ? ' ' + T('Đã tự dịch bù: {p}.', { p: paraList(fixed) }) : '')
+  chunk.status = r.errorKind ? 'error' : 'partial'; chunk.errorKind = r.errorKind || '';
+  chunk.msg = (r.errorMessage ? r.errorMessage + ' · ' : '') + missMsg(r.left) + ' — ' + T('bấm “Dịch lại đoạn thiếu”.') + (fixed.length ? ' ' + T('Đã tự dịch bù: {p}.', { p: paraList(fixed) }) : '')
     + (r.blocked.length ? ' ' + T('Đoạn {p}: AI không trả lời hoặc bị chặn — thử “Dịch giảm nhẹ” hoặc model khác.', { p: paraList(r.blocked) }) : '') + notes;
 }
 async function repairChunk(ch, chunk, need, suspects, profile, signal, soften) {
@@ -4243,6 +4277,7 @@ async function fixChunk(k, soften) {
 /* Nút “Dịch lại tất cả đoạn thiếu”: chỉ dịch các đoạn còn trống (AI bỏ sót + đoạn cuối chưa dịch tới), không dịch lại cả chương */
 async function fixAll() {
   const ch = curCh(); if (!ch || S.busy) return;
+  if (!hasAny(ch) && ch.paras.some(isEmptyPara)) return runQueue([{ id: ch.id, mode: 'empty' }]);
   const loc = fillSymbolParas(ch, gapInfo(ch).all);
   if (loc.length) {
     await saveNow('chapters', ch);
@@ -4289,6 +4324,7 @@ async function translateOne(ch, mode, signal, prof) {
     let cur = size;
     for (let k = 0; k < job.chunks.length; k++) {
       const c = job.chunks[k]; if (signal.aborted) break; await netGate(signal); await runChunkUI(ch, c, prof, signal, true);
+      if (c.status === 'error' && ['auth', 'quota', 'notfound', 'bad'].includes(c.errorKind)) break;
       if (c.truncated && cur > 400) { /* bị cắt vì giới hạn độ dài → các phần sau chia nhỏ một nửa */
         cur = Math.max(300, Math.floor(cur / 2));
         const rest = job.chunks.slice(k + 1).filter(x => x.status === 'wait');
@@ -5098,6 +5134,7 @@ async function testProfile(id) {
   try {
     const r = await C.chat(p, [{ role: 'user', content: UI === 'en' ? 'Translate into English, reply with the translation only: 你好，今天天气很好。' : 'Dịch sang tiếng Việt, chỉ trả lời bản dịch: 你好，今天天气很好。' }], {});
     if (r.finish === 'blocked') toast(T('Kết nối được nhưng phản hồi bị chặn.'), 'err');
+    else if (!C.stripThink(r.text || '').trim()) toast(T('AI trả lời rỗng. Kết nối chưa được xác nhận — kiểm tra model hoặc thử AI khác.'), 'err', 15000);
     else toast('✓ ' + T('Kết nối thành công:') + ' “' + C.stripThink(r.text).trim().slice(0, 80) + '”', 'ok', 6000);
   } catch (e) { toast('✗ ' + e.message, 'err', 10000); }
 }
@@ -5496,6 +5533,7 @@ function setUiLang(l) {
 
 /* ---------- Sự kiện ---------- */
 const A = {
+  testPrimary: () => { const p = primaryProfile(); return p ? testProfile(p.id) : openSettings(); },
   home: () => goHome(), newNovel: () => openNewNovel(), settings: () => openSettings(), closeModal: () => closeModal(),
   theme: () => { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = t; localStorage.setItem('dichtruyen_theme', t); setThemeMeta(t); },
   uiLang: el => setUiLang(el.dataset.l),
@@ -5718,7 +5756,7 @@ window.addEventListener('beforeunload', e => { if (pending.size || S.busy) { e.p
 
 
 /* ---------- Ứng dụng trên màn hình chính (PWA) ---------- */
-const APP_BUILD = 'novel-ai-1101';
+const APP_BUILD = 'translation-fix-1101';
 const ONLINE_ORIGIN = /^https?:$/.test(location.protocol);
 function setThemeMeta(t) { document.querySelectorAll('meta[name=theme-color]').forEach(m => { m.content = t === 'dark' ? '#1a1714' : '#f3eee6'; m.removeAttribute('media'); }); }
 // Service worker chỉ chạy khi mở qua http(s); mở file:// thì bỏ qua (app vẫn chạy trọn trong một file)
