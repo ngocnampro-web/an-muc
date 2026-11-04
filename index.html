@@ -130,6 +130,7 @@ details.menu summary::-webkit-details-marker{display:none}
 .menu-list button{border-radius:10px;justify-content:flex-start;border-color:transparent}
 #rows{border:1px solid var(--line);border-top:0;border-radius:0 0 16px 16px;background:var(--sheet);overflow:hidden}
 .prow{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+.cvcard .cvrow{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap} .cvcard h3{margin:0 0 2px} .cvinfo{margin-top:8px;min-height:1.2em} .cvout button{flex:1 1 40%}
 #rows.big .prow{content-visibility:auto;contain-intrinsic-size:auto 120px}
 .prow:first-child{border-top:0}
 .prow.flag{background:var(--warn-soft)}
@@ -2048,7 +2049,9 @@ nav ol{list-style:none;padding-left:0;} nav li{margin:.45em 0;} nav a{text-decor
 const xhtml = (title, body, lang) => { lang = lang || 'vi'; return '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="' + lang + '" lang="' + lang + '">\n<head>\n<meta charset="UTF-8"/>\n<title>' + C.xmlEsc(title) + '</title>\n<link rel="stylesheet" type="text/css" href="style.css"/>\n</head>\n<body>\n' + body + '\n</body>\n</html>\n'; };
 /* book: {title, author, translator, chapters:[{title, paras:[string]}], id?, modified?} */
 C.buildEpub = book => {
-  const lang = book.lang === 'en' ? 'en' : 'vi'; const L = BOOK_L[lang];
+  const lang = book.langCode || (book.lang === 'en' ? 'en' : 'vi'); const L = BOOK_L[book.lang === 'en' ? 'en' : 'vi'];
+  const cov = book.cover && book.cover.data && /^image\/(jpeg|png|gif|webp)$/.test(book.cover.mime) ? book.cover : null;
+  const covExt = cov ? ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif', 'image/webp': 'webp' })[cov.mime] : '';
   const id = book.id || ('urn:uuid:' + C.uuid());
   const modified = (book.modified || new Date()).toISOString().replace(/\.\d{3}Z$/, 'Z');
   const chs = book.chapters.map((c, i) => ({ file: 'chap-' + String(i + 1).padStart(3, '0') + '.xhtml', id: 'c' + (i + 1), title: c.title || (L.chapter + ' ' + (i + 1)), paras: c.paras }));
@@ -2060,13 +2063,16 @@ C.buildEpub = book => {
   if (book.editor) meta += '<dc:contributor id="edt">' + C.xmlEsc(book.editor) + '</dc:contributor>\n<meta refines="#edt" property="role" scheme="marc:relators">edt</meta>\n';
   if (book.source) meta += '<dc:source>' + C.xmlEsc(book.source) + '</dc:source>\n';
   meta += '<meta property="dcterms:modified">' + modified + '</meta>\n';
+  if (cov) meta += '<meta name="cover" content="cover-img"/>\n';
   let manifest = '<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>\n<item id="css" href="style.css" media-type="text/css"/>\n<item id="titlepage" href="title.xhtml" media-type="application/xhtml+xml"/>\n';
   let spine = '<itemref idref="titlepage"/>\n<itemref idref="nav"/>\n';
+  if (cov) { manifest += '<item id="cover-img" href="cover.' + covExt + '" media-type="' + cov.mime + '" properties="cover-image"/>\n<item id="cover" href="cover.xhtml" media-type="application/xhtml+xml"/>\n'; spine = '<itemref idref="cover"/>\n' + spine; }
   chs.forEach(c => { manifest += '<item id="' + c.id + '" href="' + c.file + '" media-type="application/xhtml+xml"/>\n'; spine += '<itemref idref="' + c.id + '"/>\n'; });
   files.push({ name: 'OEBPS/content.opf', data: '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="bookid" xml:lang="' + lang + '">\n<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n' + meta + '</metadata>\n<manifest>\n' + manifest + '</manifest>\n<spine toc="ncx">\n' + spine + '</spine>\n</package>\n' });
   files.push({ name: 'OEBPS/nav.xhtml', data: xhtml(L.toc, '<nav epub:type="toc" id="toc">\n<h1>' + L.toc + '</h1>\n<ol>\n' + chs.map(c => '<li><a href="' + c.file + '">' + C.xmlEsc(c.title) + '</a></li>').join('\n') + '\n</ol>\n</nav>', lang) });
   files.push({ name: 'OEBPS/toc.ncx', data: '<?xml version="1.0" encoding="UTF-8"?>\n<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="' + lang + '">\n<head><meta name="dtb:uid" content="' + C.xmlEsc(id) + '"/></head>\n<docTitle><text>' + C.xmlEsc(book.title || '') + '</text></docTitle>\n<navMap>\n' + chs.map((c, i) => '<navPoint id="np' + (i + 1) + '" playOrder="' + (i + 1) + '"><navLabel><text>' + C.xmlEsc(c.title) + '</text></navLabel><content src="' + c.file + '"/></navPoint>').join('\n') + '\n</navMap>\n</ncx>\n' });
-  files.push({ name: 'OEBPS/style.css', data: EPUB_CSS });
+  files.push({ name: 'OEBPS/style.css', data: EPUB_CSS + (cov ? '\n.cover{margin:0;padding:0;text-align:center;} .cover img{max-width:100%;max-height:100vh;}' : '') });
+  if (cov) { files.push({ name: 'OEBPS/cover.' + covExt, data: cov.data }); files.push({ name: 'OEBPS/cover.xhtml', data: xhtml(book.title || '', '<section class="cover" epub:type="cover"><img src="cover.' + covExt + '" alt="' + C.xmlEsc(book.title || '') + '"/></section>', lang) }); }
   files.push({ name: 'OEBPS/title.xhtml', data: xhtml(book.title || '', '<section class="title-page" epub:type="titlepage">\n<h1>' + C.xmlEsc(book.title || '') + '</h1>\n' + C.creditLines(book).map(c => '<p class="credit ' + c.k + '"><span class="lbl">' + C.xmlEsc(c.label) + ':</span> ' + C.xmlEsc(c.value).replace(/\n/g, '<br/>') + '</p>\n').join('') + '<p class="small">' + L.edition + '</p>\n</section>', lang) });
   chs.forEach(c => files.push({ name: 'OEBPS/' + c.file, data: xhtml(c.title, '<section epub:type="chapter">\n<h1>' + C.xmlEsc(c.title) + '</h1>\n' + c.paras.map(p => '<p>' + C.xmlEsc(p) + '</p>').join('\n') + '\n</section>', lang) }));
   return C.zip(files);
@@ -3288,7 +3294,7 @@ function renderHeader() {
     <button class="iconbtn" data-act="settings" title="${esc(T('Kết nối AI'))}" aria-label="${esc(T('Kết nối AI'))}">${I('gear')}</button>
     <button class="iconbtn" data-act="theme" title="${esc(T('Giao diện sáng / tối'))}" aria-label="${esc(T('Giao diện sáng / tối'))}">${I('moon')}</button>
     <div class="pill" role="group" aria-label="${esc(T('Ngôn ngữ giao diện'))}"><button data-act="uiLang" data-l="vi" class="${UI === 'vi' ? 'on' : ''}" aria-pressed="${UI === 'vi'}">VI</button><button data-act="uiLang" data-l="en" class="${UI === 'en' ? 'on' : ''}" aria-pressed="${UI === 'en'}">EN</button></div>
-  </div>${inProj ? `<div class="row-flex" style="padding:0 12px 10px"><button data-act="home">${I('folder')} ${esc(T('Kho truyện'))}</button><button data-act="newNovel">${I('plus')} ${esc(T('Truyện mới'))}</button></div>` : ''}`;
+  </div>${inProj ? `<div class="row-flex" style="padding:0 12px 10px"><button data-act="home">${I('folder')} ${esc(T('Kho truyện'))}</button><button data-act="newNovel">${I('plus')} ${esc(T('Truyện mới'))}</button><button data-act="convert">${I('download')} ${esc(T('Chuyển định dạng'))}</button></div>` : ''}`;
   renderMTabs();
 }
 function openNewNovel() {
@@ -3458,6 +3464,7 @@ function renderHome(allCh) {
       <div class="muted small droph" style="margin-top:6px">${esc(T('Trên máy tính: kéo thả file truyện vào trang này cũng được.'))}</div>
       ${S.projects.length ? '' : `<div class="small" style="margin-top:8px">${esc(T('Chưa quen?'))} <button class="link" data-act="sampleProject">${esc(T('Thử truyện mẫu'))}</button></div>`}
     </section>
+    <section class="sheet cvcard"><div class="cvrow"><div><h3 class="serif">${esc(T('Chuyển định dạng'))}</h3><div class="muted small">${esc(T('TXT → EPUB · Word · PDF, có mục lục — làm ngay trên máy'))}</div></div><button data-act="convert">${I('download')} ${esc(T('Mở công cụ'))}</button></div></section>
     ${S.projects.length ? `<h3 class="serif sect">${esc(T('Truyện của bạn'))}</h3>` : ''}
     <div class="grid-cards">${S.projects.map(p => { const c = cnt[p.id] || { n: 0, done: 0 }; return `<button class="sheet pcard" data-act="openProject" data-id="${p.id}">
       <span class="pt serif">${esc(p.title || T('Không tên'))}</span>
@@ -5304,7 +5311,7 @@ async function novelDownload(fmt) {
   await deliverBook(book, safeName(book.title), fmt);
 }
 /* PDF thật: vẽ từng trang lên canvas bằng font chữ có chân của trình duyệt (đúng dấu tiếng Việt), rồi gói JPEG thành .pdf */
-async function renderPdfPages(book, size) {
+async function renderPdfPages(book, size, onProg) {
   try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
   const fam = (getComputedStyle(document.documentElement).getPropertyValue('--serif') || '').trim() || 'Georgia, serif';
   const F = C.pdfFonts(size);
@@ -5313,7 +5320,7 @@ async function renderPdfPages(book, size) {
   const cache = new Map();
   const measure = (t, f) => { const key = f + '\u0001' + t; if (cache.has(key)) return cache.get(key); mctx.font = css(f, 1); const w = mctx.measureText(t).width; cache.set(key, w); return w; };
   const lay = C.pdfLayout(book, measure, { size });
-  const sc = 2.4; const cw = Math.round(lay.W * sc), chh = Math.round(lay.H * sc);
+  const np = lay.pages.length, sc = np > 600 ? 1.4 : np > 250 ? 2 : 2.4, jq = np > 600 ? 0.72 : 0.86; const cw = Math.round(lay.W * sc), chh = Math.round(lay.H * sc);
   const cv = document.createElement('canvas'); cv.width = cw; cv.height = chh; const ctx = cv.getContext('2d');
   const out = [];
   for (let i = 0; i < lay.pages.length; i++) {
@@ -5327,20 +5334,88 @@ async function renderPdfPages(book, size) {
         ctx.textAlign = 'left'; let x = op.x; op.words.forEach((w, k) => { ctx.fillText(w, x * sc, op.y * sc); x += ws[k] + gap; });
       } else { ctx.textAlign = op.align === 'center' ? 'center' : 'left'; ctx.fillText(op.s, op.x * sc, op.y * sc); }
     }
-    const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.86));
+    const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', jq));
     out.push({ jpeg: new Uint8Array(await blob.arrayBuffer()), pw: cw, ph: chh });
-    if (i % 8 === 7) await new Promise(r => setTimeout(r, 0));
+    if (i % 8 === 7) { if (onProg) onProg(i + 1, lay.pages.length); await new Promise(r => setTimeout(r, 0)); }
   }
   return { lay, pages: out };
 }
-async function downloadPdf(book, base) {
+async function downloadPdf(book, base, onProg) {
   toast(T('Đang tạo PDF…'));
-  const { lay, pages } = await renderPdfPages(book, 'A5');
+  const { lay, pages } = await renderPdfPages(book, 'A5', onProg);
   const bytes = C.buildPdf(pages, lay.W, lay.H, { title: book.title, author: book.author || '' });
   download(base + '.pdf', new Blob([bytes], { type: 'application/pdf' }));
   toast(T('Đã tạo PDF ({n} trang).', { n: pages.length }), 'ok');
 }
 window.__pdf = { renderPdfPages };
+/* ---------- Công cụ “Chuyển định dạng”: TXT (hoặc chữ dán) → EPUB / Word / PDF, chạy hoàn toàn trên máy ---------- */
+const CV = { text: '', name: '', cover: null, busy: false };
+const cvYield = () => new Promise(r => setTimeout(r, 0));
+const CV_VI = /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i;
+function cvSource() { const ta = $('#cvText'); return ta && ta.value.trim() ? ta.value : CV.text; }
+function openConvert() {
+  closeDlMenu && closeDlMenu();
+  Object.assign(CV, { text: '', name: '', cover: null, busy: false });
+  openModal(T('Chuyển định dạng'), `
+    <p class="muted small" style="margin-top:0">${esc(T('Biến file .txt thành sách EPUB, Word (.docx) hoặc PDF — có mục lục theo chương. Mọi thứ làm ngay trên máy, không gửi đi đâu.'))}</p>
+    <div class="row-flex"><button class="primary" id="cvFile">${I('upload')} ${esc(T('Chọn file .txt'))}</button><span id="cvFname" class="muted small"></span></div>
+    <label>${esc(T('Hoặc dán chữ vào đây'))}</label><textarea id="cvText" rows="4" class="zhfont" placeholder="${esc(T('Chương 1 …'))}"></textarea>
+    <div class="two"><div><label>${esc(T('Tên sách'))}</label><input id="cvTitle"></div><div><label>${esc(T('Tác giả'))}</label><input id="cvAuthor"></div></div>
+    <label class="inline small"><input type="checkbox" id="cvSplit" checked> ${esc(T('Tự tách chương theo tiêu đề (Chương 1, 第一章, 第1章, Chapter 1…) và làm mục lục'))}</label>
+    <div class="row-flex" style="margin-top:6px"><button id="cvCover">${I('upload')} ${esc(T('Ảnh bìa (EPUB)…'))}</button><span id="cvCoverInfo" class="muted small"></span></div>
+    <div id="cvInfo" class="small cvinfo" aria-live="polite"></div>
+    <div class="row-flex cvout" style="margin-top:10px"><button class="primary" data-cv="epub">${I('download')} EPUB</button><button data-cv="docx">${I('download')} Word (.docx)</button><button data-cv="pdf">${I('download')} PDF</button><button data-cv="print">${esc(T('In / PDF (chữ chọn được)'))}</button></div>
+    <div class="muted small" style="margin-top:8px">${esc(T('PDF tải về ngay, khổ A5, đúng dấu tiếng Việt và chữ Hán (trang dạng ảnh). Cần chọn/tìm chữ trong PDF thì bấm “In / PDF” → trên iPhone: Chia sẻ/In → chụm hai ngón vào trang xem trước → Lưu vào Tệp.'))}</div>
+    <div class="muted small" style="margin-top:4px">${esc(T('Muốn xuất bản dịch của một truyện trong Kho: mở truyện → Tải xuống.'))}</div>`, b => bindConvert(b), () => { CV.text = ''; CV.cover = null; });
+}
+function bindConvert(b) {
+  let tm = 0;
+  const info = () => { clearTimeout(tm); tm = setTimeout(() => {
+    const el = $('#cvInfo', b); if (!el) return; const t = cvSource(); if (!t.trim()) { el.textContent = ''; return; }
+    const t0 = performance.now(); const parts = $('#cvSplit', b).checked ? C.splitChapters(t) : [{ title: '', paras: C.splitParagraphs(t) }];
+    const np = parts.reduce((a, p) => a + p.paras.length, 0);
+    el.textContent = T('{c} chữ · {p} đoạn · {n} chương', { c: fmtN(C.countChars(t)), p: fmtN(np), n: parts.length }) + (parts.length > 1 ? ': ' + parts.slice(0, 4).map(p => p.title).join(' · ') + (parts.length > 4 ? ' … ' + parts[parts.length - 1].title : '') : '');
+    CV.lastMs = performance.now() - t0;
+  }, 350); };
+  $('#cvText', b).oninput = () => { if ($('#cvText', b).value.trim()) $('#cvFname', b).textContent = ''; info(); };
+  $('#cvSplit', b).onchange = info;
+  $('#cvFile', b).onclick = async () => {
+    const [f] = await pickFiles('.txt,.md,text/plain', false); if (!f) return;
+    try {
+      const buf = new Uint8Array(await f.arrayBuffer()); CV.text = C.decodeText(buf).replace(/\r\n?/g, '\n'); CV.name = f.name.replace(/\.[^.]+$/, '');
+      $('#cvText', b).value = ''; $('#cvFname', b).textContent = f.name + ' · ' + fmtN(Math.round(f.size / 1024)) + ' KB';
+      if (!$('#cvTitle', b).value.trim()) $('#cvTitle', b).value = CV.name;
+      info();
+    } catch (e) { toast(T('Không đọc được file.') + ' ' + (e.message || ''), 'err'); }
+  };
+  $('#cvCover', b).onclick = async () => {
+    const [f] = await pickFiles('image/jpeg,image/png,image/gif,image/webp', false); if (!f) return;
+    let mime = f.type; if (!/^image\/(jpeg|png|gif|webp)$/.test(mime)) mime = /\.png$/i.test(f.name) ? 'image/png' : 'image/jpeg';
+    CV.cover = { data: new Uint8Array(await f.arrayBuffer()), mime }; $('#cvCoverInfo', b).textContent = f.name;
+  };
+  $$('[data-cv]', b).forEach(btn => { btn.onclick = () => cvExport(b, btn.dataset.cv); });
+}
+async function cvExport(b, fmt) {
+  if (CV.busy) return; const text = cvSource();
+  if (!text.trim()) { toast(T('Hãy chọn file .txt hoặc dán chữ trước.'), 'err'); return; }
+  CV.busy = true; const btns = $$('[data-cv]', b); btns.forEach(x => { x.disabled = true; }); const el = $('#cvInfo', b); const say = t => { if (el) el.textContent = t; };
+  try {
+    say(T('Đang chuẩn bị…')); await cvYield();
+    const title = $('#cvTitle', b).value.trim() || CV.name || T('Không tên'); const author = $('#cvAuthor', b).value.trim();
+    let chs = $('#cvSplit', b).checked ? C.splitChapters(text) : [{ title: '', paras: C.splitParagraphs(text) }];
+    chs = chs.filter(c => c.paras.length); if (!chs.length) throw new Error(T('Không có nội dung.'));
+    if (chs.length === 1 && !chs[0].title) chs[0].title = title;
+    const sample = text.slice(0, 20000); const zh = (sample.match(/[\u4e00-\u9fff]/g) || []).length > sample.length * 0.2 && !CV_VI.test(sample);
+    const book = { title, author, lang: 'vi', langCode: zh ? 'zh' : 'vi', chapters: chs, cover: CV.cover };
+    const base = safeName(title); await cvYield();
+    if (fmt === 'epub') { say(T('Đang tạo EPUB…')); await cvYield(); download(base + '.epub', new Blob([C.buildEpub(book)], { type: 'application/epub+zip' })); }
+    else if (fmt === 'docx') { say(T('Đang tạo Word…')); await cvYield(); download(base + '.docx', new Blob([C.buildDocx(book)], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })); }
+    else if (fmt === 'pdf') { say(T('Đang dàn trang PDF…')); await cvYield(); await downloadPdf(book, base, (i, n) => say(T('Đang vẽ trang {i}/{n}…', { i, n }))); }
+    else if (fmt === 'print') printBook(book);
+    say(T('Xong: {n} chương.', { n: chs.length }) + (fmt === 'print' ? '' : ' ' + T('File đã tải về (trên iPhone: xem trong Tệp → Tải về).')));
+  } catch (e) { say(''); toast(T('Không tạo được file.') + ' ' + (e.message || e), 'err'); }
+  finally { CV.busy = false; btns.forEach(x => { x.disabled = false; }); }
+}
 /* ---------- Sách nói: đọc bản dịch thành MP3 ngay trên máy (miễn phí, không cần khóa API) ----------
    Piper VITS + espeak-ng chạy trong luồng phụ (WebAssembly). Lần đầu tải giọng đọc (~100 MB) rồi lưu trong Cache Storage
    'am-tts-v1' (tên không bắt đầu bằng 'anmuc-' nên sw.js không xóa khi cập nhật app). MP3 từng chương lưu ở 'am-audio-v1' để làm tiếp được. */
@@ -5626,7 +5701,7 @@ function setUiLang(l) {
 /* ---------- Sự kiện ---------- */
 const A = {
   testPrimary: () => { const p = primaryProfile(); return p ? testProfile(p.id) : openSettings(); },
-  home: () => goHome(), newNovel: () => openNewNovel(), settings: () => openSettings(), closeModal: () => closeModal(),
+  home: () => goHome(), newNovel: () => openNewNovel(), convert: () => openConvert(), settings: () => openSettings(), closeModal: () => closeModal(),
   theme: () => { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = t; localStorage.setItem('dichtruyen_theme', t); setThemeMeta(t); },
   uiLang: el => setUiLang(el.dataset.l),
   mtab: el => { S.mtab = el.dataset.m; if (S.mtab !== 'list' && S.tab !== 'editor') { S.tab = 'editor'; renderSide(); renderMain(); } renderMTabs(); if (S.mtab === 'tgt') autosizeAll($$('textarea.vi')); window.scrollTo(0, 0); },
@@ -5848,7 +5923,7 @@ window.addEventListener('beforeunload', e => { if (pending.size || S.busy) { e.p
 
 
 /* ---------- Ứng dụng trên màn hình chính (PWA) ---------- */
-const APP_BUILD = 'freeze-fix-1101';
+const APP_BUILD = 'convert-1104';
 const ONLINE_ORIGIN = /^https?:$/.test(location.protocol);
 function setThemeMeta(t) { document.querySelectorAll('meta[name=theme-color]').forEach(m => { m.content = t === 'dark' ? '#1a1714' : '#f3eee6'; m.removeAttribute('media'); }); }
 // Service worker chỉ chạy khi mở qua http(s); mở file:// thì bỏ qua (app vẫn chạy trọn trong một file)
