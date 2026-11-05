@@ -130,6 +130,7 @@ details.menu summary::-webkit-details-marker{display:none}
 .menu-list button{border-radius:10px;justify-content:flex-start;border-color:transparent}
 #rows{border:1px solid var(--line);border-top:0;border-radius:0 0 16px 16px;background:var(--sheet);overflow:hidden}
 .prow{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+#modalBody .hidden{display:none!important} .cvocr{margin-top:10px;padding:10px 12px;border:1px solid var(--line, #d9d2c3);border-radius:10px;background:var(--cin-soft)} .cvocr select{width:auto;flex:1 1 140px} .cvprev{max-height:220px;overflow:auto;padding:6px 2px} .cvprev b{display:block;margin-top:6px} .cvprev p{margin:2px 0 4px}
 .cvcard .cvrow{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap} .cvcard h3{margin:0 0 2px} .cvinfo{margin-top:8px;min-height:1.2em} .cvout button{flex:1 1 40%}
 #rows.big .prow{content-visibility:auto;contain-intrinsic-size:auto 120px}
 .prow:first-child{border-top:0}
@@ -2256,8 +2257,10 @@ const decodeXmlBytes = d => { const head = new TextDecoder('latin1').decode(d.su
 C.splitHtmlHeadings = html => {
   const body = String(html).replace(/<head[\s\S]*?<\/head>/i, '');
   const cnt = [1, 2, 3].map(l => (body.match(new RegExp('<h' + l + '\\b', 'gi')) || []).length);
-  const lv = [1, 2, 3].find(l => cnt[l - 1] >= 2); if (!lv) return null;
-  const re = new RegExp('<h' + lv + '\\b', 'gi'); const pos = []; let m; while ((m = re.exec(body))) pos.push(m.index);
+  let lv = [1, 2, 3].find(l => cnt[l - 1] >= 2); if (!lv) return null;
+  /* vài “Quyển” ở h1, nhiều chương ở h2 → chương theo h2, tên quyển ghép vào trước */
+  if (lv < 3 && cnt[lv - 1] <= 6 && cnt[lv] >= 3 && cnt[lv] >= cnt[lv - 1] * 3) lv++;
+  const re = new RegExp('<h[1-' + lv + ']\\b', 'gi'); const pos = []; let m; while ((m = re.exec(body))) pos.push(m.index);
   const out = []; let carry = '';
   const pre = C.htmlToText(body.slice(0, pos[0]));
   const preLines = pre.split('\n').filter(Boolean); const preHead = headingOf(body.slice(0, pos[0]));
@@ -2265,7 +2268,7 @@ C.splitHtmlHeadings = html => {
   if (preLines.length) out.push({ title: preHead || '', text: preLines.join('\n') });
   pos.forEach((p, k) => {
     const seg = body.slice(p, k + 1 < pos.length ? pos[k + 1] : body.length);
-    const hm = seg.match(new RegExp('<h' + lv + '\\b[^>]*>([\\s\\S]*?)<\\/h' + lv + '>', 'i'));
+    const hm = seg.match(/^<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1>/i); if (hm) hm[1] = hm[2];
     const t = hm ? C.htmlToText(hm[1]).replace(/\n/g, ' ').trim() : '';
     const text = C.htmlToText(hm ? seg.slice(hm.index + hm[0].length) : seg);
     if (!text.trim()) { carry = carry ? carry + ' · ' + t : t; return; }
@@ -2291,6 +2294,7 @@ C.readEpubFiles = (all, root) => {
   const opf = decodeXmlBytes(opfF.data); const base = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/') + 1) : '';
   const items = {}; for (const m of opf.matchAll(/<item\b[^>]*>/gi)) { const t = m[0]; const id = (t.match(/\bid=["']([^"']+)/) || [])[1]; const href = (t.match(/\bhref=["']([^"']+)/) || [])[1]; const props = (t.match(/\bproperties=["']([^"']+)/) || [])[1] || ''; const mt = (t.match(/media-type=["']([^"']+)/) || [])[1] || ''; if (id && href) items[id] = { href: decodeURIComponent(href), props, mt }; }
   const title = ((opf.match(/<dc:title[^>]*>([\s\S]*?)<\/dc:title>/i) || [])[1] || '').trim();
+  const navT = epubNavTitles(opf, items, base, get);
   const out = [];
   for (const m of opf.matchAll(/<itemref\b[^>]*idref=["']([^"']+)["'][^>]*>/gi)) {
     const it = items[m[1]]; if (!it || /nav/.test(it.props) || !/html/.test(it.mt || 'html')) continue;
@@ -2299,28 +2303,105 @@ C.readEpubFiles = (all, root) => {
     const html = decodeXmlBytes(f.data); if (/epub:type=["'][^"']*\b(titlepage|toc|cover|copyright-page)\b/i.test(html)) continue;
     const segs = C.splitHtmlHeadings(html); if (segs) { segs.forEach(x => out.push(x)); continue; }
     const text = C.htmlToText(html); if (!text.trim()) continue;
-    let t = headingOf(html); const lines = text.split('\n'); if (t && lines[0] === t) lines.shift();
+    const p = resolvePath(base, it.href);
+    let t = hTagOf(html) || navT.get(p.toLowerCase()) || headingOf(html); const lines = text.split('\n'); if (t && lines[0] === t) lines.shift();
     if (!lines.join('').trim()) continue;
     out.push({ title: t || '', text: lines.join('\n') });
   }
   const meta = C.epubMeta(opf);
-  return { title: C.htmlToText(title), chapters: out, meta };
+  let cover = null; try { cover = epubCover(opf, items, base, get); } catch (e) { /* bỏ qua */ }
+  return { title: C.htmlToText(title), chapters: out, meta, cover };
+};
+const hTagOf = html => { const m = String(html).match(/<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/i); return m ? C.htmlToText(m[1]).replace(/\n/g, ' ').trim() : ''; };
+/* Tên chương theo mục lục EPUB (nav của EPUB 3, toc.ncx của EPUB 2): Map đường dẫn tệp (chữ thường) → tên mục đầu tiên trỏ vào tệp đó */
+const epubNavTitles = (opf, items, base, get) => {
+  const map = new Map(); const add = (dir, href, label) => { href = String(href || '').split('#')[0]; label = C.htmlToText(label).replace(/\n/g, ' ').trim(); if (!href || !label) return; let h = href; try { h = decodeURIComponent(href); } catch (e) { /* giữ nguyên */ } const k = resolvePath(dir, h).toLowerCase(); if (!map.has(k)) map.set(k, label); };
+  const dirOf = p => p.includes('/') ? p.slice(0, p.lastIndexOf('/') + 1) : '';
+  try {
+    const nav = Object.values(items).find(x => /\bnav\b/.test(x.props));
+    if (nav) {
+      const np = resolvePath(base, nav.href); const f = get(np);
+      if (f) { let h = decodeXmlBytes(f.data); const tm = h.match(/<nav\b[^>]*epub:type=["'][^"']*\btoc\b[^"']*["'][^>]*>([\s\S]*?)<\/nav>/i); if (tm) h = tm[1]; for (const m of h.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) add(dirOf(np), m[1], m[2]); }
+    }
+    const tocId = (opf.match(/<spine\b[^>]*\btoc=["']([^"']+)/i) || [])[1];
+    const ncx = (tocId && items[tocId]) || Object.values(items).find(x => /dtbncx/i.test(x.mt));
+    if (ncx) {
+      const np = resolvePath(base, ncx.href); const f = get(np);
+      if (f) { const x = decodeXmlBytes(f.data); for (const m of x.matchAll(/<navPoint\b[\s\S]*?<navLabel>\s*<text>([\s\S]*?)<\/text>[\s\S]*?<content\b[^>]*src=["']([^"']+)["']/gi)) add(dirOf(np), m[2], m[1]); }
+    }
+  } catch (e) { /* mục lục hỏng: bỏ qua */ }
+  return map;
+};
+/* Ảnh bìa EPUB: properties="cover-image" (EPUB 3), <meta name="cover"> (EPUB 2), rồi ảnh có chữ “cover” trong id/tên tệp */
+const epubCover = (opf, items, base, get) => {
+  const isImg = x => x && /^image\/(jpe?g|png|gif|webp)$/i.test(x.mt);
+  let it = Object.values(items).find(x => /\bcover-image\b/.test(x.props) && isImg(x));
+  if (!it) { const mt = (opf.match(/<meta\b[^>]*\bname=["']cover["'][^>]*>/i) || [])[0]; const id = mt && (mt.match(/\bcontent=["']([^"']+)/i) || [])[1]; if (id && isImg(items[id])) it = items[id]; }
+  if (!it) it = Object.entries(items).filter(([id, x]) => isImg(x) && /cover|bia|封面/i.test(id + ' ' + x.href)).map(e => e[1])[0];
+  if (!it) return null;
+  const f = get(resolvePath(base, it.href)); if (!f || !f.data || f.data.length < 100) return null;
+  const mime = it.mt.toLowerCase().replace('image/jpg', 'image/jpeg');
+  return { data: f.data, mime, name: it.href.split('/').pop() };
 };
 /* DOCX → văn bản (đọc word/document.xml) */
 const readDocxFull = async buf => {
   const files = await C.unzip(buf); const doc = files.find(f => f.name === 'word/document.xml');
   if (!doc) throw new Error(M('Không đọc được file Word. Lưu lại thành docx rồi đưa vào.', 'Could not read the Word file. Save it as .docx and try again.'));
   const xml = utf8(doc.data);
-  const paras = [];
+  const paras = [], levels = []; const lvOf = docxStyleLevels(files);
   for (const m of xml.matchAll(/<w:p[\s>][\s\S]*?<\/w:p>|<w:p\/>/g)) {
     let t = ''; for (const x of m[0].matchAll(/<w:t(?:\s[^>]*)?>([\s\S]*?)<\/w:t>|<w:tab\/>|<w:br\b[^>]*\/>/g)) t += x[1] != null ? x[1] : x[0].startsWith('<w:tab') ? '\t' : '\n';
     paras.push(t.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&'));
+    const ppr = (m[0].match(/<w:pPr>[\s\S]*?<\/w:pPr>/) || [''])[0];
+    const st = (ppr.match(/<w:pStyle\b[^>]*w:val="([^"]+)"/) || [])[1]; const ol = (ppr.match(/<w:outlineLvl\b[^>]*w:val="(\d)"/) || [])[1];
+    levels.push(ol != null ? +ol + 1 : st ? lvOf(st) : -1);
   }
   const meta = {}; const core = files.find(f => f.name === 'docProps/core.xml');
   if (core) { const x = utf8(core.data); const g = tag => xmlText((x.match(new RegExp('<' + tag + '\\b[^>]*>([\\s\\S]*?)</' + tag + '>')) || [])[1]); meta.title = C.cleanMetaTitle(g('dc:title')); meta.author = C.cleanMetaName(g('dc:creator')); const d = g('dc:description'); if (d.length > 20) meta.blurb = d; }
-  return { text: paras.join('\n'), meta };
+  return { text: paras.join('\n'), meta, units: C.docxUnits(paras, levels) };
 };
 C.readDocx = async buf => (await readDocxFull(buf)).text;
+/* Cấp tiêu đề theo tên kiểu đoạn: Title/Tiêu đề/标题 = 0; Heading 1…/Đầu đề 1…/标题 1… = 1…; -1 = đoạn thường. Có kế thừa basedOn và outlineLvl trong styles.xml */
+const DOCX_TITLE = /^(title|tiêu\s*đề|tựa\s*đề|标题|標題|书名|書名)$/i;
+const DOCX_HEAD = /^(heading|đầu\s*đề|tiêu\s*đề|标题|標題|見出し|제목)\s*([1-9])$/i;
+const docxStyleLevels = files => {
+  const sf = files.find(f => f.name === 'word/styles.xml'); const st = {};
+  if (sf) for (const m of utf8(sf.data).matchAll(/<w:style\b([^>]*)>([\s\S]*?)<\/w:style>/g)) {
+    const id = (m[1].match(/w:styleId="([^"]+)"/) || [])[1]; if (!id) continue;
+    st[id] = { name: (m[2].match(/<w:name\b[^>]*w:val="([^"]+)"/) || [])[1] || '', based: (m[2].match(/<w:basedOn\b[^>]*w:val="([^"]+)"/) || [])[1] || '', ol: (m[2].match(/<w:outlineLvl\b[^>]*w:val="(\d)"/) || [])[1] };
+  }
+  const byName = n => { n = String(n || '').trim().replace(/[_-]+/g, ' ').replace(/([^\d\s])(\d)$/, '$1 $2'); if (DOCX_TITLE.test(n)) return 0; const h = n.match(DOCX_HEAD); return h ? +h[2] : -1; };
+  const memo = {};
+  const lv = (id, depth) => {
+    if (id in memo) return memo[id]; const s = st[id]; let r = byName(s ? s.name : id);
+    if (r < 0 && s && s.ol != null && +s.ol < 9) r = +s.ol + 1;
+    if (r < 0 && s && s.based && s.based !== id && (depth || 0) < 8) r = lv(s.based, (depth || 0) + 1);
+    if (r < 0 && !s) r = byName(id);
+    return (memo[id] = r);
+  };
+  return id => lv(id, 0);
+};
+/* Đoạn + cấp tiêu đề → [{title, text}] (null nếu không có ít nhất 2 tiêu đề cùng cấp).
+   Cấp chương = cấp cao nhất (1–3) xuất hiện ≥ 2 lần; Title trước chương đầu = tên sách; tiêu đề cấp cao hơn (Quyển/Phần) ghép vào trước tên chương sau. */
+C.docxUnits = (paras, levels) => {
+  const cnt = {}; paras.forEach((p, i) => { if (p.trim() && levels[i] >= 0) cnt[levels[i]] = (cnt[levels[i]] || 0) + 1; });
+  let L = [1, 2, 3, 4].find(l => cnt[l] >= 2); if (L == null && cnt[0] >= 2) L = 0; if (L == null) return null;
+  /* vài “Quyển/Phần” ở cấp trên, nhiều chương ở cấp dưới → lấy cấp dưới làm chương */
+  const nx = [L + 1, L + 2].find(l => cnt[l] >= 3); if (nx && cnt[L] <= 6 && cnt[nx] >= cnt[L] * 3) L = nx;
+  const out = []; let cur = { title: '', lines: [] }, carry = '', bookTitle = '', started = false;
+  const push = () => { if (cur.title || cur.lines.some(x => x.trim())) out.push({ title: cur.title, text: cur.lines.join('\n') }); };
+  paras.forEach((p, i) => {
+    const t = p.replace(/\s+/g, ' ').trim(); const lv = levels[i];
+    if (!t) { cur.lines.push(''); return; }
+    if (lv === L) { push(); cur = { title: carry ? carry + ' · ' + t : t, lines: [] }; carry = ''; started = true; return; }
+    if (lv >= 0 && lv < L) { if (lv === 0 && !started && !bookTitle) { bookTitle = t; return; } if (started && cur.lines.some(x => x.trim())) { push(); cur = { title: '', lines: [] }; started = false; } carry = carry ? carry + ' · ' + t : t; return; }
+    cur.lines.push(p);
+  });
+  push();
+  const units = out.filter(u => u.title || u.text.trim());
+  if (units.filter(u => u.title).length < 2) return null;
+  units.bookTitle = bookTitle; return units;
+};
 const xmlText = s => C.htmlToText(String(s || '')).replace(/\n+/g, ' ').trim();
 /* Siêu dữ liệu OPF: dc:title, dc:creator (aut / trl), dc:contributor, dc:publisher, dc:source, dc:description, dc:subject */
 C.epubMeta = opf => {
@@ -2551,20 +2632,24 @@ const CJK_START = /^[\u2e80-\u9fff\uf900-\ufaff\uff00-\uffef\u3000-\u303f\uac00-
 const TERM_END = /[。！？!?…”"」』）)\]】.:：~～—]$/;
 const PAGE_NUM = /^(?:[-—–·\s]*\d{1,4}[-—–·\s]*|第\s*\d+\s*[页頁]|(?:page|trang)\s*\d+(?:\s*(?:\/|of|trên)\s*\d+)?|\d+\s*(?:\/|of)\s*\d+)$/i;
 /* lines: [{text, x, y, w, h, page}] (y tính từ trên xuống) → văn bản, mỗi đoạn một dòng */
+const CJK_RAD = {"⺁": "厂", "⺇": "几", "⺊": "卜", "⺌": "小", "⺍": "小", "⺐": "尢", "⺓": "幺", "⺔": "彐", "⺖": "忄", "⺗": "心", "⺘": "扌", "⺙": "攵", "⺛": "旡", "⺝": "月", "⺟": "母", "⺠": "民", "⺡": "氵", "⺢": "氵", "⺣": "灬", "⺤": "爫", "⺥": "爫", "⺦": "丬", "⺧": "丬", "⺨": "犭", "⺩": "王", "⺪": "疋", "⺫": "目", "⺬": "示", "⺭": "礻", "⺮": "竹", "⺯": "糸", "⺰": "纟", "⺱": "网", "⺲": "罒", "⺳": "网", "⺶": "羊", "⺷": "羊", "⺸": "羊", "⺹": "耂", "⺺": "肀", "⺻": "聿", "⺼": "月", "⺽": "臼", "⺾": "艹", "⺿": "艹", "⻀": "艹", "⻁": "虎", "⻂": "衤", "⻃": "覀", "⻄": "西", "⻅": "见", "⻆": "角", "⻇": "角", "⻈": "讠", "⻉": "贝", "⻊": "足", "⻋": "车", "⻌": "辶", "⻍": "辶", "⻎": "辶", "⻏": "阝", "⻐": "钅", "⻑": "長", "⻒": "镸", "⻓": "长", "⻔": "门", "⻕": "阝", "⻖": "阝", "⻗": "雨", "⻘": "青", "⻙": "韦", "⻚": "页", "⻛": "风", "⻜": "飞", "⻝": "食", "⻞": "食", "⻟": "食", "⻠": "饣", "⻡": "首", "⻢": "马", "⻣": "骨", "⻤": "鬼", "⻥": "鱼", "⻦": "鸟", "⻧": "卤", "⻨": "麦", "⻩": "黄", "⻪": "黾", "⻫": "斉", "⻬": "齐", "⻭": "歯", "⻮": "齿", "⻯": "竜", "⻰": "龙", "⻱": "龜", "⻲": "亀", "⻳": "龟"}; // CJK radical-supplement glyphs some PDF fonts map to → normal ideographs
 C.pdfLinesToText = lines => {
-  lines = (lines || []).map(l => Object.assign({}, l, { text: String(l.text || '').replace(/[\u2E80-\u2FDF\uF900-\uFAFF]/g, c => c.normalize('NFKC')).replace(/\s+/g, ' ').trim() })).filter(l => l.text);
+  lines = (lines || []).map(l => Object.assign({}, l, { text: String(l.text || '').replace(/[\u2E80-\u2FDF\uF900-\uFAFF]/g, c => CJK_RAD[c] || c.normalize('NFKC')).replace(/\s+/g, ' ').trim() })).filter(l => l.text);
   if (!lines.length) return '';
   /* bỏ số trang và tiêu đề chạy lặp lại ở đầu/cuối trang */
   const pages = {}; lines.forEach(l => { (pages[l.page] = pages[l.page] || []).push(l); });
   const pk = Object.keys(pages); const edge = {};
-  pk.forEach(k => { const a = pages[k]; [a[0], a[a.length - 1]].forEach(l => { const key = l.text.replace(/\d+/g, '#'); edge[key] = (edge[key] || 0) + 1; }); });
+  /* hai dòng đầu và hai dòng cuối mỗi trang (tiêu đề chạy + số trang có thể đứng cùng phía) */
+  const edgesOf = a => [...new Set([a[0], a[1], a[a.length - 2], a[a.length - 1]].filter(Boolean))];
+  pk.forEach(k => { edgesOf(pages[k]).forEach(l => { const key = l.text.replace(/\d+/g, '#'); edge[key] = (edge[key] || 0) + 1; }); });
   const minRep = Math.max(3, Math.ceil(pk.length * 0.3));
-  lines = lines.filter(l => { const a = pages[l.page]; const isEdge = l === a[0] || l === a[a.length - 1]; if (!isEdge) return true; if (PAGE_NUM.test(l.text)) return false; return !(pk.length >= 3 && edge[l.text.replace(/\d+/g, '#')] >= minRep); });
+  lines = lines.filter(l => { const a = pages[l.page]; const pos = a.indexOf(l); const outer = pos === 0 || pos === a.length - 1; if (!(outer || pos === 1 || pos === a.length - 2)) return true; if (PAGE_NUM.test(l.text) && (outer || a.length > 6)) return false; if (C.isHeading(l.text)) return true; return !(pk.length >= 3 && edge[l.text.replace(/\d+/g, '#')] >= minRep); });
   if (!lines.length) return '';
   const xs = lines.map(l => l.x).sort((a, b) => a - b); const left = xs[Math.floor(xs.length * 0.1)];
   const rights = lines.map(l => l.x + l.w).sort((a, b) => a - b); const right = rights[Math.floor(rights.length * 0.9)];
   const gaps = []; for (let i = 1; i < lines.length; i++) if (lines[i].page === lines[i - 1].page) { const g = lines[i].y - lines[i - 1].y; if (g > 0) gaps.push(g); }
   gaps.sort((a, b) => a - b); const gap = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 0;
+  const hs = lines.map(l => l.h || 0).filter(Boolean).sort((a, b) => a - b); const medH = hs.length ? hs[Math.floor(hs.length / 2)] : 0;
   const paras = []; let cur = '';
   for (let i = 0; i < lines.length; i++) {
     const b = lines[i], a = lines[i - 1];
@@ -2572,6 +2657,7 @@ C.pdfLinesToText = lines => {
     if (a) {
       const h = b.h || a.h || 10;
       if (C.isHeading(a.text) || C.isHeading(b.text)) brk = true;
+      else if (medH && (a.h > medH * 1.3 || b.h > medH * 1.3) && Math.abs(a.h - b.h) > medH * 0.15) brk = true; /* đổi cỡ chữ (tiêu đề chữ to) */
       else if (/^[\u3000 ]{1,}/.test(b.text)) brk = true;
       else if (a.page === b.page && gap && b.y - a.y > gap * 1.55) brk = true;
       else if (b.x > left + h * 0.9) brk = true;
@@ -2587,7 +2673,9 @@ C.pdfLinesToText = lines => {
   return paras.map(C.cleanLine).filter(Boolean).join('\n');
 };
 /* Đọc PDF bằng pdf.js (lib truyền vào) → { text, meta, pages } */
-C.readPdf = async (u8, lib, opts) => {
+/* ctl (tuỳ chọn): { onPage(pn, n), signal (AbortSignal), allowEmpty — trả về noText thay vì báo lỗi khi PDF không có lớp chữ } */
+C.readPdf = async (u8, lib, opts, ctl) => {
+  ctl = ctl || {};
   let doc;
   try { doc = await lib.getDocument(Object.assign({ data: new Uint8Array(u8), isEvalSupported: false, disableFontFace: true, useSystemFonts: false, verbosity: 0, stopAtErrors: false }, opts || {})).promise; }
   catch (e) {
@@ -2601,13 +2689,16 @@ C.readPdf = async (u8, lib, opts) => {
     meta.title = C.cleanMetaTitle(xg('dc:title') || info.Title); meta.author = C.cleanMetaName(xg('dc:creator') || info.Author);
     const subj = metaVal(xg('dc:description') || info.Subject); if (subj && subj.length > 20) meta.blurb = subj;
   } catch (e) { /* bỏ qua */ }
-  const lines = [];
+  const lines = []; let ovl = 0; /* ovl: mảnh chữ đè lên mảnh trước trên cùng dòng → lớp chữ bị xáo (vd. PDF LibreOffice tách chữ có dấu ra phông riêng) */
   for (let pn = 1; pn <= doc.numPages; pn++) {
+    if (ctl.signal && ctl.signal.aborted) { try { await doc.destroy(); } catch (e) { /* bỏ qua */ } throw abortError(); }
+    if (ctl.onPage) ctl.onPage(pn, doc.numPages);
     const page = await doc.getPage(pn); const vp = page.getViewport({ scale: 1 }); const tc = await page.getTextContent();
     let cur = null;
     for (const it of tc.items) {
       if (typeof it.str !== 'string') continue;
       const tr = it.transform || [1, 0, 0, 1, 0, 0]; const h = Math.hypot(tr[2], tr[3]) || it.height || 10; const x = tr[4], y = vp.height - tr[5];
+      if (cur && it.str.trim() && cur.text.trim() && Math.abs(y - cur.y) <= h * 0.5 && x < cur.x + cur.w - h * 2) ovl++;
       if (!cur || Math.abs(y - cur.y) > h * 0.5 || x < cur.x + cur.w - h * 2) { if (cur && cur.text.trim()) lines.push(cur); cur = { text: '', x, y, w: 0, h, page: pn }; }
       if (it.str) { const gapX = x - (cur.x + cur.w); if (cur.text && gapX > h * 0.25 && !/\s$/.test(cur.text) && !CJK_END.test(cur.text)) cur.text += ' '; cur.text += it.str; cur.w = Math.max(cur.w, x + (it.width || 0) - cur.x); }
       if (it.hasEOL) { if (cur.text.trim()) lines.push(cur); cur = null; }
@@ -2616,10 +2707,12 @@ C.readPdf = async (u8, lib, opts) => {
     page.cleanup && page.cleanup();
   }
   const pages = doc.numPages; try { await doc.destroy(); } catch (e) { /* bỏ qua */ }
-  const text = C.pdfLinesToText(lines);
+  const text = C.pdfLinesToText(lines); const garbled = ovl >= Math.max(5, lines.length * 0.08);
+  if (ctl.allowEmpty && text.replace(/\s/g, '').length < Math.max(20, pages * 8)) return { text, meta, pages, noText: true };
   if (text.replace(/\s/g, '').length < Math.max(20, pages * 8)) throw new Error(M('PDF này không có lớp chữ (bản scan hoặc ảnh chụp) nên không lấy được nội dung. Cần nhận dạng chữ (OCR) trước — ví dụ mở bằng Google Drive → “Mở bằng Google Tài liệu”, hoặc dùng Adobe Scan — rồi tải file .docx/.txt lên.', 'This PDF has no text layer (it is a scan or a photo), so no text can be read. Run OCR first — e.g. in Google Drive choose “Open with Google Docs”, or use Adobe Scan — then upload the .docx/.txt.'));
-  return { text, meta, pages };
+  return { text, meta, pages, garbled };
 };
+const abortError = () => { const e = new Error(M('Đã hủy.', 'Cancelled.')); e.name = 'AbortError'; return e; };
 const numKey = n => n.replace(/\d+/g, d => d.padStart(8, '0'));
 /* Đọc một tệp bất kỳ → { title, chapters:[{title, text}], warn } */
 C.ACCEPT_EXT = ['epub', 'pdf', 'txt', 'doc', 'docx', 'zip', 'md', 'html', 'htm', 'xhtml'];
@@ -2639,8 +2732,49 @@ const epubsInZip = files => {
   return { roots, inPkg, real };
 };
 const pkgName = (root, zipName) => { const seg = root.replace(/\/$/, '').split('/').pop(); return seg || String(zipName).split(/[\\/]/).pop().replace(/\.zip$/i, ''); };
-const epubResult = (e, name) => { if (!e.chapters.length) throw new Error(M('Không thấy chương trong epub.', 'No chapters found in the epub.')); const base = String(name).split(/[\\/]/).pop().replace(/\.epub$/i, '').replace(/\.[^.]+$/, ''); return { title: e.title || base, chapters: e.chapters, embedded: e.meta, srcName: /\.epub$/i.test(name) ? name : name + '.epub' }; };
+const epubResult = (e, name) => { if (!e.chapters.length) throw new Error(M('Không thấy chương trong epub.', 'No chapters found in the epub.')); const base = String(name).split(/[\\/]/).pop().replace(/\.epub$/i, '').replace(/\.[^.]+$/, ''); return { title: e.title || base, chapters: e.chapters, embedded: e.meta, cover: e.cover, srcName: /\.epub$/i.test(name) ? name : name + '.epub' }; };
 const sniff = u8 => { const h = new TextDecoder('latin1').decode(u8.subarray(0, 1024)); if (h.startsWith('PK\x03\x04')) return 'zip'; if (h.startsWith('\xD0\xCF\x11\xE0')) return 'cfb'; if (h.startsWith('{\\rtf')) return 'rtf'; if (h.includes('%PDF-')) return 'pdf'; if (/^\s*(<\?xml|<!doctype html|<html)/i.test(h.replace(/^(\ufeff|\xef\xbb\xbf)/, ''))) return 'html'; return ''; };
+C.sniffKind = sniff;
+/* Tên tệp trong zip (chỉ đọc thư mục trung tâm, không giải nén) */
+C.zipNames = u8 => {
+  const n = u8.length; let e = -1;
+  for (let i = n - 22; i >= Math.max(0, n - 66000); i--) if (u8[i] === 0x50 && u8[i + 1] === 0x4b && u8[i + 2] === 5 && u8[i + 3] === 6) { e = i; break; }
+  if (e < 0) return [];
+  const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength); const cnt = dv.getUint16(e + 10, true); let o = dv.getUint32(e + 16, true); const out = [];
+  for (let k = 0; k < cnt && o + 46 <= n && dv.getUint32(o, true) === 0x02014b50; k++) { const nl = dv.getUint16(o + 28, true), xl = dv.getUint16(o + 30, true), cl = dv.getUint16(o + 32, true); out.push(new TextDecoder('utf-8').decode(u8.subarray(o + 46, o + 46 + nl))); o += 46 + nl + xl + cl; }
+  return out;
+};
+/* Sửa đuôi tệp theo nội dung (magic bytes): zip có META-INF/container.xml → .epub, có word/document.xml → .docx; %PDF → .pdf; không đuôi + chữ → .txt */
+C.fixImportName = (name, u8) => {
+  name = String(name || 'file'); const ext = (name.match(/\.([a-z0-9]+)$/i) || [])[1]?.toLowerCase() || ''; const base = ext ? name.slice(0, -ext.length - 1) : name;
+  const k = sniff(u8);
+  if (k === 'pdf' && ext !== 'pdf') return base + '.pdf';
+  if (k === 'zip') {
+    const names = C.zipNames(u8);
+    if (names.includes('META-INF/container.xml') && ext !== 'epub') return base + '.epub';
+    if (names.includes('word/document.xml') && ext !== 'docx') return base + '.docx';
+    if (!['epub', 'docx', 'zip'].includes(ext)) return base + '.zip';
+    return name;
+  }
+  if (k === 'html' && !['html', 'htm', 'xhtml'].includes(ext)) return base + '.html';
+  if (!C.ACCEPT_EXT.includes(ext)) return name + '.txt';
+  return name;
+};
+/* Kết quả TSV của Tesseract → dòng {text, x, y, w, h, page} (toạ độ nhân scale), bỏ khoảng trắng chen giữa chữ Hán */
+const CJK_CH = '\\u2e80-\\u9fff\\uf900-\\ufaff\\uff00-\\uffef\\u3000-\\u303f';
+const CJK_GAP = new RegExp('([' + CJK_CH + '])\\s+(?=[' + CJK_CH + '])', 'g');
+C.ocrTsvLines = (tsv, page, scale) => {
+  scale = scale || 1; const lines = new Map();
+  for (const row of String(tsv || '').split('\n')) {
+    const c = row.split('\t'); if (c.length < 12 || !/^\d+$/.test(c[0])) continue;
+    const lv = +c[0]; const key = c[2] + '.' + c[3] + '.' + c[4];
+    if (lv === 4) lines.set(key, { text: '', x: +c[6] * scale, y: (+c[7] + +c[9]) * scale, w: +c[8] * scale, h: +c[9] * scale, page, words: [] });
+    else if (lv === 5) { const t = c.slice(11).join('\t').trim(); const l = lines.get(key); if (l && t && +c[10] >= 0) l.words.push(t); }
+  }
+  const out = [];
+  for (const l of lines.values()) { let t = l.words.join(' ').replace(CJK_GAP, '$1').replace(/\s+([，。！？；：、”」』）])/g, '$1').trim(); if (!t) continue; delete l.words; l.text = t; out.push(l); }
+  return out;
+};
 const importRaw = async (name, buf, opts) => {
   let ext = (String(name).match(/\.([a-z0-9]+)$/i) || [])[1]?.toLowerCase() || '';
   const base = String(name).replace(/\.[^.]+$/, '');
@@ -2655,14 +2789,14 @@ const importRaw = async (name, buf, opts) => {
   if (ext === 'pdf') {
     if (kind !== 'pdf') throw new Error(M('Không đọc được file PDF này (file hỏng hoặc không phải PDF).', 'Could not read this PDF (the file is damaged or not a PDF).'));
     if (!opts.pdfjs) throw new Error(M('Chưa nạp được bộ đọc PDF.', 'The PDF reader is not loaded.'));
-    const lib = await opts.pdfjs(); const r = await C.readPdf(u8, lib, opts.pdfOpts);
-    return { title: base, chapters: [{ title: '', text: r.text }], whole: true, embedded: r.meta, pages: r.pages };
+    const lib = await opts.pdfjs(); const r = await C.readPdf(u8, lib, opts.pdfOpts, opts.pdfCtl);
+    return { title: base, chapters: [{ title: '', text: r.text }], whole: true, embedded: r.meta, pages: r.pages, noText: !!r.noText, garbled: !!r.garbled };
   }
   if (ext === 'doc') { const r = C.readDoc(u8); return { title: base, chapters: [{ title: '', text: r.text }], whole: true, embedded: r.meta }; }
   if (ext === 'txt' || ext === 'md' || ext === '') return { title: base, chapters: [{ title: '', text: C.decodeText(u8) }], whole: true };
   if (ext === 'html' || ext === 'htm' || ext === 'xhtml') { const h = decodeXmlBytes(u8); return { title: base, chapters: [{ title: headingOf(h), text: C.htmlToText(h) }] }; }
-  if (ext === 'docx') { const d = await readDocxFull(u8); return { title: base, chapters: [{ title: '', text: d.text }], whole: true, embedded: d.meta }; }
-  if (ext === 'epub') { const e = await C.readEpub(u8); if (!e.chapters.length) throw new Error(M('Không thấy chương trong epub.', 'No chapters found in the epub.')); return { title: e.title || base, chapters: e.chapters, embedded: e.meta }; }
+  if (ext === 'docx') { const d = await readDocxFull(u8); if (opts.docxStyles && d.units) return { title: d.units.bookTitle || base, chapters: d.units.slice(), embedded: d.meta, styled: true }; return { title: base, chapters: [{ title: '', text: d.text }], whole: true, embedded: d.meta }; }
+  if (ext === 'epub') { const e = await C.readEpub(u8); if (!e.chapters.length) throw new Error(M('Không thấy chương trong epub.', 'No chapters found in the epub.')); return { title: e.title || base, chapters: e.chapters, embedded: e.meta, cover: e.cover }; }
   if (ext === 'zip') {
     const files = (await C.unzip(u8)).filter(f => !/(^|\/)(\.|__MACOSX)/.test(f.name)).sort((a, b) => numKey(a.name).localeCompare(numKey(b.name)));
     const ep = epubsInZip(files);
@@ -2777,7 +2911,8 @@ C.chaptersFromImport = imp => {
   const out = [];
   for (const c of imp.chapters) {
     const split = C.splitChapters(c.text);
-    if (split.length > 1 || (split[0] && split[0].title)) split.forEach(s => out.push({ title: s.title || c.title, paras: s.paras }));
+    /* phần trước tiêu đề đầu tiên giữ tên của tệp/chương gốc (vd. “Quyển 1” từ mục lục EPUB) thay vì “Mở đầu” */
+    if (split.length > 1 || (split[0] && split[0].title)) split.forEach((s, k) => out.push({ title: k === 0 && s.title === 'Mở đầu' && c.title && imp.chapters.length > 1 ? c.title : s.title || c.title, paras: s.paras }));
     else if (split[0] && split[0].paras.length) out.push({ title: c.title || '', paras: split[0].paras });
     if (c.vi && out.length && split.length === 1) { const last = out[out.length - 1]; const a = C.alignPasted(c.vi, last.paras.length); last.vi = a.lines; }
   }
@@ -3464,7 +3599,7 @@ function renderHome(allCh) {
       <div class="muted small droph" style="margin-top:6px">${esc(T('Trên máy tính: kéo thả file truyện vào trang này cũng được.'))}</div>
       ${S.projects.length ? '' : `<div class="small" style="margin-top:8px">${esc(T('Chưa quen?'))} <button class="link" data-act="sampleProject">${esc(T('Thử truyện mẫu'))}</button></div>`}
     </section>
-    <section class="sheet cvcard"><div class="cvrow"><div><h3 class="serif">${esc(T('Chuyển định dạng'))}</h3><div class="muted small">${esc(T('TXT → EPUB · Word · PDF, có mục lục — làm ngay trên máy'))}</div></div><button data-act="convert">${I('download')} ${esc(T('Mở công cụ'))}</button></div></section>
+    <section class="sheet cvcard"><div class="cvrow"><div><h3 class="serif">${esc(T('Chuyển định dạng'))}</h3><div class="muted small">${esc(T('TXT · EPUB · Word · PDF (cả PDF scan) ⇄ TXT · EPUB · Word · PDF, có mục lục — làm ngay trên máy'))}</div></div><button data-act="convert">${I('download')} ${esc(T('Mở công cụ'))}</button></div></section>
     ${S.projects.length ? `<h3 class="serif sect">${esc(T('Truyện của bạn'))}</h3>` : ''}
     <div class="grid-cards">${S.projects.map(p => { const c = cnt[p.id] || { n: 0, done: 0 }; return `<button class="sheet pcard" data-act="openProject" data-id="${p.id}">
       <span class="pt serif">${esc(p.title || T('Không tên'))}</span>
@@ -5311,7 +5446,7 @@ async function novelDownload(fmt) {
   await deliverBook(book, safeName(book.title), fmt);
 }
 /* PDF thật: vẽ từng trang lên canvas bằng font chữ có chân của trình duyệt (đúng dấu tiếng Việt), rồi gói JPEG thành .pdf */
-async function renderPdfPages(book, size, onProg) {
+async function renderPdfPages(book, size, onProg, signal) {
   try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
   const fam = (getComputedStyle(document.documentElement).getPropertyValue('--serif') || '').trim() || 'Georgia, serif';
   const F = C.pdfFonts(size);
@@ -5336,7 +5471,7 @@ async function renderPdfPages(book, size, onProg) {
     }
     const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', jq));
     out.push({ jpeg: new Uint8Array(await blob.arrayBuffer()), pw: cw, ph: chh });
-    if (i % 8 === 7) { if (onProg) onProg(i + 1, lay.pages.length); await new Promise(r => setTimeout(r, 0)); }
+    if (i % 8 === 7) { if (onProg) onProg(i + 1, lay.pages.length); await new Promise(r => setTimeout(r, 0)); if (signal && signal.aborted) { const e = new Error(T('Đã hủy.')); e.name = 'AbortError'; throw e; } }
   }
   return { lay, pages: out };
 }
@@ -5348,73 +5483,235 @@ async function downloadPdf(book, base, onProg) {
   toast(T('Đã tạo PDF ({n} trang).', { n: pages.length }), 'ok');
 }
 window.__pdf = { renderPdfPages };
-/* ---------- Công cụ “Chuyển định dạng”: TXT (hoặc chữ dán) → EPUB / Word / PDF, chạy hoàn toàn trên máy ---------- */
-const CV = { text: '', name: '', cover: null, busy: false };
+/* ---------- Công cụ “Chuyển định dạng”: TXT / EPUB / Word / PDF (kể cả PDF scan qua OCR) → TXT / EPUB / Word / PDF, chạy hoàn toàn trên máy ---------- */
+const CV = { text: '', name: '', cover: null, fileCover: null, coverOff: false, busy: false, src: null, kind: '', u8: null, ctl: null, pdfText: '' };
 const cvYield = () => new Promise(r => setTimeout(r, 0));
 const CV_VI = /[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i;
+const CV_KIND = { txt: 'TXT', md: 'TXT', epub: 'EPUB', docx: 'Word', doc: 'Word', pdf: 'PDF', html: 'HTML', htm: 'HTML', xhtml: 'HTML', zip: 'ZIP' };
+/* OCR bằng Tesseract.js — chỉ tải khi cần (lần đầu cần mạng: ~3 MB bộ máy + ~2–12 MB dữ liệu mỗi ngôn ngữ, sau đó trình duyệt giữ lại) */
+const TESS_VER = '7.0.0';
+const TESS_URL = 'https://cdn.jsdelivr.net/npm/tesseract.js@' + TESS_VER + '/dist/tesseract.min.js';
+const OCR_LANGS = [['vie', 'Tiếng Việt'], ['chi_sim', 'Tiếng Trung giản thể'], ['chi_tra', 'Tiếng Trung phồn thể'], ['eng', 'Tiếng Anh'], ['vie+eng', 'Việt + Anh']];
+let tessP = null;
+function loadTesseract() {
+  if (window.Tesseract && window.Tesseract.createWorker) return Promise.resolve(window.Tesseract);
+  tessP = tessP || new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = window.__tessUrl || TESS_URL; s.async = true; s.crossOrigin = 'anonymous';
+    s.onload = () => (window.Tesseract && window.Tesseract.createWorker ? res(window.Tesseract) : rej(new Error('tesseract')));
+    s.onerror = () => { tessP = null; s.remove(); rej(new Error(T('Không tải được bộ nhận dạng chữ — lần dùng đầu cần có mạng.'))); };
+    document.head.appendChild(s);
+  });
+  return tessP;
+}
+const cvAbortErr = () => { const e = new Error(T('Đã hủy.')); e.name = 'AbortError'; return e; };
+/* PDF (ảnh scan) → chữ: vẽ từng trang bằng pdf.js, nhận dạng bằng Tesseract, rồi gộp dòng thành đoạn như PDF có chữ */
+async function cvOcrPdf(u8, lang, ctl) {
+  const lib = await loadPdfJs();
+  ctl.say(T('Đang tải bộ nhận dạng chữ (OCR)…'));
+  const Tess = await loadTesseract();
+  if (ctl.signal.aborted) throw cvAbortErr();
+  let worker = null; const stop = () => { if (worker) { const w = worker; worker = null; try { w.terminate(); } catch (e) { /* bỏ qua */ } } };
+  let onAbort; const abortP = new Promise((_, rej) => { onAbort = () => { stop(); rej(cvAbortErr()); }; ctl.signal.addEventListener('abort', onAbort, { once: true }); });
+  abortP.catch(() => {});
+  const race = p => Promise.race([p, abortP]);
+  let doc = null;
+  try {
+    worker = await race(Tess.createWorker(lang, 1, { logger: m => {
+      if (!m || !m.status || m.status === 'recognizing text') return;
+      const st = /traineddata/.test(m.status) ? T('Đang tải dữ liệu chữ ({l})…', { l: lang }) : /core/.test(m.status) ? T('Đang tải bộ máy OCR…') : T('Đang khởi động OCR…');
+      ctl.say(st + (m.progress > 0 && m.progress < 1 ? ' ' + Math.round(m.progress * 100) + '%' : ''));
+    } }));
+    doc = await race(lib.getDocument(Object.assign({ data: new Uint8Array(u8), isEvalSupported: false, verbosity: 0, stopAtErrors: false }, PDF_OPTS)).promise);
+    const n = doc.numPages; const lines = []; const t0 = Date.now();
+    const cv = document.createElement('canvas'); const ctx = cv.getContext('2d');
+    for (let pn = 1; pn <= n; pn++) {
+      if (ctl.signal.aborted) throw cvAbortErr();
+      const el = (Date.now() - t0) / 1000; const eta = pn > 1 ? Math.round(el / (pn - 1) * (n - pn + 1)) : 0;
+      ctl.say(T('Đang nhận dạng chữ: trang {i}/{n}…', { i: pn, n }) + (eta ? ' ' + T('còn khoảng {t}', { t: C.fmtDur(eta) }) : ''), (pn - 1) / n);
+      const page = await race(doc.getPage(pn)); const vp1 = page.getViewport({ scale: 1 });
+      const sc = Math.min(3, Math.max(1, 1700 / Math.max(vp1.width, 1))); const vp = page.getViewport({ scale: sc });
+      cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+      await race(page.render({ canvasContext: ctx, viewport: vp }).promise);
+      const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+      const res = await race(worker.recognize(blob, {}, { text: false, tsv: true }));
+      C.ocrTsvLines((res && res.data && res.data.tsv) || '', pn, 1 / sc).forEach(l => lines.push(l));
+      page.cleanup && page.cleanup();
+    }
+    ctl.say(T('Đang ghép đoạn…'), 1); await cvYield();
+    return { text: C.pdfLinesToText(lines), pages: n };
+  } finally {
+    ctl.signal.removeEventListener('abort', onAbort); stop();
+    if (doc) { try { await doc.destroy(); } catch (e) { /* bỏ qua */ } }
+  }
+}
+/* Đoán ngôn ngữ OCR từ tên file / chữ đọc được */
+function cvGuessLang(s) { s = String(s || ''); if (/[\u4e00-\u9fff]/.test(s)) return /[們這說個為來時見書]/.test(s) ? 'chi_tra' : 'chi_sim'; if (CV_VI.test(s)) return 'vie'; return /[a-z]{4}/i.test(s) ? 'vie' : 'vie'; }
 function cvSource() { const ta = $('#cvText'); return ta && ta.value.trim() ? ta.value : CV.text; }
+/* Danh sách chương [{title, paras}] từ chữ dán, file .txt hoặc cấu trúc của EPUB/Word/PDF */
+function cvChapters(b) {
+  const split = $('#cvSplit', b).checked; const ta = $('#cvText', b).value;
+  if (ta.trim() || !CV.src) { const t = ta.trim() ? ta : CV.text; if (!t.trim()) return []; return split ? C.splitChapters(t) : [{ title: '', paras: C.splitParagraphs(t) }]; }
+  const units = CV.src.chapters || [];
+  if (split) return C.chaptersFromImport({ chapters: units });
+  return units.map(u => ({ title: u.title || '', paras: C.splitParagraphs(u.text || '') })).filter(c => c.paras.length);
+}
+function cvCoverNow() { return CV.cover || (CV.coverOff ? null : CV.fileCover); }
 function openConvert() {
   closeDlMenu && closeDlMenu();
-  Object.assign(CV, { text: '', name: '', cover: null, busy: false });
+  if (CV.ctl) { try { CV.ctl.abort(); } catch (e) { /* bỏ qua */ } }
+  Object.assign(CV, { text: '', name: '', cover: null, fileCover: null, coverOff: false, busy: false, src: null, kind: '', u8: null, ctl: null, pdfText: '' });
+  const langOpts = OCR_LANGS.map(([v, l]) => `<option value="${v}">${esc(T(l))}</option>`).join('');
   openModal(T('Chuyển định dạng'), `
-    <p class="muted small" style="margin-top:0">${esc(T('Biến file .txt thành sách EPUB, Word (.docx) hoặc PDF — có mục lục theo chương. Mọi thứ làm ngay trên máy, không gửi đi đâu.'))}</p>
-    <div class="row-flex"><button class="primary" id="cvFile">${I('upload')} ${esc(T('Chọn file .txt'))}</button><span id="cvFname" class="muted small"></span></div>
+    <p class="muted small" style="margin-top:0">${esc(T('Đọc file .txt, EPUB, Word (.docx) hoặc PDF — cả PDF scan (nhận dạng chữ OCR) — rồi xuất ra TXT, EPUB, Word hoặc PDF, có mục lục theo chương. Mọi thứ làm ngay trên máy, không gửi file đi đâu.'))}</p>
+    <div class="row-flex"><button class="primary" id="cvFile">${I('upload')} ${esc(T('Chọn file (.txt, .epub, .docx, .pdf)'))}</button><span id="cvFname" class="muted small"></span></div>
+    <div id="cvOcr" class="cvocr hidden">
+      <div id="cvOcrMsg" class="small"></div>
+      <div class="row-flex" style="margin-top:6px"><label class="small" for="cvOcrLang" style="margin:0">${esc(T('Chữ trong ảnh là'))}</label><select id="cvOcrLang">${langOpts}</select><button class="primary" id="cvOcrGo">${esc(T('Nhận dạng chữ (OCR)'))}</button></div>
+      <div class="muted small" style="margin-top:6px">${esc(T('OCR chạy ngay trên máy nên khá chậm: trên điện thoại khoảng 5–20 giây mỗi trang (sách 300 trang có thể mất cả giờ). Lần đầu cần mạng để tải bộ nhận dạng (~5–15 MB). Giữ màn hình sáng và đừng chuyển sang app khác trong lúc chạy.'))}</div>
+    </div>
+    <div id="cvOcrAsk" class="hidden small" style="margin-top:4px"><button class="linkbtn" id="cvOcrShow">${esc(T('Chữ đọc ra bị lỗi, thiếu? Nhận dạng lại bằng OCR'))}</button></div>
     <label>${esc(T('Hoặc dán chữ vào đây'))}</label><textarea id="cvText" rows="4" class="zhfont" placeholder="${esc(T('Chương 1 …'))}"></textarea>
     <div class="two"><div><label>${esc(T('Tên sách'))}</label><input id="cvTitle"></div><div><label>${esc(T('Tác giả'))}</label><input id="cvAuthor"></div></div>
     <label class="inline small"><input type="checkbox" id="cvSplit" checked> ${esc(T('Tự tách chương theo tiêu đề (Chương 1, 第一章, 第1章, Chapter 1…) và làm mục lục'))}</label>
-    <div class="row-flex" style="margin-top:6px"><button id="cvCover">${I('upload')} ${esc(T('Ảnh bìa (EPUB)…'))}</button><span id="cvCoverInfo" class="muted small"></span></div>
+    <div class="row-flex" style="margin-top:6px"><button id="cvCover">${I('upload')} ${esc(T('Ảnh bìa (EPUB)…'))}</button><span id="cvCoverInfo" class="muted small"></span><button class="linkbtn hidden" id="cvCoverDel">${esc(T('Bỏ ảnh bìa'))}</button></div>
+    <div id="cvProg" class="row-flex hidden" style="margin-top:8px"><progress id="cvBar" max="1" value="0" style="flex:1;min-width:120px"></progress><button id="cvCancel">${esc(T('Hủy'))}</button></div>
     <div id="cvInfo" class="small cvinfo" aria-live="polite"></div>
-    <div class="row-flex cvout" style="margin-top:10px"><button class="primary" data-cv="epub">${I('download')} EPUB</button><button data-cv="docx">${I('download')} Word (.docx)</button><button data-cv="pdf">${I('download')} PDF</button><button data-cv="print">${esc(T('In / PDF (chữ chọn được)'))}</button></div>
-    <div class="muted small" style="margin-top:8px">${esc(T('PDF tải về ngay, khổ A5, đúng dấu tiếng Việt và chữ Hán (trang dạng ảnh). Cần chọn/tìm chữ trong PDF thì bấm “In / PDF” → trên iPhone: Chia sẻ/In → chụm hai ngón vào trang xem trước → Lưu vào Tệp.'))}</div>
-    <div class="muted small" style="margin-top:4px">${esc(T('Muốn xuất bản dịch của một truyện trong Kho: mở truyện → Tải xuống.'))}</div>`, b => bindConvert(b), () => { CV.text = ''; CV.cover = null; });
+    <details id="cvPrevBox" class="small hidden" style="margin-top:6px"><summary>${esc(T('Xem trước nội dung'))}</summary><div id="cvPrev" class="cvprev"></div></details>
+    <div class="row-flex cvout" style="margin-top:10px"><button class="primary" data-cv="epub">${I('download')} EPUB</button><button data-cv="docx">${I('download')} Word (.docx)</button><button data-cv="pdf">${I('download')} PDF</button><button data-cv="txt">${I('download')} TXT</button><button data-cv="print">${esc(T('In / PDF (chữ chọn được)'))}</button></div>
+    <div class="muted small" style="margin-top:8px">${esc(T('PDF tải về ngay, khổ A5, đúng dấu tiếng Việt và chữ Hán (trang dạng ảnh). Cần chọn/tìm chữ trong PDF thì bấm “In / PDF” → trên iPhone: Chia sẻ/In → chụm hai ngón vào trang xem trước → Lưu vào Tệp. TXT xuất ra mã UTF-8, mỗi chương mở đầu bằng tên chương.'))}</div>
+    <div class="muted small" style="margin-top:4px">${esc(T('Muốn xuất bản dịch của một truyện trong Kho: mở truyện → Tải xuống.'))}</div>`, b => bindConvert(b), () => { if (CV.ctl) { try { CV.ctl.abort(); } catch (e) { /* bỏ qua */ } } Object.assign(CV, { text: '', cover: null, fileCover: null, src: null, u8: null, ctl: null, busy: false }); });
 }
 function bindConvert(b) {
   let tm = 0;
-  const info = () => { clearTimeout(tm); tm = setTimeout(() => {
-    const el = $('#cvInfo', b); if (!el) return; const t = cvSource(); if (!t.trim()) { el.textContent = ''; return; }
-    const t0 = performance.now(); const parts = $('#cvSplit', b).checked ? C.splitChapters(t) : [{ title: '', paras: C.splitParagraphs(t) }];
-    const np = parts.reduce((a, p) => a + p.paras.length, 0);
-    el.textContent = T('{c} chữ · {p} đoạn · {n} chương', { c: fmtN(C.countChars(t)), p: fmtN(np), n: parts.length }) + (parts.length > 1 ? ': ' + parts.slice(0, 4).map(p => p.title).join(' · ') + (parts.length > 4 ? ' … ' + parts[parts.length - 1].title : '') : '');
+  const say = (t, frac) => { const el = $('#cvInfo', b); if (el) el.textContent = t; const bar = $('#cvBar', b); if (bar && frac != null) bar.value = Math.max(0, Math.min(1, frac)); };
+  const busyOn = on => {
+    CV.busy = on; $$('[data-cv]', b).forEach(x => { x.disabled = on; }); ['#cvFile', '#cvOcrGo', '#cvOcrShow'].forEach(s => { const x = $(s, b); if (x) x.disabled = on; });
+    $('#cvProg', b).classList.toggle('hidden', !on); if (on) $('#cvBar', b).removeAttribute('value'); /* chưa rõ tiến độ: thanh chạy */
+    if (on) { const pg = $('#cvProg', b); setTimeout(() => { try { pg.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {} }, 0); } /* điện thoại: cho thấy thanh tiến độ + nút Hủy */
+  };
+  const start = () => { const ac = new AbortController(); CV.ctl = ac; busyOn(true); return ac; };
+  const end = ac => { if (CV.ctl === ac) CV.ctl = null; busyOn(false); };
+  const coverInfo = () => {
+    const c = cvCoverNow(); $('#cvCoverInfo', b).textContent = CV.cover ? CV.cover.name || '' : c ? T('Bìa lấy từ file EPUB') + (c.name ? ' (' + c.name + ')' : '') : '';
+    $('#cvCoverDel', b).classList.toggle('hidden', !c);
+  };
+  const info = (now) => { clearTimeout(tm); tm = setTimeout(() => {
+    if (CV.busy) return; const el = $('#cvInfo', b); if (!el) return;
+    const t0 = performance.now(); const parts = cvChapters(b);
+    if (!parts.length) { el.textContent = ''; $('#cvPrevBox', b).classList.add('hidden'); return; }
+    const np = parts.reduce((a, p) => a + p.paras.length, 0); const nc = parts.reduce((a, p) => a + C.countChars(p.paras.join('\n')), 0);
+    const m = CV.src && !$('#cvText', b).value.trim() ? CV.src.meta || {} : {};
+    const cred = [['translator', 'Người dịch'], ['originalTitle', 'Tên gốc'], ['editor', 'Biên tập'], ['source', 'Nguồn']].filter(([k]) => m[k] && !(k === 'originalTitle' && m[k] === $('#cvTitle', b).value.trim())).map(([k, l]) => T(l) + ': ' + m[k]);
+    el.textContent = T('{c} chữ · {p} đoạn · {n} chương', { c: fmtN(nc), p: fmtN(np), n: parts.length }) + (parts.length > 1 ? ': ' + parts.slice(0, 4).map(p => p.title || '…').join(' · ') + (parts.length > 4 ? ' … ' + (parts[parts.length - 1].title || '') : '') : '') + (cred.length ? ' · ' + T('Ghi công lấy từ file') + ' — ' + cred.join(' · ') : '');
+    const pv = $('#cvPrev', b); pv.innerHTML = '';
+    parts.slice(0, 3).forEach(p => { const h = document.createElement('b'); h.textContent = p.title || T('(không tên)'); pv.appendChild(h); p.paras.slice(0, 3).forEach(x => { const d = document.createElement('p'); d.textContent = x.length > 300 ? x.slice(0, 300) + '…' : x; pv.appendChild(d); }); });
+    $('#cvPrevBox', b).classList.remove('hidden');
     CV.lastMs = performance.now() - t0;
-  }, 350); };
+  }, now === true ? 0 : 350); };
+  const showOcr = (msg, open) => { $('#cvOcrMsg', b).textContent = msg; $('#cvOcr', b).classList.toggle('hidden', !open); $('#cvOcrAsk', b).classList.toggle('hidden', open || CV.kind !== 'pdf'); };
+  const applySrc = (imp, fname) => {
+    CV.src = imp; CV.name = fname.replace(/\.[^.]+$/, ''); CV.text = '';
+    const m = imp.meta || {};
+    const it = imp.title && imp.title !== CV.name && imp.title.length < 120 ? imp.title : ''; /* tên sách trong file (dc:title, kiểu Title của Word) trước, rồi thuộc tính file */
+    $('#cvTitle', b).value = it || (m.title && m.title.length < 120 && m.title !== CV.name ? m.title : '') || $('#cvTitle', b).value.trim() || CV.name;
+    if (m.author && !$('#cvAuthor', b).value.trim()) $('#cvAuthor', b).value = m.author;
+    CV.fileCover = imp.cover || null; CV.coverOff = false; coverInfo();
+  };
   $('#cvText', b).oninput = () => { if ($('#cvText', b).value.trim()) $('#cvFname', b).textContent = ''; info(); };
   $('#cvSplit', b).onchange = info;
+  $('#cvCancel', b).onclick = () => { if (CV.ctl) CV.ctl.abort(); };
   $('#cvFile', b).onclick = async () => {
-    const [f] = await pickFiles('.txt,.md,text/plain', false); if (!f) return;
+    if (CV.busy) return;
+    const [f] = await pickFiles(ACCEPT, false); if (!f) return;
+    if (f.size > MAX_BOOK) { toast(T('File lớn hơn 80 MB. Chia nhỏ rồi đưa lại.'), 'err'); return; }
+    const ac = start();
     try {
-      const buf = new Uint8Array(await f.arrayBuffer()); CV.text = C.decodeText(buf).replace(/\r\n?/g, '\n'); CV.name = f.name.replace(/\.[^.]+$/, '');
-      $('#cvText', b).value = ''; $('#cvFname', b).textContent = f.name + ' · ' + fmtN(Math.round(f.size / 1024)) + ' KB';
-      if (!$('#cvTitle', b).value.trim()) $('#cvTitle', b).value = CV.name;
-      info();
-    } catch (e) { toast(T('Không đọc được file.') + ' ' + (e.message || ''), 'err'); }
+      say(T('Đang đọc “{f}”…', { f: f.name }));
+      const u8 = new Uint8Array(await f.arrayBuffer());
+      const name = C.fixImportName(f.name, u8); const ext = (name.match(/\.([a-z0-9]+)$/i) || [])[1]?.toLowerCase() || '';
+      Object.assign(CV, { src: null, text: '', u8: null, kind: ext, pdfText: '' }); showOcr('', false);
+      $('#cvText', b).value = ''; $('#cvFname', b).textContent = f.name + ' · ' + fmtN(Math.round(f.size / 1024)) + ' KB' + (CV_KIND[ext] ? ' · ' + CV_KIND[ext] : '');
+      await cvYield();
+      const pdfCtl = { signal: ac.signal, allowEmpty: true, onPage: (i, n) => say(T('Đang đọc PDF: trang {i}/{n}…', { i, n }), i / n) };
+      let imp = await C.importFile(name, u8, { pdfjs: loadPdfJs, pdfOpts: PDF_OPTS, docxStyles: true, pdfCtl });
+      if (ac.signal.aborted) throw cvAbortErr();
+      if (imp.books) { const bk = imp.books[0]; toast(T('File nén có {n} sách — lấy cuốn đầu: {t}.', { n: imp.books.length, t: bk.title }), ''); imp = bk; }
+      if (ext === 'pdf') CV.u8 = u8;
+      applySrc(imp, f.name);
+      if (ext === 'pdf') {
+        CV.pdfText = imp.chapters.map(c => c.text).join('\n');
+        $('#cvOcrLang', b).value = cvGuessLang(CV.pdfText.slice(0, 4000) + ' ' + f.name);
+        if (imp.noText) { CV.src = null; showOcr(T('PDF này là ảnh scan/ảnh chụp, không có lớp chữ ({n} trang). Chọn ngôn ngữ rồi bấm “Nhận dạng chữ (OCR)” để lấy chữ.', { n: imp.pages || '?' }), true); end(ac); say(T('Chưa có chữ — cần nhận dạng chữ (OCR).')); return; }
+        if (imp.garbled) showOcr(T('Lớp chữ của PDF này có vẻ bị xáo trộn (hay gặp ở PDF xuất từ LibreOffice/Word với chữ có dấu: dấu bị tách khỏi chữ). Xem trước bên dưới — nếu chữ lỗi, chọn ngôn ngữ rồi bấm “Nhận dạng chữ (OCR)”.'), true);
+        else showOcr('', false);
+      }
+      end(ac); info(true);
+    } catch (e) {
+      end(ac); CV.src = null; say('');
+      if (e && e.name === 'AbortError') { say(T('Đã hủy.')); $('#cvFname', b).textContent = ''; return; }
+      toast(T('Không đọc được file.') + ' ' + (e.message || ''), 'err');
+    }
+  };
+  $('#cvOcrShow', b).onclick = () => showOcr(T('Nhận dạng lại toàn bộ PDF bằng OCR (bỏ lớp chữ sẵn có). Hợp với PDF có lớp chữ lỗi font, mất dấu.'), true);
+  $('#cvOcrGo', b).onclick = async () => {
+    if (CV.busy || !CV.u8) return;
+    const lang = $('#cvOcrLang', b).value || 'vie'; const ac = start();
+    try {
+      const r = await cvOcrPdf(CV.u8, lang, { signal: ac.signal, say });
+      if (ac.signal.aborted) throw cvAbortErr();
+      if (r.text.replace(/\s/g, '').length < 10) throw new Error(T('Không nhận ra chữ nào — thử chọn đúng ngôn ngữ, hoặc ảnh quá mờ.'));
+      const imp = C.finishImport({ title: CV.name, chapters: [{ title: '', text: r.text }], whole: true }, CV.name + '.pdf', (CV.src && CV.src.meta) || {});
+      const keepT = $('#cvTitle', b).value; applySrc(imp, CV.name + '.pdf'); if (keepT.trim()) $('#cvTitle', b).value = keepT;
+      $('#cvOcr', b).classList.add('hidden'); $('#cvOcrAsk', b).classList.remove('hidden');
+      end(ac); info(true); toast(T('Đã nhận dạng {n} trang.', { n: r.pages }), 'ok');
+    } catch (e) {
+      end(ac);
+      if (e && e.name === 'AbortError') { say(T('Đã hủy nhận dạng chữ.')); return; }
+      say(''); toast(T('Nhận dạng chữ không thành công.') + ' ' + (e.message || e), 'err');
+    }
   };
   $('#cvCover', b).onclick = async () => {
     const [f] = await pickFiles('image/jpeg,image/png,image/gif,image/webp', false); if (!f) return;
     let mime = f.type; if (!/^image\/(jpeg|png|gif|webp)$/.test(mime)) mime = /\.png$/i.test(f.name) ? 'image/png' : 'image/jpeg';
-    CV.cover = { data: new Uint8Array(await f.arrayBuffer()), mime }; $('#cvCoverInfo', b).textContent = f.name;
+    CV.cover = { data: new Uint8Array(await f.arrayBuffer()), mime, name: f.name }; coverInfo();
   };
-  $$('[data-cv]', b).forEach(btn => { btn.onclick = () => cvExport(b, btn.dataset.cv); });
+  $('#cvCoverDel', b).onclick = () => { if (CV.cover) CV.cover = null; else CV.coverOff = true; coverInfo(); };
+  $$('[data-cv]', b).forEach(btn => { btn.onclick = () => cvExport(b, btn.dataset.cv, { start, end, say }); });
 }
-async function cvExport(b, fmt) {
-  if (CV.busy) return; const text = cvSource();
-  if (!text.trim()) { toast(T('Hãy chọn file .txt hoặc dán chữ trước.'), 'err'); return; }
-  CV.busy = true; const btns = $$('[data-cv]', b); btns.forEach(x => { x.disabled = true; }); const el = $('#cvInfo', b); const say = t => { if (el) el.textContent = t; };
+async function cvExport(b, fmt, h) {
+  if (CV.busy) return;
+  let chs = cvChapters(b);
+  if (!chs.length || !chs.some(c => c.paras.length)) { toast(CV.u8 && !CV.src ? T('PDF này chưa có chữ — bấm “Nhận dạng chữ (OCR)” trước.') : T('Hãy chọn file hoặc dán chữ trước.'), 'err'); return; }
+  const ac = h.start(); const say = h.say;
   try {
     say(T('Đang chuẩn bị…')); await cvYield();
     const title = $('#cvTitle', b).value.trim() || CV.name || T('Không tên'); const author = $('#cvAuthor', b).value.trim();
-    let chs = $('#cvSplit', b).checked ? C.splitChapters(text) : [{ title: '', paras: C.splitParagraphs(text) }];
     chs = chs.filter(c => c.paras.length); if (!chs.length) throw new Error(T('Không có nội dung.'));
     if (chs.length === 1 && !chs[0].title) chs[0].title = title;
-    const sample = text.slice(0, 20000); const zh = (sample.match(/[\u4e00-\u9fff]/g) || []).length > sample.length * 0.2 && !CV_VI.test(sample);
-    const book = { title, author, lang: 'vi', langCode: zh ? 'zh' : 'vi', chapters: chs, cover: CV.cover };
+    chs.forEach((c, i) => { if (!c.title) c.title = i === 0 ? 'Mở đầu' : T('Phần {n}', { n: i + 1 }); });
+    const sample = chs.slice(0, 3).map(c => c.paras.slice(0, 80).join('\n')).join('\n').slice(0, 20000); const zh = (sample.match(/[\u4e00-\u9fff]/g) || []).length > sample.length * 0.2 && !CV_VI.test(sample);
+    const m = CV.src && !$('#cvText', b).value.trim() ? CV.src.meta || {} : {};
+    const book = { title, author, lang: 'vi', langCode: zh ? 'zh' : 'vi', chapters: chs, cover: cvCoverNow(), translator: m.translator || '', originalTitle: m.originalTitle && m.originalTitle !== title ? m.originalTitle : '', editor: m.editor || '', source: m.source || '', creditNote: m.creditNote || '' };
     const base = safeName(title); await cvYield();
     if (fmt === 'epub') { say(T('Đang tạo EPUB…')); await cvYield(); download(base + '.epub', new Blob([C.buildEpub(book)], { type: 'application/epub+zip' })); }
     else if (fmt === 'docx') { say(T('Đang tạo Word…')); await cvYield(); download(base + '.docx', new Blob([C.buildDocx(book)], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })); }
-    else if (fmt === 'pdf') { say(T('Đang dàn trang PDF…')); await cvYield(); await downloadPdf(book, base, (i, n) => say(T('Đang vẽ trang {i}/{n}…', { i, n }))); }
+    else if (fmt === 'txt') { say(T('Đang tạo TXT…')); await cvYield(); download(base + '.txt', new Blob(['\ufeff' + C.buildTxt(book)], { type: 'text/plain;charset=utf-8' })); }
+    else if (fmt === 'pdf') {
+      say(T('Đang dàn trang PDF…')); await cvYield();
+      const { lay, pages } = await renderPdfPages(book, 'A5', (i, n) => say(T('Đang vẽ trang {i}/{n}…', { i, n }), i / n), ac.signal);
+      if (ac.signal.aborted) throw cvAbortErr();
+      download(base + '.pdf', new Blob([C.buildPdf(pages, lay.W, lay.H, { title: book.title, author: book.author || '' })], { type: 'application/pdf' }));
+      toast(T('Đã tạo PDF ({n} trang).', { n: pages.length }), 'ok');
+    }
     else if (fmt === 'print') printBook(book);
+    h.end(ac);
     say(T('Xong: {n} chương.', { n: chs.length }) + (fmt === 'print' ? '' : ' ' + T('File đã tải về (trên iPhone: xem trong Tệp → Tải về).')));
-  } catch (e) { say(''); toast(T('Không tạo được file.') + ' ' + (e.message || e), 'err'); }
-  finally { CV.busy = false; btns.forEach(x => { x.disabled = false; }); }
+  } catch (e) {
+    h.end(ac);
+    if (e && e.name === 'AbortError') { say(T('Đã hủy.')); return; }
+    say(''); toast(T('Không tạo được file.') + ' ' + (e.message || e), 'err');
+  }
 }
 /* ---------- Sách nói: đọc bản dịch thành MP3 ngay trên máy (miễn phí, không cần khóa API) ----------
    Piper VITS + espeak-ng chạy trong luồng phụ (WebAssembly). Lần đầu tải giọng đọc (~100 MB) rồi lưu trong Cache Storage
@@ -5923,7 +6220,7 @@ window.addEventListener('beforeunload', e => { if (pending.size || S.busy) { e.p
 
 
 /* ---------- Ứng dụng trên màn hình chính (PWA) ---------- */
-const APP_BUILD = 'convert-1104';
+const APP_BUILD = 'convert2-1104';
 const ONLINE_ORIGIN = /^https?:$/.test(location.protocol);
 function setThemeMeta(t) { document.querySelectorAll('meta[name=theme-color]').forEach(m => { m.content = t === 'dark' ? '#1a1714' : '#f3eee6'; m.removeAttribute('media'); }); }
 // Service worker chỉ chạy khi mở qua http(s); mở file:// thì bỏ qua (app vẫn chạy trọn trong một file)
